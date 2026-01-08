@@ -1,0 +1,127 @@
+{
+  "header": {
+    "features": "Cómo Funciona",
+    "demo": "Ejemplos",
+    "pricing": "Precios",
+    "getStarted": "Empezar Gratis"
+  },
+  "hero": {
+    "title": "Tu Sitio Web. Tus Apps. Tu Estilo. En 5 Minutos.",
+    "subtitle": "Sitios web profesionales y apps simples creadas por IA. Sin código. Sin configuración. En vivo al instante.",
+    "websitePath": {
+      "title": "Necesito un Sitio Web",
+      "subtitle": "Perfecto para restaurantes, gimnasios, salones, portafolios, landing pages y pequeñas empresas",
+      "feature1": "En vivo en 5 minutos con tu propio dominio",
+      "feature2": "Adaptado a móviles y optimizado para SEO",
+      "feature3": "Actualiza en cualquier momento con comandos de texto simples",
+      "cta": "Crear Mi Sitio Web",
+      "price": "Desde $19/mes"
+    },
+    "appPath": {
+      "title": "Necesito una App Simple",
+      "subtitle": "Sistemas de reservas, directorios, calculadoras, dashboards y herramientas personalizadas",
+      "feature1": "Plantillas pre-construidas listas para personalizar",
+      "feature2": "Notificaciones por email y sincronización de calendario",
+      "feature3": "Funciona perfectamente con tu sitio web",
+      "cta": "Crear Mi App",
+      "price": "Desde $49/mes"
+    }
+  },
+  "apps": {
+    "title": "Apps Simples Populares",
+    "subtitle": "Creadas en minutos, no semanas",
+    "booking": {
+      "title": "Sistema de Reservas",
+      "description": "Acepta citas con sincronización de calendario, confirmaciones por email y cobro de pagos"
+    },
+    "directory": {
+      "title": "Directorio",
+      "description": "Listados buscables con filtros, perfiles y formularios de contacto para tu comunidad"
+    },
+    "calculator": {
+      "title": "Calculadora",
+      "description": "Herramientas de precios personalizadas, calculadoras de ROI, generadores de presupuestos para tu negocio"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "description": "Seguimiento de métricas, visualización de datos y compartir insights con tu equipo o clientes"
+    }
+  },
+  "howItWorks": {
+    "title": "Cómo Funciona",
+    "subtitle": "De la idea a en vivo en tres pasos simples",
+    "step1": {
+      "title": "Describe lo que Necesitas",
+      "description": "Cuéntanos sobre tu negocio, qué quieres en tu sitio y tu estilo preferido"
+    },
+    "step2": {
+      "title": "La IA lo Construye al Instante",
+      "description": "Nuestra IA genera tu sitio o app profesional con tu marca en minutos"
+    },
+    "step3": {
+      "title": "Lánzalo y Actualiza Cuando Quieras",
+      "description": "Conecta tu dominio y lanza. Actualiza el contenido en cualquier momento con comandos de texto simples"
+    }
+  },
+  "pricing": {
+    "title": "Precios Simples y Transparentes",
+    "subtitle": "Empieza gratis, actualiza cuando estés listo",
+    "free": {
+      "name": "Prueba Gratuita",
+      "price": "$0",
+      "perMonth": " / 7 días",
+      "credits": "Prueba antes de comprar",
+      "vibes": "Vista previa de dominio de prueba",
+      "gallery": "Sin tarjeta de crédito",
+      "cta": "Empezar Gratis"
+    },
+    "website": {
+      "name": "Sitio Web",
+      "price": "$19",
+      "perMonth": " / mes",
+      "feature1": "En vivo con tu dominio",
+      "feature2": "Responsive para móviles",
+      "feature3": "Actualizaciones ilimitadas",
+      "feature4": "Optimizado para SEO",
+      "cta": "Empezar",
+      "note": "O $49 de pago único por exportación"
+    },
+    "bundle": {
+      "name": "Sitio Web + App",
+      "badge": "MÁS POPULAR",
+      "price": "$68",
+      "perMonth": " / mes",
+      "feature1": "Todo lo del Sitio Web",
+      "feature2": "1 app simple incluida",
+      "feature3": "Notificaciones por email",
+      "feature4": "Soporte prioritario",
+      "cta": "Empezar",
+      "note": "Ahorra $20/mes vs separado"
+    },
+    "unlimited": {
+      "name": "Ilimitado",
+      "price": "$199",
+      "perMonth": " / mes",
+      "feature1": "Sitios web ilimitados",
+      "feature2": "Apps ilimitadas",
+      "feature3": "Opción white-label",
+      "feature4": "Soporte dedicado",
+      "cta": "Empezar",
+      "note": "Perfecto para agencias"
+    }
+  },
+  "cta": {
+    "title": "¿Listo para Lanzar Tu Sitio?",
+    "subtitle": "Únete a miles de negocios ya en vivo con WeVibeCode",
+    "button": "Empezar a Construir Gratis",
+    "note": "Sin tarjeta de crédito requerida • Prueba gratuita de 7 días"
+  },
+  "footer": {
+    "tagline": "Crea sitios web y apps profesionales en minutos, no semanas",
+    "twitter": "Twitter",
+    "github": "GitHub",
+    "discord": "Discord",
+    "docs": "Documentos",
+    "copyright": "© 2026 WeVibeCode.ai. Todos los derechos reservados."
+  }
+}
