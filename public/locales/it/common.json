@@ -6,41 +6,41 @@
     "getStarted": "Inizia Gratis"
   },
   "hero": {
-    "title": "Il Tuo Sito. Le Tue App. Il Tuo Stile. In 5 Minuti.",
-    "subtitle": "Siti web professionali e app semplici creati dall'IA. Senza codice. Senza configurazione. Online istantaneamente.",
+    "title": "Il Tuo Sito Web. Le Tue App. Il Tuo Stile. In 5 Minuti.",
+    "subtitle": "Siti web professionali e app semplici create dall'IA. Nessun codice. Nessuna configurazione. Online all'istante.",
     "websitePath": {
       "title": "Ho Bisogno di un Sito Web",
       "subtitle": "Perfetto per ristoranti, palestre, saloni, portfolio, landing page e piccole imprese",
       "feature1": "Online in 5 minuti con il tuo dominio",
-      "feature2": "Ottimizzato per mobile e SEO",
-      "feature3": "Aggiorna quando vuoi con semplici comandi testuali",
-      "cta": "Crea il Mio Sito Web",
+      "feature2": "Mobile-friendly e ottimizzato per SEO",
+      "feature3": "Aggiorna in qualsiasi momento con semplici comandi di testo",
+      "cta": "Crea Il Mio Sito Web",
       "price": "A partire da $19/mese"
     },
     "appPath": {
       "title": "Ho Bisogno di un'App Semplice",
       "subtitle": "Sistemi di prenotazione, directory, calcolatori, dashboard e strumenti personalizzati",
-      "feature1": "Template pre-costruiti pronti per la personalizzazione",
+      "feature1": "Template pre-costruiti pronti da personalizzare",
       "feature2": "Notifiche email e sincronizzazione calendario",
       "feature3": "Funziona perfettamente con il tuo sito web",
-      "cta": "Crea la Mia App",
+      "cta": "Crea La Mia App",
       "price": "A partire da $49/mese"
     }
   },
   "apps": {
     "title": "App Semplici Popolari",
-    "subtitle": "Create in minuti, non settimane",
+    "subtitle": "Costruite in minuti, non settimane",
     "booking": {
       "title": "Sistema di Prenotazione",
-      "description": "Accetta appuntamenti con sincronizzazione calendario, conferme email e raccolta pagamenti"
+      "description": "Accetta appuntamenti con sincronizzazione calendario, conferme via email e raccolta pagamenti"
     },
     "directory": {
       "title": "Directory",
-      "description": "Elenchi ricercabili con filtri, profili e moduli di contatto per la tua community"
+      "description": "Elenchi ricercabili con filtri, profili e moduli di contatto per la tua comunità"
     },
     "calculator": {
       "title": "Calcolatore",
-      "description": "Strumenti di pricing personalizzati, calcolatori ROI, generatori di preventivi per il tuo business"
+      "description": "Strumenti di prezzo personalizzati, calcolatori ROI, generatori di preventivi per la tua attività"
     },
     "dashboard": {
       "title": "Dashboard",
@@ -49,23 +49,23 @@
   },
   "howItWorks": {
     "title": "Come Funziona",
-    "subtitle": "Dall'idea all'online in tre semplici passi",
+    "subtitle": "Dall'idea al online in tre semplici passaggi",
     "step1": {
-      "title": "Descrivi di Cosa Hai Bisogno",
-      "description": "Raccontaci della tua attività, cosa vuoi sul tuo sito e lo stile preferito"
+      "title": "Descrivi Cosa Ti Serve",
+      "description": "Raccontaci della tua attività, cosa vuoi sul tuo sito e il tuo stile preferito"
     },
     "step2": {
-      "title": "L'IA lo Costruisce Istantaneamente",
-      "description": "La nostra IA genera il tuo sito o app professionale con il tuo branding in minuti"
+      "title": "L'IA Lo Costruisce Istantaneamente",
+      "description": "La nostra IA genera il tuo sito o app professionale con il tuo brand in minuti"
     },
     "step3": {
-      "title": "Pubblica e Aggiorna Quando Vuoi",
-      "description": "Collega il tuo dominio e lancia. Aggiorna i contenuti quando vuoi con semplici comandi testuali"
+      "title": "Pubblica e Aggiorna in Qualsiasi Momento",
+      "description": "Collega il tuo dominio e lancia. Aggiorna i contenuti in qualsiasi momento con semplici comandi di testo"
     }
   },
   "pricing": {
     "title": "Prezzi Semplici e Trasparenti",
-    "subtitle": "Inizia gratis, passa a pagamento quando sei pronto",
+    "subtitle": "Inizia gratis, aggiorna quando sei pronto",
     "free": {
       "name": "Prova Gratuita",
       "price": "$0",
@@ -82,21 +82,21 @@
       "feature1": "Online con il tuo dominio",
       "feature2": "Responsive per mobile",
       "feature3": "Aggiornamenti illimitati",
-      "feature4": "Ottimizzato SEO",
+      "feature4": "Ottimizzato per SEO",
       "cta": "Inizia",
       "note": "O $49 una tantum per l'esportazione"
     },
     "bundle": {
       "name": "Sito Web + App",
-      "badge": "IL PIÙ POPOLARE",
+      "badge": "PIÙ POPOLARE",
       "price": "$68",
       "perMonth": " / mese",
-      "feature1": "Tutto incluso nel Sito Web",
+      "feature1": "Tutto in Sito Web",
       "feature2": "1 app semplice inclusa",
       "feature3": "Notifiche email",
       "feature4": "Supporto prioritario",
       "cta": "Inizia",
-      "note": "Risparmia $20/mese rispetto all'acquisto separato"
+      "note": "Risparmia $20/mese vs separato"
     },
     "unlimited": {
       "name": "Illimitato",
@@ -111,17 +111,17 @@
     }
   },
   "cta": {
-    "title": "Pronto a Lanciare il Tuo Sito?",
+    "title": "Pronto a Lanciare Il Tuo Sito?",
     "subtitle": "Unisciti a migliaia di aziende già online con WeVibeCode",
     "button": "Inizia a Costruire Gratis",
     "note": "Nessuna carta di credito richiesta • Prova gratuita di 7 giorni"
   },
   "footer": {
-    "tagline": "Crea siti web e app professionali in minuti, non settimane",
+    "tagline": "Costruisci siti web e app professionali in minuti, non settimane",
     "twitter": "Twitter",
     "github": "GitHub",
     "discord": "Discord",
-    "docs": "Documentazione",
+    "docs": "Documenti",
     "copyright": "© 2026 WeVibeCode.ai. Tutti i diritti riservati."
   }
 }
