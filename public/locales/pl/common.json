@@ -3,17 +3,17 @@
     "features": "Jak To Działa",
     "demo": "Przykłady",
     "pricing": "Cennik",
-    "getStarted": "Zacznij Za Darmo"
+    "getStarted": "Rozpocznij Za Darmo"
   },
   "hero": {
     "title": "Twoja Strona. Twoje Aplikacje. Twój Styl. W 5 Minut.",
-    "subtitle": "Profesjonalne strony internetowe i proste aplikacje budowane przez AI. Bez kodowania. Bez konfiguracji. Natychmiast online.",
+    "subtitle": "Profesjonalne strony internetowe i proste aplikacje stworzone przez AI. Bez kodowania. Bez konfiguracji. Natychmiast online.",
     "websitePath": {
       "title": "Potrzebuję Strony Internetowej",
-      "subtitle": "Idealne dla restauracji, siłowni, salonów, portfolio, landing page'ów i małych firm",
+      "subtitle": "Idealne dla restauracji, siłowni, salonów, portfolio, stron docelowych i małych firm",
       "feature1": "Online w 5 minut z własną domeną",
-      "feature2": "Responsywna na mobile i zoptymalizowana pod SEO",
-      "feature3": "Aktualizuj w dowolnym momencie prostymi komendami tekstowymi",
+      "feature2": "Przyjazne dla urządzeń mobilnych i zoptymalizowane pod SEO",
+      "feature3": "Aktualizuj w dowolnym momencie za pomocą prostych poleceń tekstowych",
       "cta": "Stwórz Moją Stronę",
       "price": "Od $19/miesiąc"
     },
@@ -22,17 +22,17 @@
       "subtitle": "Systemy rezerwacji, katalogi, kalkulatory, dashboardy i niestandardowe narzędzia",
       "feature1": "Gotowe szablony do personalizacji",
       "feature2": "Powiadomienia e-mail i synchronizacja kalendarza",
-      "feature3": "Działa idealnie z Twoją stroną",
+      "feature3": "Działa idealnie z Twoją stroną internetową",
       "cta": "Stwórz Moją Aplikację",
       "price": "Od $49/miesiąc"
     }
   },
   "apps": {
     "title": "Popularne Proste Aplikacje",
-    "subtitle": "Zbudowane w minuty, nie tygodnie",
+    "subtitle": "Stworzone w minuty, nie tygodnie",
     "booking": {
       "title": "System Rezerwacji",
-      "description": "Akceptuj rezerwacje z synchronizacją kalendarza, potwierdzeniami e-mail i zbieraniem płatności"
+      "description": "Przyjmuj spotkania z synchronizacją kalendarza, potwierdzeniami e-mail i pobieraniem płatności"
     },
     "directory": {
       "title": "Katalog",
@@ -40,63 +40,63 @@
     },
     "calculator": {
       "title": "Kalkulator",
-      "description": "Niestandardowe narzędzia cenowe, kalkulatory ROI, generatory ofert dla Twojego biznesu"
+      "description": "Niestandardowe narzędzia cenowe, kalkulatory ROI, generatory wycen dla Twojej firmy"
     },
     "dashboard": {
       "title": "Dashboard",
-      "description": "Śledź metryki, wyświetlaj dane i udostępniaj insights zespołowi lub klientom"
+      "description": "Śledź metryki, wyświetlaj dane i dziel się spostrzeżeniami z zespołem lub klientami"
     }
   },
   "howItWorks": {
     "title": "Jak To Działa",
-    "subtitle": "Od pomysłu do publikacji w trzech prostych krokach",
+    "subtitle": "Od pomysłu do online w trzech prostych krokach",
     "step1": {
-      "title": "Opisz, Czego Potrzebujesz",
-      "description": "Opowiedz nam o swojej firmie, co chcesz na stronie i preferowanym stylu"
+      "title": "Opisz Czego Potrzebujesz",
+      "description": "Powiedz nam o swojej firmie, co chcesz na swojej stronie i preferowany styl"
     },
     "step2": {
       "title": "AI Buduje To Natychmiast",
-      "description": "Nasze AI generuje profesjonalną stronę lub aplikację z Twoim brandingiem w minuty"
+      "description": "Nasze AI generuje Twoją profesjonalną stronę lub aplikację z Twoją marką w minuty"
     },
     "step3": {
-      "title": "Opublikuj i Aktualizuj Kiedy Chcesz",
-      "description": "Podłącz domenę i uruchom. Aktualizuj treści w dowolnym momencie prostymi komendami tekstowymi"
+      "title": "Opublikuj i Aktualizuj W Dowolnym Momencie",
+      "description": "Podłącz swoją domenę i uruchom. Aktualizuj treści w dowolnym momencie za pomocą prostych poleceń tekstowych"
     }
   },
   "pricing": {
     "title": "Proste, Przejrzyste Ceny",
-    "subtitle": "Zacznij za darmo, upgrade'uj kiedy jesteś gotowy",
+    "subtitle": "Zacznij za darmo, uaktualnij gdy będziesz gotowy",
     "free": {
       "name": "Darmowa Wersja Próbna",
       "price": "$0",
       "perMonth": " / 7 dni",
       "credits": "Wypróbuj przed zakupem",
-      "vibes": "Podgląd domeny testowej",
+      "vibes": "Testowy podgląd domeny",
       "gallery": "Bez karty kredytowej",
-      "cta": "Zacznij Za Darmo"
+      "cta": "Rozpocznij Za Darmo"
     },
     "website": {
       "name": "Strona Internetowa",
       "price": "$19",
       "perMonth": " / miesiąc",
-      "feature1": "Online z własną domeną",
-      "feature2": "Responsywna na mobile",
+      "feature1": "Online z Twoją domeną",
+      "feature2": "Responsywna na urządzenia mobilne",
       "feature3": "Nieograniczone aktualizacje",
       "feature4": "Zoptymalizowana pod SEO",
-      "cta": "Zacznij",
+      "cta": "Rozpocznij",
       "note": "Lub $49 jednorazowo za eksport"
     },
     "bundle": {
       "name": "Strona + Aplikacja",
-      "badge": "NAJPOPULARNIEJSZY",
+      "badge": "NAJPOPULARNIEJSZE",
       "price": "$68",
       "perMonth": " / miesiąc",
-      "feature1": "Wszystko z planu Strona",
-      "feature2": "1 prosta aplikacja w cenie",
+      "feature1": "Wszystko ze Strony",
+      "feature2": "1 prosta aplikacja w zestawie",
       "feature3": "Powiadomienia e-mail",
-      "feature4": "Priorytetowe wsparcie",
-      "cta": "Zacznij",
-      "note": "Oszczędź $20/miesiąc w porównaniu do osobnych planów"
+      "feature4": "Wsparcie priorytetowe",
+      "cta": "Rozpocznij",
+      "note": "Oszczędź $20/miesiąc vs oddzielnie"
     },
     "unlimited": {
       "name": "Nieograniczony",
@@ -106,22 +106,22 @@
       "feature2": "Nieograniczone aplikacje",
       "feature3": "Opcja white-label",
       "feature4": "Dedykowane wsparcie",
-      "cta": "Zacznij",
+      "cta": "Rozpocznij",
       "note": "Idealne dla agencji"
     }
   },
   "cta": {
-    "title": "Gotowy na Uruchomienie Swojej Strony?",
-    "subtitle": "Dołącz do tysięcy firm już działających z WeVibeCode",
+    "title": "Gotowy Na Uruchomienie Swojej Strony?",
+    "subtitle": "Dołącz do tysięcy firm już online z WeVibeCode",
     "button": "Zacznij Budować Za Darmo",
-    "note": "Bez karty kredytowej • 7-dniowa darmowa wersja próbna"
+    "note": "Nie wymaga karty kredytowej • 7-dniowa darmowa wersja próbna"
   },
   "footer": {
-    "tagline": "Buduj profesjonalne strony i aplikacje w minuty, nie tygodnie",
+    "tagline": "Twórz profesjonalne strony i aplikacje w minuty, nie tygodnie",
     "twitter": "Twitter",
     "github": "GitHub",
     "discord": "Discord",
     "docs": "Dokumentacja",
-    "copyright": "© 2026 WeVibeCode.ai. Wszystkie prawa zastrzeżone."
+    "copyright": "© 2026 WeVibeCode.ai. Wszelkie prawa zastrzeżone."
   }
 }
