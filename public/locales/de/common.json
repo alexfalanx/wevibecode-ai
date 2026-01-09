@@ -1,127 +1,148 @@
 {
   "header": {
-    "features": "Wie Es Funktioniert",
+    "features": "So funktioniert's",
     "demo": "Beispiele",
     "pricing": "Preise",
-    "getStarted": "Kostenlos Starten"
+    "getStarted": "Kostenlos starten",
+    "login": "Anmelden"
   },
   "hero": {
     "title": "Deine Website. Deine Apps. Dein Stil. In 5 Minuten.",
-    "subtitle": "Professionelle Websites und einfache Apps, erstellt durch KI. Kein Coding. Keine Einrichtung. Sofort online.",
+    "subtitle": "Professionelle Websites und einfache Apps von KI erstellt. Kein Code. Kein Setup. Sofort live.",
     "websitePath": {
-      "title": "Ich Brauche Eine Website",
-      "subtitle": "Perfekt für Restaurants, Fitnessstudios, Salons, Portfolios, Landingpages und kleine Unternehmen",
-      "feature1": "In 5 Minuten online mit deiner eigenen Domain",
+      "title": "Ich brauche eine Website",
+      "subtitle": "Perfekt für Restaurants, Fitnessstudios, Salons, Portfolios, Landing Pages und kleine Unternehmen",
+      "feature1": "In 5 Minuten live mit deiner eigenen Domain",
       "feature2": "Mobilfreundlich & SEO-optimiert",
-      "feature3": "Jederzeit aktualisieren mit einfachen Textbefehlen",
-      "cta": "Meine Website Erstellen",
-      "price": "Ab $19/Monat"
+      "feature3": "Jederzeit mit einfachen Textbefehlen aktualisieren",
+      "cta": "Meine Website erstellen",
+      "price": "Ab €19/Monat"
     },
     "appPath": {
-      "title": "Ich Brauche Eine Einfache App",
-      "subtitle": "Buchungssysteme, Verzeichnisse, Rechner, Dashboards und benutzerdefinierte Tools",
-      "feature1": "Vorgefertigte Vorlagen bereit zum Anpassen",
-      "feature2": "E-Mail-Benachrichtigungen & Kalender-Sync",
+      "title": "Ich brauche eine einfache App",
+      "subtitle": "Buchungssysteme, Verzeichnisse, Rechner, Dashboards und individuelle Tools",
+      "feature1": "Vorgefertigte Vorlagen, bereit zur Anpassung",
+      "feature2": "E-Mail-Benachrichtigungen & Kalendersynchronisation",
       "feature3": "Funktioniert perfekt mit deiner Website",
-      "cta": "Meine App Erstellen",
-      "price": "Ab $49/Monat"
+      "cta": "Meine App erstellen",
+      "price": "Ab €49/Monat"
     }
   },
   "apps": {
-    "title": "Beliebte Einfache Apps",
-    "subtitle": "In Minuten gebaut, nicht Wochen",
+    "title": "Beliebte einfache Apps",
+    "subtitle": "In Minuten erstellt, nicht Wochen",
     "booking": {
       "title": "Buchungssystem",
-      "description": "Termine annehmen mit Kalender-Sync, E-Mail-Bestätigungen und Zahlungsabwicklung"
+      "description": "Termine annehmen mit Kalendersynchronisation, E-Mail-Bestätigungen und Zahlungsabwicklung"
     },
     "directory": {
       "title": "Verzeichnis",
-      "description": "Durchsuchbare Listen mit Filtern, Profilen und Kontaktformularen für deine Community"
+      "description": "Durchsuchbare Einträge mit Filtern, Profilen und Kontaktformularen für deine Community"
     },
     "calculator": {
       "title": "Rechner",
-      "description": "Benutzerdefinierte Preis-Tools, ROI-Rechner, Angebotsgeneratoren für dein Unternehmen"
+      "description": "Individuelle Preistools, ROI-Rechner, Angebotsgeneratoren für dein Unternehmen"
     },
     "dashboard": {
       "title": "Dashboard",
-      "description": "Metriken verfolgen, Daten anzeigen und Erkenntnisse mit deinem Team oder Kunden teilen"
+      "description": "Metriken verfolgen, Daten anzeigen und Insights mit deinem Team oder Kunden teilen"
     }
   },
   "howItWorks": {
-    "title": "Wie Es Funktioniert",
+    "title": "So funktioniert's",
     "subtitle": "Von der Idee bis online in drei einfachen Schritten",
     "step1": {
-      "title": "Beschreibe Was Du Brauchst",
-      "description": "Erzähle uns von deinem Unternehmen, was du auf deiner Seite willst und deinen bevorzugten Stil"
+      "title": "Beschreibe, was du brauchst",
+      "description": "Erzähle uns von deinem Unternehmen, was du auf deiner Seite möchtest und deinen bevorzugten Stil"
     },
     "step2": {
-      "title": "KI Baut Es Sofort",
-      "description": "Unsere KI erstellt deine professionelle Seite oder App mit deinem Branding in Minuten"
+      "title": "KI erstellt es sofort",
+      "description": "Unsere KI generiert deine professionelle Website oder App mit deinem Branding in Minuten"
     },
     "step3": {
-      "title": "Online Gehen & Jederzeit Aktualisieren",
-      "description": "Verbinde deine Domain und starte. Aktualisiere deinen Inhalt jederzeit mit einfachen Textbefehlen"
+      "title": "Online gehen & jederzeit aktualisieren",
+      "description": "Verbinde deine Domain und starte. Aktualisiere deine Inhalte jederzeit mit einfachen Textbefehlen"
     }
   },
   "pricing": {
-    "title": "Einfache, Transparente Preise",
-    "subtitle": "Starte kostenlos, upgrade wenn du bereit bist",
+    "title": "Einfache, transparente Preise",
+    "subtitle": "Kostenlos starten, upgraden wenn du bereit bist",
     "free": {
-      "name": "Kostenlose Testversion",
-      "price": "$0",
+      "name": "Kostenlose Testphase",
+      "price": "€0",
       "perMonth": " / 7 Tage",
-      "credits": "Teste bevor du kaufst",
+      "credits": "Vor dem Kauf testen",
       "vibes": "Test-Domain-Vorschau",
       "gallery": "Keine Kreditkarte",
-      "cta": "Kostenlos Starten"
+      "cta": "Kostenlos starten"
     },
     "website": {
       "name": "Website",
-      "price": "$19",
+      "price": "€19",
       "perMonth": " / Monat",
-      "feature1": "Online mit deiner Domain",
-      "feature2": "Mobile responsive",
+      "feature1": "Live mit deiner Domain",
+      "feature2": "Mobil responsiv",
       "feature3": "Unbegrenzte Updates",
       "feature4": "SEO-optimiert",
-      "cta": "Starten",
-      "note": "Oder $49 einmalig für Export"
+      "cta": "Loslegen",
+      "note": "Oder €49 einmalig für Export"
     },
     "bundle": {
       "name": "Website + App",
-      "badge": "AM BELIEBTESTEN",
-      "price": "$68",
+      "badge": "BELIEBTESTE",
+      "price": "€68",
       "perMonth": " / Monat",
-      "feature1": "Alles in Website",
-      "feature2": "1 einfache App enthalten",
+      "feature1": "Alles aus Website",
+      "feature2": "1 einfache App inklusive",
       "feature3": "E-Mail-Benachrichtigungen",
-      "feature4": "Prioritäts-Support",
-      "cta": "Starten",
-      "note": "Spare $20/Monat vs. einzeln"
+      "feature4": "Priorisierter Support",
+      "cta": "Loslegen",
+      "note": "Spare €20/Monat im Vergleich zu separat"
     },
     "unlimited": {
       "name": "Unbegrenzt",
-      "price": "$199",
+      "price": "€199",
       "perMonth": " / Monat",
       "feature1": "Unbegrenzte Websites",
       "feature2": "Unbegrenzte Apps",
       "feature3": "White-Label-Option",
       "feature4": "Dedizierter Support",
-      "cta": "Starten",
+      "cta": "Loslegen",
       "note": "Perfekt für Agenturen"
     }
   },
   "cta": {
-    "title": "Bereit Deine Seite Zu Starten?",
-    "subtitle": "Schließe dich Tausenden von Unternehmen an, die bereits mit WeVibeCode online sind",
-    "button": "Kostenlos Bauen Starten",
-    "note": "Keine Kreditkarte erforderlich • 7-tägige kostenlose Testversion"
+    "title": "Bereit, deine Seite zu starten?",
+    "subtitle": "Schließe dich Tausenden von Unternehmen an, die bereits mit WeVibeCode live sind",
+    "button": "Kostenlos loslegen",
+    "note": "Keine Kreditkarte erforderlich • 7-tägige kostenlose Testphase"
   },
   "footer": {
-    "tagline": "Erstelle professionelle Websites und Apps in Minuten, nicht Wochen",
+    "tagline": "Professionelle Websites und Apps in Minuten erstellen, nicht Wochen",
     "twitter": "Twitter",
     "github": "GitHub",
     "discord": "Discord",
     "docs": "Dokumentation",
     "copyright": "© 2026 WeVibeCode.ai. Alle Rechte vorbehalten."
+  },
+  "login": "Anmelden",
+  "signup": "Registrieren",
+  "dashboard": "Dashboard",
+  "logout": "Abmelden",
+  "auth": {
+    "signup": "Registrieren",
+    "login": "Anmelden",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "loading": "Lädt...",
+    "signupSuccess": "Konto erfolgreich erstellt! Weiterleitung...",
+    "confirmEmailSent": "Bitte überprüfe deine E-Mail, um dein Konto zu bestätigen.",
+    "alreadyHaveAccount": "Hast du bereits ein Konto?"
+  },
+  "errors": {
+    "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.",
+    "User already registered": "Diese E-Mail ist bereits registriert.",
+    "Invalid email": "Bitte gib eine gültige E-Mail-Adresse ein.",
+    "Password should be at least 6 characters": "Das Passwort muss mindestens 6 Zeichen lang sein."
   }
 }

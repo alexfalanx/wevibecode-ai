@@ -1,0 +1,22 @@
+{
+  "login": "Login",
+  "signup": "Sign Up",
+  "dashboard": "Dashboard",
+  "logout": "Logout",
+  "auth": {
+    "signup": "Sign Up",
+    "login": "Login",
+    "email": "Email",
+    "password": "Password",
+    "loading": "Loading...",
+    "signupSuccess": "Account created successfully! Redirecting...",
+    "confirmEmailSent": "Please check your email to confirm your account.",
+    "alreadyHaveAccount": "Already have an account?"
+  },
+  "errors": {
+    "unexpectedError": "An unexpected error occurred. Please try again.",
+    "User already registered": "This email is already registered.",
+    "Invalid email": "Please enter a valid email address.",
+    "Password should be at least 6 characters": "Password must be at least 6 characters long."
+  }
+}

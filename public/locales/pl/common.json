@@ -1,9 +1,10 @@
-{
+﻿{
   "header": {
     "features": "Jak To Działa",
     "demo": "Przykłady",
     "pricing": "Cennik",
-    "getStarted": "Rozpocznij Za Darmo"
+    "getStarted": "Rozpocznij Za Darmo",
+    "login": "Zaloguj się"
   },
   "hero": {
     "title": "Twoja Strona. Twoje Aplikacje. Twój Styl. W 5 Minut.",
@@ -15,7 +16,7 @@
       "feature2": "Przyjazne dla urządzeń mobilnych i zoptymalizowane pod SEO",
       "feature3": "Aktualizuj w dowolnym momencie za pomocą prostych poleceń tekstowych",
       "cta": "Stwórz Moją Stronę",
-      "price": "Od $19/miesiąc"
+      "price": "Od €19/miesiąc"
     },
     "appPath": {
       "title": "Potrzebuję Prostej Aplikacji",
@@ -24,7 +25,7 @@
       "feature2": "Powiadomienia e-mail i synchronizacja kalendarza",
       "feature3": "Działa idealnie z Twoją stroną internetową",
       "cta": "Stwórz Moją Aplikację",
-      "price": "Od $49/miesiąc"
+      "price": "Od €49/miesiąc"
     }
   },
   "apps": {
@@ -68,7 +69,7 @@
     "subtitle": "Zacznij za darmo, uaktualnij gdy będziesz gotowy",
     "free": {
       "name": "Darmowa Wersja Próbna",
-      "price": "$0",
+      "price": "€0",
       "perMonth": " / 7 dni",
       "credits": "Wypróbuj przed zakupem",
       "vibes": "Testowy podgląd domeny",
@@ -77,30 +78,30 @@
     },
     "website": {
       "name": "Strona Internetowa",
-      "price": "$19",
+      "price": "€19",
       "perMonth": " / miesiąc",
       "feature1": "Online z Twoją domeną",
       "feature2": "Responsywna na urządzenia mobilne",
       "feature3": "Nieograniczone aktualizacje",
       "feature4": "Zoptymalizowana pod SEO",
       "cta": "Rozpocznij",
-      "note": "Lub $49 jednorazowo za eksport"
+      "note": "Lub €49 jednorazowo za eksport"
     },
     "bundle": {
       "name": "Strona + Aplikacja",
       "badge": "NAJPOPULARNIEJSZE",
-      "price": "$68",
+      "price": "€68",
       "perMonth": " / miesiąc",
       "feature1": "Wszystko ze Strony",
       "feature2": "1 prosta aplikacja w zestawie",
       "feature3": "Powiadomienia e-mail",
       "feature4": "Wsparcie priorytetowe",
       "cta": "Rozpocznij",
-      "note": "Oszczędź $20/miesiąc vs oddzielnie"
+      "note": "Oszczędź €20/miesiąc vs oddzielnie"
     },
     "unlimited": {
       "name": "Nieograniczony",
-      "price": "$199",
+      "price": "€199",
       "perMonth": " / miesiąc",
       "feature1": "Nieograniczone strony",
       "feature2": "Nieograniczone aplikacje",
@@ -123,5 +124,25 @@
     "discord": "Discord",
     "docs": "Dokumentacja",
     "copyright": "© 2026 WeVibeCode.ai. Wszelkie prawa zastrzeżone."
+  },
+  "login": "Zaloguj się",
+  "signup": "Zarejestruj się",
+  "dashboard": "Panel",
+  "logout": "Wyloguj",
+  "auth": {
+    "signup": "Zarejestruj się",
+    "login": "Zaloguj się",
+    "email": "Email",
+    "password": "Hasło",
+    "loading": "Ładowanie...",
+    "signupSuccess": "Konto utworzone pomyślnie! Przekierowywanie...",
+    "confirmEmailSent": "Sprawdź swoją pocztę, aby potwierdzić konto.",
+    "alreadyHaveAccount": "Masz już konto?"
+  },
+  "errors": {
+    "unexpectedError": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie.",
+    "User already registered": "Ten email jest już zarejestrowany.",
+    "Invalid email": "Wprowadź prawidłowy adres email.",
+    "Password should be at least 6 characters": "Hasło musi mieć co najmniej 6 znaków."
   }
 }

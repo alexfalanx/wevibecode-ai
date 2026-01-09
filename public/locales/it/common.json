@@ -1,38 +1,39 @@
-{
+﻿{
   "header": {
     "features": "Come Funziona",
     "demo": "Esempi",
     "pricing": "Prezzi",
-    "getStarted": "Inizia Gratis"
+    "getStarted": "Inizia Gratis",
+    "login": "Accedi"
   },
   "hero": {
     "title": "Il Tuo Sito Web. Le Tue App. Il Tuo Stile. In 5 Minuti.",
-    "subtitle": "Siti web professionali e app semplici create dall'IA. Nessun codice. Nessuna configurazione. Online all'istante.",
+    "subtitle": "Siti web professionali e app semplici create dall'IA. Nessun codice. Nessuna configurazione. Subito online.",
     "websitePath": {
       "title": "Ho Bisogno di un Sito Web",
-      "subtitle": "Perfetto per ristoranti, palestre, saloni, portfolio, landing page e piccole imprese",
+      "subtitle": "Perfetto per ristoranti, palestre, saloni di bellezza, attività commerciali, landing page e piccole imprese",
       "feature1": "Online in 5 minuti con il tuo dominio",
-      "feature2": "Mobile-friendly e ottimizzato per SEO",
-      "feature3": "Aggiorna in qualsiasi momento con semplici comandi di testo",
+      "feature2": "Mobile-friendly e ottimizzato per SEO e Google",
+      "feature3": "Aggiorna sempre gratis con semplici comandi di testo",
       "cta": "Crea Il Mio Sito Web",
-      "price": "A partire da $19/mese"
+      "price": "A partire da €19/mese"
     },
     "appPath": {
       "title": "Ho Bisogno di un'App Semplice",
-      "subtitle": "Sistemi di prenotazione, directory, calcolatori, dashboard e strumenti personalizzati",
+      "subtitle": "Sistemi di prenotazione, directory, calcolatori, dashboard e applicazioni personalizzate",
       "feature1": "Template pre-costruiti pronti da personalizzare",
       "feature2": "Notifiche email e sincronizzazione calendario",
-      "feature3": "Funziona perfettamente con il tuo sito web",
+      "feature3": "Si integrano perfettamente con il tuo sito web",
       "cta": "Crea La Mia App",
-      "price": "A partire da $49/mese"
+      "price": "A partire da €49/mese"
     }
   },
   "apps": {
-    "title": "App Semplici Popolari",
+    "title": "App Semplici Utilissime",
     "subtitle": "Costruite in minuti, non settimane",
     "booking": {
       "title": "Sistema di Prenotazione",
-      "description": "Accetta appuntamenti con sincronizzazione calendario, conferme via email e raccolta pagamenti"
+      "description": "Accetta prenotazioni con sincronizzazione calendario, conferme via email e pagamenti integrati"
     },
     "directory": {
       "title": "Directory",
@@ -44,12 +45,12 @@
     },
     "dashboard": {
       "title": "Dashboard",
-      "description": "Traccia metriche, visualizza dati e condividi insights con il tuo team o clienti"
+      "description": "Traccia metriche, visualizza dati e condividi insights con il tuo team o con i clienti"
     }
   },
   "howItWorks": {
     "title": "Come Funziona",
-    "subtitle": "Dall'idea al online in tre semplici passaggi",
+    "subtitle": "Dall'idea all'online in tre semplici passaggi",
     "step1": {
       "title": "Descrivi Cosa Ti Serve",
       "description": "Raccontaci della tua attività, cosa vuoi sul tuo sito e il tuo stile preferito"
@@ -60,15 +61,15 @@
     },
     "step3": {
       "title": "Pubblica e Aggiorna in Qualsiasi Momento",
-      "description": "Collega il tuo dominio e lancia. Aggiorna i contenuti in qualsiasi momento con semplici comandi di testo"
+      "description": "Collega il tuo dominio e lancia il tuo sito. Aggiorna i contenuti in qualsiasi momento con semplici comandi di testo"
     }
   },
   "pricing": {
     "title": "Prezzi Semplici e Trasparenti",
-    "subtitle": "Inizia gratis, aggiorna quando sei pronto",
+    "subtitle": "Inizia gratis, acquista quando sei pronto",
     "free": {
       "name": "Prova Gratuita",
-      "price": "$0",
+      "price": "€0",
       "perMonth": " / 7 giorni",
       "credits": "Prova prima di acquistare",
       "vibes": "Anteprima dominio di test",
@@ -77,35 +78,35 @@
     },
     "website": {
       "name": "Sito Web",
-      "price": "$19",
+      "price": "€19",
       "perMonth": " / mese",
       "feature1": "Online con il tuo dominio",
-      "feature2": "Responsive per mobile",
+      "feature2": "Mobile friendly",
       "feature3": "Aggiornamenti illimitati",
       "feature4": "Ottimizzato per SEO",
       "cta": "Inizia",
-      "note": "O $49 una tantum per l'esportazione"
+      "note": "O €49 una tantum per l'esportazione"
     },
     "bundle": {
       "name": "Sito Web + App",
       "badge": "PIÙ POPOLARE",
-      "price": "$68",
+      "price": "€68",
       "perMonth": " / mese",
-      "feature1": "Tutto in Sito Web",
-      "feature2": "1 app semplice inclusa",
+      "feature1": "Tutto quanto in 'Sito Web'",
+      "feature2": "1 app professionale inclusa",
       "feature3": "Notifiche email",
       "feature4": "Supporto prioritario",
       "cta": "Inizia",
-      "note": "Risparmia $20/mese vs separato"
+      "note": "Risparmia €20/mese vs separato"
     },
     "unlimited": {
       "name": "Illimitato",
-      "price": "$199",
+      "price": "€199",
       "perMonth": " / mese",
       "feature1": "Siti web illimitati",
       "feature2": "App illimitate",
       "feature3": "Opzione white-label",
-      "feature4": "Supporto dedicato",
+      "feature4": "Supporto VIP dedicato",
       "cta": "Inizia",
       "note": "Perfetto per agenzie"
     }
@@ -113,7 +114,7 @@
   "cta": {
     "title": "Pronto a Lanciare Il Tuo Sito?",
     "subtitle": "Unisciti a migliaia di aziende già online con WeVibeCode",
-    "button": "Inizia a Costruire Gratis",
+    "button": "Inizia a Creare Gratis",
     "note": "Nessuna carta di credito richiesta • Prova gratuita di 7 giorni"
   },
   "footer": {
@@ -123,5 +124,25 @@
     "discord": "Discord",
     "docs": "Documenti",
     "copyright": "© 2026 WeVibeCode.ai. Tutti i diritti riservati."
+  },
+  "login": "Accedi",
+  "signup": "Registrati",
+  "dashboard": "Dashboard",
+  "logout": "Esci",
+  "auth": {
+    "signup": "Registrati",
+    "login": "Accedi",
+    "email": "Email",
+    "password": "Password",
+    "loading": "Caricamento...",
+    "signupSuccess": "Account creato con successo! Reindirizzamento...",
+    "confirmEmailSent": "Controlla la tua email per confermare il tuo account.",
+    "alreadyHaveAccount": "Hai già un account?"
+  },
+  "errors": {
+    "unexpectedError": "Si è verificato un errore imprevisto. Riprova.",
+    "User already registered": "Questa email è già registrata.",
+    "Invalid email": "Inserisci un indirizzo email valido.",
+    "Password should be at least 6 characters": "La password deve essere lunga almeno 6 caratteri."
   }
 }

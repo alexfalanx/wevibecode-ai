@@ -1,9 +1,10 @@
-{
+﻿{
   "header": {
     "features": "Cómo Funciona",
     "demo": "Ejemplos",
     "pricing": "Precios",
-    "getStarted": "Empezar Gratis"
+    "getStarted": "Empezar Gratis",
+    "login": "Iniciar Sesión"
   },
   "hero": {
     "title": "Tu Sitio Web. Tus Apps. Tu Estilo. En 5 Minutos.",
@@ -15,7 +16,7 @@
       "feature2": "Compatible con móviles y optimizado para SEO",
       "feature3": "Actualiza en cualquier momento con simples comandos de texto",
       "cta": "Crear Mi Sitio Web",
-      "price": "Desde $19/mes"
+      "price": "Desde €19/mes"
     },
     "appPath": {
       "title": "Necesito una App Simple",
@@ -24,7 +25,7 @@
       "feature2": "Notificaciones por email y sincronización de calendario",
       "feature3": "Funciona perfectamente con tu sitio web",
       "cta": "Crear Mi App",
-      "price": "Desde $49/mes"
+      "price": "Desde €49/mes"
     }
   },
   "apps": {
@@ -68,7 +69,7 @@
     "subtitle": "Comienza gratis, mejora cuando estés listo",
     "free": {
       "name": "Prueba Gratuita",
-      "price": "$0",
+      "price": "€0",
       "perMonth": " / 7 días",
       "credits": "Prueba antes de comprar",
       "vibes": "Vista previa de dominio de prueba",
@@ -77,30 +78,30 @@
     },
     "website": {
       "name": "Sitio Web",
-      "price": "$19",
+      "price": "€19",
       "perMonth": " / mes",
       "feature1": "En línea con tu dominio",
       "feature2": "Compatible con móviles",
       "feature3": "Actualizaciones ilimitadas",
       "feature4": "Optimizado para SEO",
       "cta": "Comenzar",
-      "note": "O $49 pago único para exportar"
+      "note": "O €49 pago único para exportar"
     },
     "bundle": {
       "name": "Sitio Web + App",
       "badge": "MÁS POPULAR",
-      "price": "$68",
+      "price": "€68",
       "perMonth": " / mes",
       "feature1": "Todo en Sitio Web",
       "feature2": "1 app simple incluida",
       "feature3": "Notificaciones por email",
       "feature4": "Soporte prioritario",
       "cta": "Comenzar",
-      "note": "Ahorra $20/mes vs separado"
+      "note": "Ahorra €20/mes vs separado"
     },
     "unlimited": {
       "name": "Ilimitado",
-      "price": "$199",
+      "price": "€199",
       "perMonth": " / mes",
       "feature1": "Sitios web ilimitados",
       "feature2": "Apps ilimitadas",
@@ -123,5 +124,25 @@
     "discord": "Discord",
     "docs": "Documentos",
     "copyright": "© 2026 WeVibeCode.ai. Todos los derechos reservados."
+  },
+  "login": "Iniciar Sesión",
+  "signup": "Registrarse",
+  "dashboard": "Panel",
+  "logout": "Cerrar Sesión",
+  "auth": {
+    "signup": "Registrarse",
+    "login": "Iniciar Sesión",
+    "email": "Email",
+    "password": "Contraseña",
+    "loading": "Cargando...",
+    "signupSuccess": "¡Cuenta creada exitosamente! Redirigiendo...",
+    "confirmEmailSent": "Por favor revisa tu email para confirmar tu cuenta.",
+    "alreadyHaveAccount": "¿Ya tienes una cuenta?"
+  },
+  "errors": {
+    "unexpectedError": "Ocurrió un error inesperado. Por favor intenta de nuevo.",
+    "User already registered": "Este email ya está registrado.",
+    "Invalid email": "Por favor ingresa un email válido.",
+    "Password should be at least 6 characters": "La contraseña debe tener al menos 6 caracteres."
   }
 }

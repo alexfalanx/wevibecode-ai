@@ -1,206 +1,343 @@
+// app/api/generate-website/route.ts
+// SUPER ENHANCED VERSION - Names, Icons, Vibrant Colors!
 import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
+import OpenAI from 'openai';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { businessName, industry, sections, style, primaryColor, secondaryColor, description } = body;
+    const { prompt, websiteType, colorScheme } = body;
 
-    // Get the authorization header
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader) {
+    if (!prompt || !websiteType) {
       return NextResponse.json(
-        { success: false, error: 'Not authenticated' },
-        { status: 401 }
+        { error: 'Missing required fields' },
+        { status: 400 }
       );
     }
 
-    // Get user from Supabase auth
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
+    // Create Supabase client
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return request.cookies.get(name)?.value;
+          },
+          set(name: string, value: string, options: any) {},
+          remove(name: string, options: any) {},
+        },
+      }
     );
 
+    // Get current user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
     if (authError || !user) {
-      console.error('[API] Auth error:', authError);
       return NextResponse.json(
-        { success: false, error: 'Not authenticated' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const userId = user.id;
-    console.log('[API] ========================================');
-    console.log('[API] User authenticated:', userId);
-    console.log('[API] User email:', user.email);
-
-    // First, try to find user by ID
-    const { data: userData, error: userError } = await supabase
+    // Check user credits
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('*')
-      .eq('id', userId)
+      .select('credits_remaining')
+      .eq('id', user.id)
       .single();
 
-    console.log('[API] User lookup by ID result:', { 
-      found: !!userData, 
-      error: userError?.message,
-      credits: userData?.credits 
-    });
-
-    // If not found by ID, try by email
-    let finalUserData = userData;
-    if (userError || !userData) {
-      console.log('[API] User not found by ID, trying email...');
-      const { data: userByEmail, error: emailError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('email', user.email)
-        .single();
-
-      console.log('[API] User lookup by email result:', {
-        found: !!userByEmail,
-        error: emailError?.message,
-        credits: userByEmail?.credits
-      });
-
-      if (userByEmail) {
-        finalUserData = userByEmail;
-      }
-    }
-
-    if (!finalUserData) {
-      console.error('[API] User not found in database by ID or email');
+    if (profileError || !profile) {
       return NextResponse.json(
-        { success: false, error: 'User not found in database. Please contact support.' },
-        { status: 400 }
+        { error: 'Failed to fetch user profile' },
+        { status: 500 }
       );
     }
 
-    console.log('[API] Final user data:', {
-      id: finalUserData.id,
-      email: finalUserData.email,
-      credits: finalUserData.credits
-    });
-
-    if (finalUserData.credits < 1) {
+    if (profile.credits_remaining < 1) {
       return NextResponse.json(
-        { success: false, error: `Insufficient credits. You have ${finalUserData.credits} credits.` },
-        { status: 400 }
+        { error: 'Insufficient credits' },
+        { status: 402 }
       );
     }
 
-    console.log('[API] Credit check passed. Proceeding with generation...');
-    console.log('[API] ========================================');
+    // STEP 1: ENHANCE THE PROMPT WITH NAME, COLORS, ICONS
+    console.log('Step 1: Enhancing prompt with business name, icons, and colors...');
+    const enhancedPrompt = await enhancePrompt(prompt, websiteType, colorScheme);
+    console.log('Enhanced prompt created');
 
-    // Create the prompt for Claude
-    const prompt = `You are an expert web developer. Create a complete, production-ready Next.js website for a business.
-
-Business Details:
-- Name: ${businessName}
-- Industry: ${industry}
-- Description: ${description || 'Not provided'}
-- Style: ${style}
-- Primary Color: ${primaryColor}
-- Secondary Color: ${secondaryColor}
-- Sections to include: ${sections.join(', ')}
-
-Requirements:
-1. Create a COMPLETE Next.js page component (page.tsx)
-2. Use Tailwind CSS for styling (use the provided colors)
-3. Make it mobile-responsive
-4. Include the requested sections with realistic placeholder content
-5. Make it professional and modern
-6. Use ${style} design style throughout
-7. Include proper SEO meta tags
-8. Add smooth animations and transitions
-9. Use lucide-react icons where appropriate
-10. Make it production-ready
-
-IMPORTANT: Return ONLY the complete React component code. Do NOT include any explanations, markdown, or code fences. Start directly with 'use client'; or the import statements.`;
-
-    console.log('[API] Generating website for:', businessName);
-
-    // Call Claude API
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4000,
+    // STEP 2: GENERATE WEBSITE
+    console.log('Step 2: Generating stunning website...');
+    const systemPrompt = buildSystemPrompt(websiteType, colorScheme);
+    
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o',
       messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: enhancedPrompt },
       ],
+      temperature: 0.85, // More creativity!
+      max_tokens: 4000,
     });
 
-    // Extract the generated code
-    const generatedCode = message.content[0].type === 'text' ? message.content[0].text : '';
+    const generatedCode = completion.choices[0].message.content;
 
-    console.log('[API] Website generated, length:', generatedCode.length);
-
-    // Clean up the code (remove any markdown code fences if present)
-    let cleanCode = generatedCode;
-    if (cleanCode.includes('```')) {
-      cleanCode = cleanCode.replace(/```tsx\n|```typescript\n|```jsx\n|```javascript\n|```\n/g, '');
-      cleanCode = cleanCode.replace(/```$/g, '');
+    if (!generatedCode) {
+      return NextResponse.json(
+        { error: 'Failed to generate website' },
+        { status: 500 }
+      );
     }
 
-    // Save to Supabase
-    const { data: websiteData, error: websiteError } = await supabase
-      .from('websites')
+    // Parse the generated code
+    const { html, css, js } = parseGeneratedCode(generatedCode);
+
+    // Create preview in database
+    const { data: preview, error: previewError } = await supabase
+      .from('previews')
       .insert({
-        user_id: finalUserData.id,
-        name: businessName,
-        industry,
-        style,
-        sections,
-        colors: { primary: primaryColor, secondary: secondaryColor },
-        code: cleanCode,
-        status: 'draft',
+        user_id: user.id,
+        title: prompt.substring(0, 100),
+        html_content: html,
+        css_content: css,
+        js_content: js,
+        preview_type: 'website',
+        generation_prompt: enhancedPrompt,
+        generation_type: websiteType,
+        credits_used: 1,
       })
       .select()
       .single();
 
-    if (websiteError) {
-      console.error('[API] Error saving website:', websiteError);
+    if (previewError || !preview) {
+      console.error('Error creating preview:', previewError);
       return NextResponse.json(
-        { success: false, error: 'Failed to save website' },
+        { error: 'Failed to save generated website' },
         { status: 500 }
       );
     }
 
     // Deduct credit
-    const { error: creditError } = await supabase
+    await supabase
       .from('profiles')
-      .update({ credits: finalUserData.credits - 1 })
-      .eq('id', finalUserData.id);
+      .update({ credits_remaining: profile.credits_remaining - 1 })
+      .eq('id', user.id);
 
-    if (creditError) {
-      console.error('[API] Error deducting credit:', creditError);
-    } else {
-      console.log('[API] Credit deducted successfully. New balance:', finalUserData.credits - 1);
-    }
+    // Log credit usage
+    await supabase.from('credits_log').insert({
+      user_id: user.id,
+      credits_used: 1,
+      action: 'generate_website',
+      details: { 
+        preview_id: preview.id, 
+        original_prompt: prompt.substring(0, 100)
+      },
+    });
 
-    console.log('[API] Website saved successfully, ID:', websiteData.id);
+    console.log('Website generated successfully!');
 
     return NextResponse.json({
       success: true,
-      websiteId: websiteData.id,
-      code: cleanCode,
+      previewId: preview.id,
+      creditsRemaining: profile.credits_remaining - 1,
     });
-  } catch (error) {
-    console.error('[API] Error generating website:', error);
+
+  } catch (error: any) {
+    console.error('Website generation error:', error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { error: error.message || 'Internal server error' },
       { status: 500 }
     );
   }
+}
+
+/**
+ * STEP 1: Enhance prompt with business name, icons, and vibrant colors
+ */
+async function enhancePrompt(
+  userPrompt: string, 
+  websiteType: string, 
+  colorScheme?: string
+): Promise<string> {
+  
+  const enhancementPrompt = `You are a creative director and branding expert. Take the user's basic idea and create a DETAILED, EXCITING specification with:
+
+1. **BUSINESS NAME** - Create a catchy, memorable name (unless already provided)
+2. **VISUAL ICONS** - Specify emoji icons for each section/feature (🚀 💡 ⚡ 🎯 💎 etc)
+3. **VIBRANT COLORS** - Choose bold, exciting color combinations with specific hex codes
+4. **RICH CONTENT** - Expand with specific sections, headlines, and copy
+5. **PERSONALITY** - Give it character and energy!
+
+COLOR PALETTE GUIDELINES:
+- Use VIBRANT, BOLD colors (no dull grays!)
+- Specify 2-3 main brand colors with hex codes
+- Include gradient combinations
+- Examples:
+  * Electric: #6366F1 (indigo) → #EC4899 (pink) → #8B5CF6 (purple)
+  * Energy: #F59E0B (amber) → #EF4444 (red) → #F97316 (orange)  
+  * Fresh: #10B981 (green) → #3B82F6 (blue) → #06B6D4 (cyan)
+  * Bold: #8B5CF6 (purple) → #EC4899 (pink) → #F43F5E (rose)
+  * Modern: #0EA5E9 (sky) → #6366F1 (indigo) → #A855F7 (purple)
+
+ICON USAGE:
+Use emojis liberally for visual interest:
+- Features: 🚀 ⚡ 💎 🎯 ✨ 🔥 💡 🎨 📱 🌟 ⭐ 🏆
+- Benefits: ✅ 💰 ⏱️ 📈 🎉 💪 🌈 🎁 🔔 🎊
+- Social: 👥 💬 🤝 ❤️ 👍 🌍 📣 🎤 📸 🎬
+- Business: 📊 💼 🏢 📞 ✉️ 🌐 📍 🕐 📅 💳
+
+STRUCTURE:
+For each section, specify:
+- Section name with icon
+- Headline (bold, exciting)
+- Specific content details
+- Visual styling (colors, gradients, effects)
+- Call-to-action text
+
+Make it 5x more detailed than the user's input!
+Make it EXCITING and VISUAL!
+
+${colorScheme ? `Preferred color theme: ${colorScheme} - use this as inspiration but make it VIBRANT!` : ''}
+
+USER'S IDEA:
+"${userPrompt}"
+
+Create the enhanced specification now:`;
+
+  const typeContext = {
+    landing: 'Landing page - focus on conversion, social proof, and clear CTAs',
+    portfolio: 'Portfolio - showcase projects with style and personality',
+    business: 'Business site - professional but modern and exciting',
+    restaurant: 'Restaurant - make it mouthwatering and inviting',
+    blog: 'Blog - clean, readable, engaging content focus',
+    ecommerce: 'E-commerce - product-focused with trust and conversion',
+  };
+
+  const enhancement = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+      { role: 'system', content: `You are a creative branding expert. ${typeContext[websiteType as keyof typeof typeContext]}` },
+      { role: 'user', content: enhancementPrompt },
+    ],
+    temperature: 0.8,
+    max_tokens: 1500,
+  });
+
+  return enhancement.choices[0].message.content || userPrompt;
+}
+
+function buildSystemPrompt(websiteType: string, colorScheme?: string): string {
+  return `You are an ELITE web developer creating STUNNING, VIBRANT, MODERN websites.
+
+CRITICAL: Output ONLY code in these markdown blocks:
+
+\`\`\`html
+<!-- HTML here -->
+\`\`\`
+
+\`\`\`css  
+/* CSS here */
+\`\`\`
+
+\`\`\`javascript
+// JS here (if needed)
+\`\`\`
+
+🎨 DESIGN REQUIREMENTS:
+
+1. **VIBRANT COLORS** - Use the EXACT color palette specified in the prompt
+   - Multiple gradient backgrounds (2-3 colors each)
+   - Bold, eye-catching color combinations
+   - Different gradients for different sections
+   - NO boring grays or whites only!
+
+2. **EMOJI ICONS** - Use the emoji icons specified in the prompt
+   - Large emojis (2-3rem) for visual impact
+   - Icons in feature cards, section headers
+   - Emojis add personality and visual interest
+
+3. **BOLD TYPOGRAPHY**
+   - Headlines: 48-72px, bold (700-800)
+   - Subheadlines: 24-32px
+   - Body: 18px, line-height 1.7
+   - Use system fonts: -apple-system, BlinkMacSystemFont, 'Segoe UI'
+
+4. **RICH GRADIENTS**
+   - Hero: Dynamic gradient background
+   - Buttons: Gradient fills with hover effects
+   - Section backgrounds: Alternating gradients
+   - Cards: Gradient borders or accents
+   - Example: background: linear-gradient(135deg, #6366F1 0%, #EC4899 100%);
+
+5. **VISUAL EFFECTS**
+   - Box shadows for depth: box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+   - Border radius for modern feel: 16-24px
+   - Hover transforms: transform: translateY(-10px);
+   - Smooth transitions: transition: all 0.3s ease;
+   - Glassmorphism: backdrop-filter: blur(10px); background: rgba(255,255,255,0.1);
+
+6. **LAYOUT**
+   - Hero: Full viewport height with gradient
+   - Sections: Generous padding (80-120px vertical)
+   - Max width: 1200px, centered
+   - Grid layouts: gap of 2-3rem
+   - Cards: Elevated with shadows
+
+7. **ANIMATIONS**
+   - Fade-in on scroll (use @keyframes)
+   - Button hover: scale + shadow increase
+   - Card hover: lift effect
+   - Smooth scroll: scroll-behavior: smooth;
+
+8. **INTERACTIVE ELEMENTS**
+   - Buttons: Large (16-20px padding), gradient fill, white text, rounded
+   - Hover: Brighten gradient, scale(1.05), increase shadow
+   - Links: Color transition on hover
+   - Forms: Modern inputs with focus effects
+
+🎯 CONTENT STRUCTURE:
+
+Include ALL sections from the prompt with:
+- Business name prominently displayed
+- Specified emoji icons in each section
+- Exact color palette used throughout
+- Multiple CTAs with exciting copy
+- Rich, detailed content
+- Visual variety (not repetitive)
+
+💎 MAKE IT PREMIUM:
+
+- Like a $15,000 professionally designed website
+- Bold, confident, modern aesthetics
+- Every element polished and refined
+- Impressive on first glance
+- Makes people say "WOW!"
+
+NO EXTERNAL DEPENDENCIES - Use only HTML/CSS/JS (emojis are fine!)`;
+}
+
+function parseGeneratedCode(generatedCode: string): { html: string; css: string; js: string } {
+  let html = '';
+  let css = '';
+  let js = '';
+
+  const htmlMatch = generatedCode.match(/```html\n([\s\S]*?)```/);
+  if (htmlMatch) html = htmlMatch[1].trim();
+
+  const cssMatch = generatedCode.match(/```css\n([\s\S]*?)```/);
+  if (cssMatch) css = cssMatch[1].trim();
+
+  const jsMatch = generatedCode.match(/```javascript\n([\s\S]*?)```/);
+  if (jsMatch) js = jsMatch[1].trim();
+
+  if (!html && generatedCode.includes('<html')) {
+    html = generatedCode;
+  }
+
+  return { html, css, js };
 }

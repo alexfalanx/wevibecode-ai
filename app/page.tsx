@@ -8,6 +8,7 @@ const LANGUAGES = [
   { code: 'es', name: 'Español', flag: '🇪🇸' },
   { code: 'it', name: 'Italiano', flag: '🇮🇹' },
   { code: 'pl', name: 'Polski', flag: '🇵🇱' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
 ];
 
 function useTranslation(locale: string) {
@@ -118,7 +119,7 @@ export default function LandingPage() {
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-8">
+            <nav className="hidden md:flex items-center gap-4">
               <a href="#how-it-works" className="text-gray-700 hover:text-gray-900 transition font-medium">{t('header.features')}</a>
               <a href="#pricing" className="text-gray-700 hover:text-gray-900 transition font-medium">{t('header.pricing')}</a>
               
@@ -149,6 +150,14 @@ export default function LandingPage() {
                   </div>
                 )}
               </div>
+              
+              {/* LOGIN BUTTON - ADDED */}
+              <button 
+                onClick={() => window.location.href = '/login'}
+                className="px-4 py-2 text-gray-700 hover:text-gray-900 transition font-medium"
+              >
+                {t('header.login') || 'Login'}
+              </button>
               
               <button 
                 onClick={() => window.location.href = '/signup'}
@@ -201,6 +210,14 @@ export default function LandingPage() {
                     </button>
                   ))}
                 </div>
+                
+                {/* LOGIN BUTTON MOBILE - ADDED */}
+                <button 
+                  onClick={() => window.location.href = '/login'}
+                  className="w-full py-2 text-gray-700 hover:text-gray-900 transition font-medium text-left border-t border-gray-200 pt-3"
+                >
+                  {t('header.login') || 'Login'}
+                </button>
                 
                 <button 
                   onClick={() => window.location.href = '/signup'}

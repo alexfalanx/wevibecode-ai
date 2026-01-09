@@ -1,127 +1,148 @@
-{
-  "header": {
-    "features": "How It Works",
-    "demo": "Examples",
-    "pricing": "Pricing",
-    "getStarted": "Get Started Free"
-  },
-  "hero": {
-    "title": "Your Website. Your Apps. Your Vibe. In 5 Minutes.",
-    "subtitle": "Professional websites and simple apps built by AI. No coding. No setup. Live instantly.",
-    "websitePath": {
-      "title": "I Need a Website",
-      "subtitle": "Perfect for restaurants, gyms, salons, portfolios, landing pages, and small businesses",
-      "feature1": "Live in 5 minutes with your own domain",
-      "feature2": "Mobile-friendly & SEO optimized",
-      "feature3": "Update anytime with simple text commands",
-      "cta": "Create My Website",
-      "price": "Starting at $19/month"
-    },
-    "appPath": {
-      "title": "I Need a Simple App",
-      "subtitle": "Booking systems, directories, calculators, dashboards, and custom tools",
-      "feature1": "Pre-built templates ready to customize",
-      "feature2": "Email notifications & calendar sync",
-      "feature3": "Works perfectly with your website",
-      "cta": "Create My App",
-      "price": "Starting at $49/month"
-    }
-  },
-  "apps": {
-    "title": "Popular Simple Apps",
-    "subtitle": "Built in minutes, not weeks",
-    "booking": {
-      "title": "Booking System",
-      "description": "Accept appointments with calendar sync, email confirmations, and payment collection"
-    },
-    "directory": {
-      "title": "Directory",
-      "description": "Searchable listings with filters, profiles, and contact forms for your community"
-    },
-    "calculator": {
-      "title": "Calculator",
-      "description": "Custom pricing tools, ROI calculators, quote generators for your business"
-    },
-    "dashboard": {
-      "title": "Dashboard",
-      "description": "Track metrics, display data, and share insights with your team or clients"
-    }
-  },
-  "howItWorks": {
-    "title": "How It Works",
-    "subtitle": "From idea to live in three simple steps",
-    "step1": {
-      "title": "Describe What You Need",
-      "description": "Tell us about your business, what you want on your site, and your preferred style"
-    },
-    "step2": {
-      "title": "AI Builds It Instantly",
-      "description": "Our AI generates your professional site or app with your branding in minutes"
-    },
-    "step3": {
-      "title": "Go Live & Update Anytime",
-      "description": "Connect your domain and launch. Update your content anytime with simple text commands"
-    }
-  },
-  "pricing": {
-    "title": "Simple, Transparent Pricing",
-    "subtitle": "Start free, upgrade when you're ready",
-    "free": {
-      "name": "Free Trial",
-      "price": "$0",
-      "perMonth": " / 7 days",
-      "credits": "Try before you buy",
-      "vibes": "Test domain preview",
-      "gallery": "No credit card",
-      "cta": "Start Free"
-    },
-    "website": {
-      "name": "Website",
-      "price": "$19",
-      "perMonth": " / month",
-      "feature1": "Live with your domain",
-      "feature2": "Mobile responsive",
-      "feature3": "Unlimited updates",
-      "feature4": "SEO optimized",
-      "cta": "Get Started",
-      "note": "Or $49 one-time for export"
-    },
-    "bundle": {
-      "name": "Website + App",
-      "badge": "MOST POPULAR",
-      "price": "$68",
-      "perMonth": " / month",
-      "feature1": "Everything in Website",
-      "feature2": "1 simple app included",
-      "feature3": "Email notifications",
-      "feature4": "Priority support",
-      "cta": "Get Started",
-      "note": "Save $20/month vs separate"
-    },
-    "unlimited": {
-      "name": "Unlimited",
-      "price": "$199",
-      "perMonth": " / month",
-      "feature1": "Unlimited websites",
-      "feature2": "Unlimited apps",
-      "feature3": "White-label option",
-      "feature4": "Dedicated support",
-      "cta": "Get Started",
-      "note": "Perfect for agencies"
-    }
-  },
-  "cta": {
-    "title": "Ready to Launch Your Site?",
-    "subtitle": "Join thousands of businesses already live with WeVibeCode",
-    "button": "Start Building Free",
-    "note": "No credit card required • 7-day free trial"
-  },
-  "footer": {
-    "tagline": "Build professional websites and apps in minutes, not weeks",
-    "twitter": "Twitter",
-    "github": "GitHub",
-    "discord": "Discord",
-    "docs": "Docs",
-    "copyright": "© 2026 WeVibeCode.ai. All rights reserved."
-  }
+﻿{
+    "header":  {
+                   "features":  "How It Works",
+                   "demo":  "Examples",
+                   "pricing":  "Pricing",
+                   "getStarted":  "Get Started Free",
+                   "login": "Login"  
+                },
+    "hero":  {
+                 "title":  "Your Website. Your Apps. Your Vibe. In 5 Minutes.",
+                 "subtitle":  "Professional websites and simple apps built by AI. No coding. No setup. Live instantly.",
+                 "websitePath":  {
+                                     "title":  "I Need a Website",
+                                     "subtitle":  "Perfect for restaurants, gyms, salons, portfolios, landing pages, and small businesses",
+                                     "feature1":  "Live in 5 minutes with your own domain",
+                                     "feature2":  "Mobile-friendly \u0026 SEO optimized",
+                                     "feature3":  "Update anytime with simple text commands",
+                                     "cta":  "Create My Website",
+                                     "price":  "Starting at £19/month"
+                                 },
+                 "appPath":  {
+                                 "title":  "I Need a Simple App",
+                                 "subtitle":  "Booking systems, directories, calculators, dashboards, and custom tools",
+                                 "feature1":  "Pre-built templates ready to customize",
+                                 "feature2":  "Email notifications \u0026 calendar sync",
+                                 "feature3":  "Works perfectly with your website",
+                                 "cta":  "Create My App",
+                                 "price":  "Starting at £49/month"
+                             }
+             },
+    "apps":  {
+                 "title":  "Popular Simple Apps",
+                 "subtitle":  "Built in minutes, not weeks",
+                 "booking":  {
+                                 "title":  "Booking System",
+                                 "description":  "Accept appointments with calendar sync, email confirmations, and payment collection"
+                             },
+                 "directory":  {
+                                   "title":  "Directory",
+                                   "description":  "Searchable listings with filters, profiles, and contact forms for your community"
+                               },
+                 "calculator":  {
+                                    "title":  "Calculator",
+                                    "description":  "Custom pricing tools, ROI calculators, quote generators for your business"
+                                },
+                 "dashboard":  {
+                                   "title":  "Dashboard",
+                                   "description":  "Track metrics, display data, and share insights with your team or clients"
+                               }
+             },
+    "howItWorks":  {
+                       "title":  "How It Works",
+                       "subtitle":  "From idea to live in three simple steps",
+                       "step1":  {
+                                     "title":  "Describe What You Need",
+                                     "description":  "Tell us about your business, what you want on your site, and your preferred style"
+                                 },
+                       "step2":  {
+                                     "title":  "AI Builds It Instantly",
+                                     "description":  "Our AI generates your professional site or app with your branding in minutes"
+                                 },
+                       "step3":  {
+                                     "title":  "Go Live \u0026 Update Anytime",
+                                     "description":  "Connect your domain and launch. Update your content anytime with simple text commands"
+                                 }
+                   },
+    "pricing":  {
+                    "title":  "Simple, Transparent Pricing",
+                    "subtitle":  "Start free, upgrade when you\u0027re ready",
+                    "free":  {
+                                 "name":  "Free Trial",
+                                 "price":  "£0",
+                                 "perMonth":  " / 7 days",
+                                 "credits":  "Try before you buy",
+                                 "vibes":  "Test domain preview",
+                                 "gallery":  "No credit card",
+                                 "cta":  "Start Free"
+                             },
+                    "website":  {
+                                    "name":  "Website",
+                                    "price":  "£16",
+                                    "perMonth":  " / month",
+                                    "feature1":  "Live with your domain",
+                                    "feature2":  "Mobile responsive",
+                                    "feature3":  "Unlimited updates",
+                                    "feature4":  "SEO optimized",
+                                    "cta":  "Get Started",
+                                    "note":  "Or £45 one-time for export"
+                                },
+                    "bundle":  {
+                                   "name":  "Website + App",
+                                   "badge":  "MOST POPULAR",
+                                   "price":  "£60",
+                                   "perMonth":  " / month",
+                                   "feature1":  "Everything in Website",
+                                   "feature2":  "1 simple app included",
+                                   "feature3":  "Email notifications",
+                                   "feature4":  "Priority support",
+                                   "cta":  "Get Started",
+                                   "note":  "Save £20/month vs separate"
+                               },
+                    "unlimited":  {
+                                      "name":  "Unlimited",
+                                      "price":  "£179",
+                                      "perMonth":  " / month",
+                                      "feature1":  "Unlimited websites",
+                                      "feature2":  "Unlimited apps",
+                                      "feature3":  "White-label option",
+                                      "feature4":  "Dedicated support",
+                                      "cta":  "Get Started",
+                                      "note":  "Perfect for agencies"
+                                  }
+                },
+    "cta":  {
+                "title":  "Ready to Launch Your Site?",
+                "subtitle":  "Join thousands of businesses already live with WeVibeCode",
+                "button":  "Start Building Free",
+                "note":  "No credit card required â€¢ 7-day free trial"
+            },
+    "footer":  {
+                   "tagline":  "Build professional websites and apps in minutes, not weeks",
+                   "twitter":  "Twitter",
+                   "github":  "GitHub",
+                   "discord":  "Discord",
+                   "docs":  "Docs",
+                   "copyright":  "Â© 2026 WeVibeCode.ai. All rights reserved."
+               },
+    "login":  "Login",
+    "signup":  "Sign Up",
+    "dashboard":  "Dashboard",
+    "logout":  "Logout",
+    "auth":  {
+                 "signup":  "Sign Up",
+                 "login":  "Login",
+                 "email":  "Email",
+                 "password":  "Password",
+                 "loading":  "Loading...",
+                 "signupSuccess":  "Account created successfully! Redirecting...",
+                 "confirmEmailSent":  "Please check your email to confirm your account.",
+                 "alreadyHaveAccount":  "Already have an account?"
+             },
+    "errors":  {
+                   "unexpectedError":  "An unexpected error occurred. Please try again.",
+                   "User already registered":  "This email is already registered.",
+                   "Invalid email":  "Please enter a valid email address.",
+                   "Password should be at least 6 characters":  "Password must be at least 6 characters long."
+               }
 }
