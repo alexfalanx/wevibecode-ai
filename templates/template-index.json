@@ -1,0 +1,193 @@
+﻿{
+    "templates":  [
+                      {
+                          "source":  "html5up",
+                          "preview":  "alpha-preview.jpg",
+                          "id":  "alpha",
+                          "vibe":  [
+                                       "professional",
+                                       "luxury"
+                                   ],
+                          "bestFor":  [
+                                          "business",
+                                          "ecommerce"
+                                      ],
+                          "hasHero":  true,
+                          "layout":  "multi-page",
+                          "name":  "Alpha",
+                          "path":  "html5up/Alpha",
+                          "colorScheme":  "light",
+                          "hasSidebar":  false
+                      },
+                      {
+                          "source":  "html5up",
+                          "preview":  "dimension-preview.jpg",
+                          "id":  "dimension",
+                          "vibe":  [
+                                       "minimal",
+                                       "calm"
+                                   ],
+                          "bestFor":  [
+                                          "portfolio"
+                                      ],
+                          "hasHero":  true,
+                          "layout":  "overlay",
+                          "name":  "Dimension",
+                          "path":  "html5up/Dimension",
+                          "colorScheme":  "dark",
+                          "hasSidebar":  false
+                      },
+                      {
+                          "source":  "html5up",
+                          "preview":  "forty-preview.jpg",
+                          "id":  "forty",
+                          "vibe":  [
+                                       "bold",
+                                       "professional"
+                                   ],
+                          "bestFor":  [
+                                          "business",
+                                          "portfolio"
+                                      ],
+                          "hasHero":  true,
+                          "layout":  "grid",
+                          "name":  "Forty",
+                          "path":  "html5up/Forty",
+                          "colorScheme":  "dark",
+                          "hasSidebar":  false
+                      },
+                      {
+                          "source":  "html5up",
+                          "preview":  "hyperspace-preview.jpg",
+                          "id":  "hyperspace",
+                          "vibe":  [
+                                       "fun",
+                                       "bold"
+                                   ],
+                          "bestFor":  [
+                                          "portfolio",
+                                          "business"
+                                      ],
+                          "hasHero":  true,
+                          "layout":  "sidebar",
+                          "name":  "Hyperspace",
+                          "path":  "html5up/Hyperspace",
+                          "colorScheme":  "dark",
+                          "hasSidebar":  true
+                      },
+                      {
+                          "source":  "html5up",
+                          "preview":  "massively-preview.jpg",
+                          "id":  "massively",
+                          "vibe":  [
+                                       "professional",
+                                       "minimal"
+                                   ],
+                          "bestFor":  [
+                                          "blog",
+                                          "portfolio"
+                                      ],
+                          "hasHero":  true,
+                          "layout":  "grid",
+                          "name":  "Massively",
+                          "path":  "html5up/Massively",
+                          "colorScheme":  "dark",
+                          "hasSidebar":  false
+                      },
+                      {
+                          "source":  "html5up",
+                          "preview":  "phantom-preview.jpg",
+                          "id":  "phantom",
+                          "vibe":  [
+                                       "minimal",
+                                       "luxury"
+                                   ],
+                          "bestFor":  [
+                                          "portfolio",
+                                          "restaurant"
+                                      ],
+                          "hasHero":  true,
+                          "layout":  "grid-tiles",
+                          "name":  "Phantom",
+                          "path":  "html5up/Phantom",
+                          "colorScheme":  "light",
+                          "hasSidebar":  false
+                      },
+                      {
+                          "source":  "html5up",
+                          "preview":  "solid-state-preview.jpg",
+                          "id":  "solid-state",
+                          "vibe":  [
+                                       "professional",
+                                       "bold"
+                                   ],
+                          "bestFor":  [
+                                          "landing",
+                                          "business"
+                                      ],
+                          "hasHero":  true,
+                          "layout":  "single-page",
+                          "name":  "Solid State",
+                          "path":  "html5up/Solid State",
+                          "colorScheme":  "light",
+                          "hasSidebar":  false
+                      },
+                      {
+                          "source":  "html5up",
+                          "preview":  "spectral-preview.jpg",
+                          "id":  "spectral",
+                          "vibe":  [
+                                       "minimal",
+                                       "professional"
+                                   ],
+                          "bestFor":  [
+                                          "landing",
+                                          "portfolio"
+                                      ],
+                          "hasHero":  true,
+                          "layout":  "single-page-scroll",
+                          "name":  "Spectral",
+                          "path":  "html5up/Spectral",
+                          "colorScheme":  "light",
+                          "hasSidebar":  false
+                      },
+                      {
+                          "source":  "html5up",
+                          "preview":  "stellar-preview.jpg",
+                          "id":  "stellar",
+                          "vibe":  [
+                                       "professional",
+                                       "bold"
+                                   ],
+                          "bestFor":  [
+                                          "landing",
+                                          "business"
+                                      ],
+                          "hasHero":  true,
+                          "layout":  "single-page",
+                          "name":  "Stellar",
+                          "path":  "html5up/Stellar",
+                          "colorScheme":  "light",
+                          "hasSidebar":  false
+                      },
+                      {
+                          "source":  "html5up",
+                          "preview":  "story-preview.jpg",
+                          "id":  "story",
+                          "vibe":  [
+                                       "calm",
+                                       "minimal"
+                                   ],
+                          "bestFor":  [
+                                          "portfolio",
+                                          "blog"
+                                      ],
+                          "hasHero":  true,
+                          "layout":  "fullscreen-scroll",
+                          "name":  "Story",
+                          "path":  "html5up/Story",
+                          "colorScheme":  "light",
+                          "hasSidebar":  false
+                      }
+                  ]
+}

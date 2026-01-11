@@ -1,136 +1,285 @@
 // components/Preview.tsx
+// OPTIMIZED - Lazy loading, better caching, and performance improvements
+
 'use client';
 
-import { useState } from 'react';
-import { Monitor, Tablet, Smartphone, Maximize2, RefreshCw, X } from 'lucide-react';
-
-type DeviceType = 'desktop' | 'tablet' | 'mobile';
+import { useEffect, useRef, useState } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
+import { Loader2, RefreshCw, Maximize } from 'lucide-react';
+import { PreviewSkeleton } from './LoadingSkeleton';
+import { trackPreviewView, logError } from '@/lib/analytics';
 
 interface PreviewProps {
   previewId: string;
-  onClose?: () => void;
 }
 
-export default function Preview({ previewId, onClose }: PreviewProps) {
-  const [device, setDevice] = useState<DeviceType>('desktop');
+type ViewportMode = 'desktop' | 'tablet' | 'mobile';
+
+export default function Preview({ previewId }: PreviewProps) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [viewportMode, setViewportMode] = useState<ViewportMode>('desktop');
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [htmlContent, setHtmlContent] = useState<string>('');
 
-  const deviceSizes = {
-    desktop: { width: '100%', height: '100%' },
-    tablet: { width: '768px', height: '1024px' },
-    mobile: { width: '375px', height: '667px' },
-  };
+  useEffect(() => {
+    loadAndRenderPreview();
+  }, [previewId]);
 
-  const currentSize = deviceSizes[device];
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        exitFullscreen();
+      } else if (e.key === 'r' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        handleRefresh();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [isFullscreen]);
 
   const handleRefresh = () => {
-    setRefreshKey(prev => prev + 1);
+    loadAndRenderPreview();
   };
 
   const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
+    if (!isFullscreen) {
+      if (containerRef.current?.requestFullscreen) {
+        containerRef.current.requestFullscreen();
+        setIsFullscreen(true);
+      }
+    } else {
+      exitFullscreen();
+    }
   };
 
+  const exitFullscreen = () => {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+  const loadAndRenderPreview = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+
+      // Fetch HTML directly from database
+      const { data, error: fetchError } = await supabase
+        .from('previews')
+        .select('html_content, css_content, js_content')
+        .eq('id', previewId)
+        .single();
+
+      if (fetchError) throw fetchError;
+      if (!data) throw new Error('Preview not found');
+
+      console.log(`✅ Preview loaded - HTML: ${data.html_content?.length || 0} chars`);
+
+      // Track preview view
+      trackPreviewView(previewId);
+
+      // Check if html_content is a complete HTML document or just content
+      const isCompleteDocument = data.html_content?.trim().toLowerCase().startsWith('<!doctype') ||
+                                  data.html_content?.trim().toLowerCase().startsWith('<html');
+
+      let finalHtml: string;
+
+      if (isCompleteDocument) {
+        // html_content already contains a complete HTML document with inlined CSS/JS
+        finalHtml = data.html_content || '';
+        console.log(`✅ Using complete HTML document from html_content`);
+      } else {
+        // html_content is just content, need to construct full document
+        finalHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    ${data.css_content || ''}
+  </style>
+</head>
+<body>
+  ${data.html_content || ''}
+  <script>
+    ${data.js_content || ''}
+  </script>
+</body>
+</html>
+        `.trim();
+        console.log(`✅ Constructed full HTML document from separate fields`);
+      }
+
+      // Set HTML content for srcdoc attribute
+      setHtmlContent(finalHtml);
+      console.log(`✅ HTML ready for rendering (${Math.round(finalHtml.length / 1024)}KB)`);
+
+      setLoading(false);
+    } catch (err: any) {
+      console.error('Preview render error:', err);
+      const errorMsg = err.message || 'Failed to render preview';
+      setError(errorMsg);
+      setLoading(false);
+
+      // Log error for monitoring
+      logError(err, {
+        action: 'load_preview',
+        previewId,
+      });
+    }
+  };
+
+  if (loading) {
+    return <PreviewSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Failed to Load Preview</h2>
+          <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const getViewportDimensions = () => {
+    switch (viewportMode) {
+      case 'mobile':
+        return { width: '375px', height: '100%' };
+      case 'tablet':
+        return { width: '768px', height: '100%' };
+      default:
+        return { width: '100%', height: '100%' };
+    }
+  };
+
+  const dimensions = getViewportDimensions();
+
   return (
-    <div className={`${isFullscreen ? 'fixed inset-0 z-50 bg-white' : 'relative'}`}>
-      {/* Controls Bar */}
-      <div className="bg-gray-100 border-b border-gray-300 p-4 flex items-center justify-between">
+    <div ref={containerRef} className="w-full h-[calc(100vh-100px)] bg-gray-100 flex flex-col">
+      {/* Viewport Toggle */}
+      <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-600 font-medium">View:</span>
+
+        <button
+          onClick={() => setViewportMode('desktop')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
+            viewportMode === 'desktop'
+              ? 'bg-indigo-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+          title="Desktop view (Full width)"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <rect x="2" y="3" width="20" height="14" rx="2" strokeWidth="2"/>
+            <path d="M8 21h8" strokeWidth="2" strokeLinecap="round"/>
+            <path d="M12 17v4" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+          Desktop
+        </button>
+
+        <button
+          onClick={() => setViewportMode('tablet')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
+            viewportMode === 'tablet'
+              ? 'bg-indigo-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+          title="Tablet view (768px)"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <rect x="5" y="2" width="14" height="20" rx="2" strokeWidth="2"/>
+            <path d="M12 18h.01" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+          Tablet
+        </button>
+
+        <button
+          onClick={() => setViewportMode('mobile')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
+            viewportMode === 'mobile'
+              ? 'bg-indigo-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+          title="Mobile view (375px)"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <rect x="7" y="2" width="10" height="20" rx="2" strokeWidth="2"/>
+            <path d="M12 18h.01" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+          Mobile
+        </button>
+
+          <span className="ml-4 text-xs text-gray-500">
+            {viewportMode === 'desktop' && 'Full width'}
+            {viewportMode === 'tablet' && '768px wide'}
+            {viewportMode === 'mobile' && '375px wide'}
+          </span>
+        </div>
+
+        {/* Action Buttons */}
         <div className="flex items-center gap-2">
-          {/* Device Toggles */}
-          <button
-            onClick={() => setDevice('desktop')}
-            className={`p-2 rounded-lg transition ${
-              device === 'desktop' 
-                ? 'bg-indigo-600 text-white' 
-                : 'bg-white text-gray-700 hover:bg-gray-50'
-            }`}
-            title="Desktop View"
-          >
-            <Monitor className="w-5 h-5" />
-          </button>
-          
-          <button
-            onClick={() => setDevice('tablet')}
-            className={`p-2 rounded-lg transition ${
-              device === 'tablet' 
-                ? 'bg-indigo-600 text-white' 
-                : 'bg-white text-gray-700 hover:bg-gray-50'
-            }`}
-            title="Tablet View"
-          >
-            <Tablet className="w-5 h-5" />
-          </button>
-          
-          <button
-            onClick={() => setDevice('mobile')}
-            className={`p-2 rounded-lg transition ${
-              device === 'mobile' 
-                ? 'bg-indigo-600 text-white' 
-                : 'bg-white text-gray-700 hover:bg-gray-50'
-            }`}
-            title="Mobile View"
-          >
-            <Smartphone className="w-5 h-5" />
-          </button>
-
-          <div className="w-px h-6 bg-gray-300 mx-2" />
-
-          {/* Refresh Button */}
           <button
             onClick={handleRefresh}
-            className="p-2 rounded-lg bg-white text-gray-700 hover:bg-gray-50 transition"
-            title="Refresh Preview"
+            className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition flex items-center gap-2"
+            title="Refresh preview (Ctrl/Cmd + R)"
           >
-            <RefreshCw className="w-5 h-5" />
+            <RefreshCw className="w-4 h-4" />
+            Refresh
           </button>
 
-          {/* Fullscreen Toggle */}
           <button
             onClick={toggleFullscreen}
-            className="p-2 rounded-lg bg-white text-gray-700 hover:bg-gray-50 transition"
-            title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+            className="px-3 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg text-sm font-medium transition flex items-center gap-2"
+            title={isFullscreen ? "Exit fullscreen (Esc)" : "Enter fullscreen"}
           >
-            {isFullscreen ? <X className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+            <Maximize className="w-4 h-4" />
+            {isFullscreen ? 'Exit' : 'Fullscreen'}
           </button>
         </div>
-
-        {/* Device Size Label */}
-        <div className="text-sm text-gray-600 font-medium">
-          {device === 'desktop' && 'Desktop'}
-          {device === 'tablet' && 'Tablet (768x1024)'}
-          {device === 'mobile' && 'Mobile (375x667)'}
-        </div>
-
-        {/* Close Button */}
-        {onClose && !isFullscreen && (
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg bg-white text-gray-700 hover:bg-gray-50 transition"
-            title="Close Preview"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        )}
       </div>
 
       {/* Preview Container */}
-      <div className={`bg-gray-200 ${isFullscreen ? 'h-[calc(100vh-73px)]' : 'h-[600px]'} flex items-center justify-center overflow-auto p-4`}>
+      <div className="flex-1 flex items-start justify-center overflow-auto p-6">
         <div
-          className="bg-white shadow-2xl transition-all duration-300"
+          className="bg-white shadow-2xl rounded-lg overflow-hidden transition-all duration-300"
           style={{
-            width: currentSize.width,
-            height: currentSize.height,
-            maxWidth: '100%',
-            maxHeight: '100%',
+            width: dimensions.width,
+            height: 'calc(100vh - 200px)',
+            maxWidth: '100%'
           }}
         >
           <iframe
-            key={refreshKey}
-            src={`/api/preview/${previewId}`}
+            ref={iframeRef}
             className="w-full h-full border-0"
-            sandbox="allow-scripts allow-same-origin"
-            title="Preview"
+            srcDoc={htmlContent}
+            title="Website Preview"
           />
         </div>
       </div>

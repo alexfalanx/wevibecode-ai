@@ -1,19 +1,85 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Store, Zap, Sparkles, LogOut, Plus, FolderOpen } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { createBrowserClient } from '@supabase/ssr';
+import { DashboardSkeleton } from '@/components/LoadingSkeleton';
+import { useToast } from '@/components/Toast';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const credits = 10; // This should come from Supabase
-  const totalProjects = 0; // This should come from Supabase
-  const currentPlan = 'free';
+  const toast = useToast();
+  const [loading, setLoading] = useState(true);
+  const [credits, setCredits] = useState<number>(0);
+  const [totalProjects, setTotalProjects] = useState<number>(0);
+  const [currentPlan, setCurrentPlan] = useState<string>('free');
+  const [user, setUser] = useState<any>(null);
 
-  const handleLogout = () => {
-    // Add your logout logic here
-    router.push('/');
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    try {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+
+      // Check authentication
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/login');
+        return;
+      }
+      setUser(user);
+
+      // Fetch user profile data
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('credits_remaining, subscription_tier')
+        .eq('id', user.id)
+        .single();
+
+      if (profile) {
+        setCredits(profile.credits_remaining || 0);
+        setCurrentPlan(profile.subscription_tier || 'free');
+      }
+
+      // Fetch total projects count
+      const { count } = await supabase
+        .from('previews')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+
+      setTotalProjects(count || 0);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+      setLoading(false);
+    }
   };
+
+  const handleLogout = async () => {
+    try {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      await supabase.auth.signOut();
+      toast.success('Logged out successfully');
+      router.push('/');
+    } catch (error) {
+      toast.error('Failed to log out');
+      console.error('Logout error:', error);
+    }
+  };
+
+  // Show loading skeleton while data is being fetched
+  if (loading) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -62,7 +128,7 @@ export default function DashboardPage() {
         <div className="grid md:grid-cols-3 gap-6 mb-12">
           {/* Create Website Card */}
           <button
-            onClick={() => router.push('/dashboard/create-website')}
+            onClick={() => router.push('/dashboard/generate')}
             className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl p-8 text-white hover:shadow-2xl transition transform hover:scale-105 text-left group"
           >
             <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
@@ -127,7 +193,7 @@ export default function DashboardPage() {
               </p>
               <div className="flex gap-4 justify-center">
                 <button
-                  onClick={() => router.push('/dashboard/create-website')}
+                  onClick={() => router.push('/dashboard/generate')}
                   className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition"
                 >
                   Create Website

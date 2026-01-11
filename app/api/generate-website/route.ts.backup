@@ -1,0 +1,1294 @@
+﻿// app/api/generate-website/route.ts
+// FIXED - Bright images + Better contrast + Logo color variety
+import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { 
+      prompt, 
+      websiteType,
+      sections,
+      vibe,
+      colorMode,
+      colorPalette,
+      customLogo,
+      logoColorMode,
+      logoColorPalette,
+      includeImages 
+    } = body;
+
+    if (!prompt || !websiteType || !sections) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) { return request.cookies.get(name)?.value; },
+          set(name: string, value: string, options: any) {},
+          remove(name: string, options: any) {},
+        },
+      }
+    );
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('credits_remaining')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile) {
+      return NextResponse.json({ error: 'Failed to fetch profile' }, { status: 500 });
+    }
+
+    const baseCredits = 1;
+    const imageCredits = includeImages ? 3 : 0;
+    const logoCredits = customLogo ? 3 : 0;
+    const totalCredits = baseCredits + imageCredits + logoCredits;
+
+    if (profile.credits_remaining < totalCredits) {
+      return NextResponse.json({ error: `Need ${totalCredits} credits` }, { status: 402 });
+    }
+
+    console.log(`ðŸŽ¨ Starting generation: images=${includeImages ? '3' : '0'}, logo=${customLogo}`);
+
+    // STEP 1: TWO-STEP GENERATION
+    const content = await generateContent(prompt, websiteType, sections, vibe);
+    console.log(`âœ… Content generated with ${Object.keys(content).length} fields`);
+
+    // STEP 2: Generate custom logo if requested
+    let logoUrl = '';
+    if (customLogo) {
+      const logoColors = logoColorMode === 'ai' 
+        ? await chooseLogoColors(prompt, websiteType, vibe) // NEW: Separate function for logo colors
+        : logoColorPalette;
+      
+      logoUrl = await generateCustomLogo(content.businessName, vibe, websiteType, logoColors);
+      console.log(`âœ… Logo generated: ${logoUrl ? 'success' : 'failed'}`);
+    }
+
+    // STEP 3: Choose website colors
+    const colors = colorMode === 'ai' 
+      ? await chooseColors(prompt, websiteType, vibe)
+      : colorPalette;
+
+    // STEP 4: Fetch HIGH-QUALITY, BRIGHT images
+    let images: any[] = [];
+    if (includeImages && content.imageSearchTerms) {
+      images = await fetchBrightImages(content.imageSearchTerms, websiteType, vibe);
+      console.log(`âœ… Images fetched: ${images.length}/3`);
+    }
+
+    // STEP 5: Build website
+    const website = buildWebsite(content, sections, colors, images, logoUrl, websiteType, vibe);
+
+    // STEP 6: Save
+    const { data: preview, error: previewError } = await supabase
+      .from('previews')
+      .insert({
+        user_id: user.id,
+        title: prompt.substring(0, 100),
+        html_content: website.html,
+        css_content: website.css,
+        js_content: website.js,
+        preview_type: 'website',
+        generation_prompt: prompt,
+        generation_type: websiteType,
+        credits_used: totalCredits,
+      })
+      .select()
+      .single();
+
+    if (previewError || !preview) {
+      return NextResponse.json({ error: 'Failed to save' }, { status: 500 });
+    }
+
+    await supabase
+      .from('profiles')
+      .update({ credits_remaining: profile.credits_remaining - totalCredits })
+      .eq('id', user.id);
+
+    await supabase.from('credits_log').insert({
+      user_id: user.id,
+      credits_used: totalCredits,
+      action: 'generate_website',
+      details: { preview_id: preview.id, custom_logo: customLogo, images: images.length },
+    });
+
+    console.log(`ðŸŽ‰ Generation complete! Preview ID: ${preview.id}`);
+
+    return NextResponse.json({
+      success: true,
+      previewId: preview.id,
+      creditsRemaining: profile.credits_remaining - totalCredits,
+    });
+
+  } catch (error: any) {
+    console.error('Generation error:', error);
+    return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
+  }
+}
+
+// ========================================
+// STEP 1: EXPAND PROMPT (GPT-4o-mini)
+// ========================================
+async function expandPrompt(prompt: string, websiteType: string, vibe: string, sections: string[]): Promise<string> {
+  console.log('ðŸ“ Step 1: Expanding prompt with GPT-4o-mini...');
+  
+  const expansionPrompt = `You are a professional copywriter and brand strategist. Expand this website brief into a detailed, creative content specification.
+
+USER BRIEF: "${prompt}"
+WEBSITE TYPE: ${websiteType}
+VIBE: ${vibe}
+SECTIONS REQUESTED: ${sections.join(', ')}
+
+Create a comprehensive content plan that includes:
+1. A creative, memorable business name (if not provided)
+2. Detailed hero section concept (compelling headline, value proposition, CTA)
+3. For EACH requested section, provide specific content ideas and messaging
+4. Brand voice and tone guidelines
+5. Unique selling points and key differentiators
+6. Target audience insights
+7. CRITICAL: Suggest SPECIFIC, DESCRIPTIVE Unsplash search terms that will return BRIGHT, HIGH-QUALITY, PROFESSIONAL images (avoid generic terms, be very specific about lighting, mood, and quality)
+
+Write a detailed paragraph (250-350 words) describing:
+- The business concept and unique value
+- Content strategy for each section
+- Brand personality and voice
+- Visual direction and mood (bright, professional, high-quality)
+- Customer journey and messaging priorities
+- Specific image requirements (bright lighting, professional quality, vibrant colors)
+
+Be creative, specific, and strategic. Think like a marketing director planning a high-converting website.`;
+
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+      { role: 'system', content: 'You are an expert copywriter and brand strategist with 15 years of experience.' },
+      { role: 'user', content: expansionPrompt },
+    ],
+    temperature: 0.9,
+    max_tokens: 600,
+  });
+
+  const expandedBrief = response.choices[0].message.content || prompt;
+  console.log(`âœ… Expanded brief: ${expandedBrief.length} characters`);
+  return expandedBrief;
+}
+
+// ========================================
+// IMPROVED IMAGE SEARCH TERMS
+// ========================================
+async function generateContent(prompt: string, websiteType: string, sections: string[], vibe: string): Promise<any> {
+  const expandedBrief = await expandPrompt(prompt, websiteType, vibe, sections);
+  
+  console.log('ðŸŽ¨ Step 2: Generating detailed content with GPT-4o...');
+  
+  // Build dynamic JSON schema
+  let jsonSchema = `{
+  "businessName": "Creative, memorable business name",
+  "tagline": "Catchy one-liner tagline (10-15 words)",
+  "hero": {
+    "headline": "Compelling 5-10 word headline that grabs attention",
+    "subtitle": "2-3 sentence value proposition explaining what you do and why it matters",
+    "cta": "Action-oriented CTA button text (2-4 words)"
+  },`;
+
+  // Add sections dynamically (same as before)
+  if (sections.includes('about')) {
+    jsonSchema += `
+  "about": {
+    "title": "Section title (2-4 words)",
+    "text": "3-4 rich paragraphs telling your story, mission, and values (200-300 words total)",
+    "highlights": ["Key point 1", "Key point 2", "Key point 3"]
+  },`;
+  }
+
+  if (sections.includes('features') || sections.includes('services')) {
+    jsonSchema += `
+  "features": [
+    {"icon": "relevant emoji", "title": "Feature/Service name", "description": "2-3 detailed sentences explaining the benefit and value"},
+    {"icon": "relevant emoji", "title": "Feature/Service name", "description": "2-3 detailed sentences explaining the benefit and value"},
+    {"icon": "relevant emoji", "title": "Feature/Service name", "description": "2-3 detailed sentences explaining the benefit and value"},
+    {"icon": "relevant emoji", "title": "Feature/Service name", "description": "2-3 detailed sentences explaining the benefit and value"}
+  ],`;
+  }
+
+  if (sections.includes('testimonials')) {
+    jsonSchema += `
+  "testimonials": [
+    {"text": "Detailed, authentic testimonial with specific results or benefits (3-4 sentences)", "author": "Full Name", "role": "Job Title at Company Name"},
+    {"text": "Detailed, authentic testimonial with specific results or benefits (3-4 sentences)", "author": "Full Name", "role": "Job Title at Company Name"},
+    {"text": "Detailed, authentic testimonial with specific results or benefits (3-4 sentences)", "author": "Full Name", "role": "Job Title at Company Name"}
+  ],`;
+  }
+
+  // CRITICAL: Improved image search terms
+  jsonSchema += `
+  "imageSearchTerms": {
+    "hero": "VERY SPECIFIC Unsplash search that will return a BRIGHT, HIGH-QUALITY, PROFESSIONAL image with good lighting. Example: 'bright modern restaurant interior natural sunlight plants' NOT 'restaurant'. Include keywords: bright, sunlight, daylight, vibrant, colorful, professional photography, high quality, well-lit. AVOID brand names like 'Louis Vuitton', 'Apple Store', etc.",
+    "about": "VERY SPECIFIC Unsplash search for about section. Must be BRIGHT and PROFESSIONAL with good lighting. Include: bright, natural light, professional, clean, modern, vibrant colors",
+    "features": "VERY SPECIFIC Unsplash search for features section. Must be BRIGHT, HIGH-QUALITY with excellent lighting. Focus on: bright lighting, professional quality, vibrant, colorful, daylight"
+  }
+}`;
+
+  const contentPrompt = `Based on this detailed brief, create exceptional website content:
+
+EXPANDED BRIEF:
+${expandedBrief}
+
+WEBSITE TYPE: ${websiteType}
+VIBE: ${vibe}
+SECTIONS TO CREATE: ${sections.join(', ')}
+
+Generate comprehensive, professional content in this exact JSON structure:
+${jsonSchema}
+
+CRITICAL REQUIREMENTS FOR IMAGE SEARCH TERMS:
+âœ… Be VERY SPECIFIC - not just "restaurant" but "bright modern restaurant interior natural sunlight elegant furniture"
+âœ… ALWAYS include brightness keywords: "bright", "sunlight", "daylight", "well-lit", "natural light"
+âœ… ALWAYS include quality keywords: "professional photography", "high quality", "vibrant colors"
+âœ… AVOID generic terms - be specific about setting, mood, lighting
+âœ… NEVER include brand names or trademarked terms
+âœ… Focus on atmosphere and lighting quality
+
+OTHER REQUIREMENTS:
+âœ… Write RICH, DETAILED content - minimum 200 words for about section
+âœ… Make it sound ${vibe} in tone throughout
+âœ… Use professional, engaging copy that converts visitors
+âœ… Return ONLY valid JSON, no markdown formatting, no extra text`;
+
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o',
+    messages: [
+      { 
+        role: 'system', 
+        content: 'You are an elite copywriter with expertise in conversion optimization and brand storytelling. You create compelling, detailed website content that engages visitors and drives action. You are EXCELLENT at creating specific, descriptive Unsplash search terms that return BRIGHT, HIGH-QUALITY images. Return ONLY valid JSON with no markdown formatting.' 
+      },
+      { role: 'user', content: contentPrompt },
+    ],
+    temperature: 0.85,
+    max_tokens: 4000,
+  });
+
+  const content = response.choices[0].message.content || '{}';
+  
+  try {
+    let cleaned = content.trim()
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
+      .trim();
+    
+    const parsed = JSON.parse(cleaned);
+    console.log(`âœ… Content with image terms: ${parsed.imageSearchTerms?.hero || 'none'}`);
+    return parsed;
+  } catch (e: any) {
+    console.error('âŒ JSON parse error:', e.message);
+    
+    return {
+      businessName: 'Business',
+      tagline: 'Your tagline here',
+      hero: { 
+        headline: 'Welcome to Our Business', 
+        subtitle: 'We provide excellent services to help you succeed.',
+        cta: 'Get Started' 
+      },
+      imageSearchTerms: {
+        hero: `bright modern ${websiteType} interior natural sunlight professional`,
+        about: `bright professional ${websiteType} team daylight office`,
+        features: `bright colorful ${websiteType} service vibrant professional photography`
+      }
+    };
+  }
+}
+
+// ========================================
+// NEW: FETCH BRIGHT, HIGH-QUALITY IMAGES
+// ========================================
+async function fetchBrightImages(searchTerms: any, websiteType: string, vibe: string): Promise<any[]> {
+  const images: any[] = [];
+  const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
+  
+  if (!UNSPLASH_ACCESS_KEY || UNSPLASH_ACCESS_KEY === 'demo') {
+    console.error('âŒ Unsplash API key missing');
+    return [];
+  }
+  
+  // Enhanced search terms with brightness filters
+  const enhancedTerms = [
+    `${searchTerms?.hero || 'bright modern workspace'} bright natural light professional`,
+    `${searchTerms?.about || 'professional team'} bright daylight vibrant`,
+    `${searchTerms?.features || 'modern design'} bright colorful professional photography`
+  ];
+  
+  console.log('ðŸ–¼ï¸  Fetching BRIGHT images with enhanced terms:');
+  enhancedTerms.forEach((term, i) => console.log(`  ${i + 1}. ${term}`));
+  
+  for (let i = 0; i < enhancedTerms.length; i++) {
+    const term = enhancedTerms[i];
+    
+    try {
+      // Unsplash API with color and quality filters
+      const response = await fetch(
+        `https://api.unsplash.com/search/photos?` +
+        `query=${encodeURIComponent(term)}` +
+        `&per_page=3` + // Get 3 results to pick the brightest
+        `&orientation=landscape` +
+        `&content_filter=high` + // High-quality only
+        `&color=` + (vibe === 'luxury' || vibe === 'calm' ? 'white' : ''), // Prefer bright colors
+        {
+          headers: { 'Authorization': `Client-ID ${UNSPLASH_ACCESS_KEY}` }
+        }
+      );
+      
+      if (!response.ok) {
+        console.error(`âŒ Unsplash error: ${response.status}`);
+        continue;
+      }
+      
+      const data = await response.json();
+      
+      if (data.results && data.results.length > 0) {
+        // Pick the brightest image from top 3 results
+        let bestPhoto = data.results[0];
+        let bestBrightness = 0;
+        
+        for (const photo of data.results) {
+          // Convert hex color to brightness
+          const brightness = photo.color ? hexToBrightness(photo.color) : 0;
+          if (brightness > bestBrightness) {
+            bestBrightness = brightness;
+            bestPhoto = photo;
+          }
+        }
+        
+        const brightness = hexToBrightness(bestPhoto.color);
+        
+        images.push({
+          url: bestPhoto.urls.regular,
+          photographer: bestPhoto.user.name,
+          photographerUrl: bestPhoto.user.links.html,
+          brightness: brightness > 160 ? 'light' : 'dark', // More lenient threshold
+          rawBrightness: brightness
+        });
+        
+        console.log(`âœ… Image ${i + 1}: brightness=${brightness} by ${bestPhoto.user.name}`);
+        
+        // Trigger download tracking
+        if (bestPhoto.links.download_location) {
+          fetch(bestPhoto.links.download_location, {
+            headers: { 'Authorization': `Client-ID ${UNSPLASH_ACCESS_KEY}` }
+          }).catch(() => {});
+        }
+      } else {
+        console.warn(`âš ï¸  No images for: "${term}"`);
+      }
+    } catch (error: any) {
+      console.error(`âŒ Image fetch error:`, error.message);
+    }
+  }
+  
+  console.log(`ðŸ“Š Fetched ${images.length}/3 images, avg brightness: ${Math.round(images.reduce((sum, img) => sum + (img.rawBrightness || 0), 0) / images.length)}`);
+  return images;
+}
+
+// Helper: Convert hex color to brightness value (0-255)
+function hexToBrightness(hex: string): number {
+  const clean = hex.replace('#', '');
+  const r = parseInt(clean.substr(0, 2), 16);
+  const g = parseInt(clean.substr(2, 2), 16);
+  const b = parseInt(clean.substr(4, 2), 16);
+  // Perceived brightness formula
+  return Math.round((r * 299 + g * 587 + b * 114) / 1000);
+}
+
+// ========================================
+// NEW: SEPARATE LOGO COLOR GENERATION
+// ========================================
+async function chooseLogoColors(prompt: string, websiteType: string, vibe: string): Promise<any> {
+  const colorPrompt = `Choose 2 VIBRANT, DIVERSE colors for a logo for "${prompt}" (${websiteType}, ${vibe} vibe).
+
+IMPORTANT: Choose colors that are:
+- DIFFERENT from the standard navy blue (#3B82F6)
+- VIBRANT and eye-catching
+- Appropriate for ${vibe} vibe
+- Professional but distinctive
+
+Vibe-specific suggestions:
+- luxury: gold/purple, rose gold/navy, emerald/gold
+- fun: orange/pink, lime/purple, coral/teal
+- professional: teal/navy, forest green/charcoal, burgundy/gold
+- minimal: charcoal/mint, slate/coral, black/gold
+- bold: red/black, electric blue/orange, magenta/yellow
+- calm: sage/lavender, sky blue/mint, seafoam/beige
+
+Return JSON:
+{"primary": "#HEX", "secondary": "#HEX"}
+
+AVOID using: #3B82F6, #2196F3 (overused blues)
+Return ONLY valid JSON.`;
+
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+      { role: 'system', content: 'You are a color theory expert. Return ONLY valid JSON with vibrant, diverse color choices.' },
+      { role: 'user', content: colorPrompt },
+    ],
+    temperature: 0.9, // Higher temperature for more variety
+    max_tokens: 200,
+  });
+
+  const content = response.choices[0].message.content || '{}';
+  try {
+    let cleaned = content.trim().replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    const colors = JSON.parse(cleaned);
+    console.log(`ðŸŽ¨ Logo colors: ${colors.primary}, ${colors.secondary}`);
+    return colors;
+  } catch (e) {
+    // Fallback to vibrant colors based on vibe
+    const fallbackColors: Record<string, any> = {
+      luxury: { primary: '#D4AF37', secondary: '#8B4789' },
+      fun: { primary: '#FF6B35', secondary: '#FF1654' },
+      professional: { primary: '#008080', secondary: '#2C3E50' },
+      minimal: { primary: '#2D3748', secondary: '#48BB78' },
+      bold: { primary: '#E53E3E', secondary: '#000000' },
+      calm: { primary: '#81C784', secondary: '#BA68C8' },
+    };
+    return fallbackColors[vibe] || { primary: '#D4AF37', secondary: '#8B4789' };
+  }
+}
+
+async function generateCustomLogo(businessName: string, vibe: string, websiteType: string, logoColors: any): Promise<string> {
+  try {
+    const primary = logoColors.primary || '#D4AF37';
+    const secondary = logoColors.secondary || '#8B4789';
+    
+    const logoPrompt = `Create a modern, professional logo for "${businessName}", a ${websiteType} business with a ${vibe} vibe. 
+
+Style: Clean, minimalist, modern logo design. Simple geometric shapes or abstract mark. Professional and memorable.
+
+Color scheme: Use ${primary} as the primary color and ${secondary} as the secondary/accent color.
+
+Requirements:
+- Simple and clean design
+- Uses the specified colors: ${primary} and ${secondary}
+- Works at small sizes
+- Modern aesthetic
+- NO text/letters in the image
+- Just the logo mark/icon
+- White or transparent background`;
+
+    const response = await openai.images.generate({
+      model: 'dall-e-3',
+      prompt: logoPrompt,
+      n: 1,
+      size: '1024x1024',
+      quality: 'standard',
+    });
+
+    return response.data?.[0]?.url || '';
+  } catch (error) {
+    console.error('Logo generation failed:', error);
+    return '';
+  }
+}
+
+async function chooseColors(prompt: string, websiteType: string, vibe: string): Promise<any> {
+  const colorPrompt = `For "${prompt}" (${websiteType}, ${vibe} vibe), choose 2 colors for the WEBSITE theme.
+
+Return JSON:
+{"primary": "#HEX", "secondary": "#HEX"}
+
+Return ONLY valid JSON.`;
+
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+      { role: 'system', content: 'Return ONLY valid JSON.' },
+      { role: 'user', content: colorPrompt },
+    ],
+    temperature: 0.7,
+    max_tokens: 200,
+  });
+
+  const content = response.choices[0].message.content || '{}';
+  try {
+    let cleaned = content.trim().replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    return JSON.parse(cleaned);
+  } catch (e) {
+    return { primary: '#3B82F6', secondary: '#06B6D4' };
+  }
+}
+
+function getFont(websiteType: string, vibe: string): { logo: string; heading: string; body: string } {
+  const fonts: Record<string, Record<string, { logo: string; heading: string; body: string }>> = {
+    restaurant: {
+      professional: { logo: 'Playfair Display', heading: 'Cormorant Garamond', body: 'Lora' },
+      fun: { logo: 'Righteous', heading: 'Fredoka', body: 'Nunito' },
+      luxury: { logo: 'Bodoni Moda', heading: 'Cinzel', body: 'Crimson Text' },
+      minimal: { logo: 'Work Sans', heading: 'Inter', body: 'Inter' },
+      bold: { logo: 'Bebas Neue', heading: 'Oswald', body: 'Roboto' },
+      calm: { logo: 'Quicksand', heading: 'Raleway', body: 'Open Sans' },
+    },
+    landing: {
+      professional: { logo: 'Poppins', heading: 'Montserrat', body: 'Roboto' },
+      fun: { logo: 'Fredoka', heading: 'Baloo 2', body: 'Nunito' },
+      luxury: { logo: 'Abril Fatface', heading: 'Playfair Display', body: 'Lato' },
+      minimal: { logo: 'Space Grotesk', heading: 'Inter', body: 'Inter' },
+      bold: { logo: 'Russo One', heading: 'Barlow', body: 'Work Sans' },
+      calm: { logo: 'Josefin Sans', heading: 'Karla', body: 'Source Sans Pro' },
+    },
+    portfolio: {
+      professional: { logo: 'Merriweather', heading: 'IBM Plex Sans', body: 'IBM Plex Sans' },
+      fun: { logo: 'Pacifico', heading: 'Comfortaa', body: 'Quicksand' },
+      luxury: { logo: 'Cormorant Garamond', heading: 'Libre Baskerville', body: 'Crimson Text' },
+      minimal: { logo: 'Manrope', heading: 'DM Sans', body: 'DM Sans' },
+      bold: { logo: 'Black Ops One', heading: 'Anton', body: 'Barlow' },
+      calm: { logo: 'Satisfy', heading: 'Lora', body: 'Karla' },
+    },
+    business: {
+      professional: { logo: 'Montserrat', heading: 'Roboto', body: 'Roboto' },
+      fun: { logo: 'Archivo Black', heading: 'Rubik', body: 'Nunito' },
+      luxury: { logo: 'Cinzel', heading: 'Playfair Display', body: 'Lato' },
+      minimal: { logo: 'Lexend', heading: 'Inter', body: 'Inter' },
+      bold: { logo: 'Oswald', heading: 'Barlow Condensed', body: 'Work Sans' },
+      calm: { logo: 'Philosopher', heading: 'Raleway', body: 'Open Sans' },
+    },
+    blog: {
+      professional: { logo: 'Spectral', heading: 'PT Serif', body: 'Source Serif Pro' },
+      fun: { logo: 'Carter One', heading: 'Fredoka', body: 'Nunito' },
+      luxury: { logo: 'Italiana', heading: 'Playfair Display', body: 'Crimson Text' },
+      minimal: { logo: 'Epilogue', heading: 'DM Sans', body: 'DM Sans' },
+      bold: { logo: 'Alfa Slab One', heading: 'Passion One', body: 'Barlow' },
+      calm: { logo: 'Literata', heading: 'Lora', body: 'Source Sans Pro' },
+    },
+    ecommerce: {
+      professional: { logo: 'Lato', heading: 'Poppins', body: 'Roboto' },
+      fun: { logo: 'Lilita One', heading: 'Baloo 2', body: 'Nunito' },
+      luxury: { logo: 'Cormorant Garamond', heading: 'Cinzel', body: 'Lato' },
+      minimal: { logo: 'Outfit', heading: 'Inter', body: 'Inter' },
+      bold: { logo: 'Teko', heading: 'Oswald', body: 'Work Sans' },
+      calm: { logo: 'Eczar', heading: 'Karla', body: 'Source Sans Pro' },
+    },
+  };
+
+  return fonts[websiteType]?.[vibe] || fonts.landing.professional;
+}
+
+function buildWebsite(
+  content: any,
+  sections: string[],
+  colors: any,
+  images: any[],
+  logoUrl: string,
+  websiteType: string,
+  vibe: string
+): { html: string; css: string; js: string } {
+  
+  const fonts = getFont(websiteType, vibe);
+  const html = generateHTML(content, sections, images, logoUrl, websiteType);
+  const css = generateCSS(colors, fonts, images);
+  const js = generateJS();
+  
+  return { html, css, js };
+}
+
+function generateHTML(content: any, sections: string[], images: any[], logoUrl: string, websiteType: string): string {
+  const heroImage = images[0];
+  const secondImage = images[1];
+  const thirdImage = images[2];
+  
+  // Adaptive text color based on actual image brightness
+  const heroTextClass = heroImage?.brightness === 'light' ? 'hero-on-light' : 'hero-on-dark';
+  
+  let sectionsHTML = '';
+  
+  // Hero - with adaptive contrast
+  sectionsHTML += `
+  <section class="hero ${heroTextClass}" id="home">
+    ${heroImage ? `
+    <div class="hero-image">
+      <img src="${heroImage.url}" alt="Hero" id="heroImg">
+      <div class="hero-overlay"></div>
+    </div>
+    ` : '<div class="hero-gradient"></div>'}
+    <div class="hero-content">
+      <h1>${content.hero?.headline || 'Welcome'}</h1>
+      <p>${content.hero?.subtitle || ''}</p>
+      <button class="cta-button">${content.hero?.cta || 'Get Started'}</button>
+    </div>
+  </section>`;
+  
+  // About section
+  if (sections.includes('about') && content.about) {
+    sectionsHTML += `
+  <section class="section fade-in-section" id="about">
+    <div class="container">
+      <div class="section-grid">
+        ${secondImage ? `<img src="${secondImage.url}" alt="About" class="section-image">` : ''}
+        <div class="section-content">
+          <h2>${content.about.title || 'About Us'}</h2>
+          <p>${content.about.text || ''}</p>
+          ${content.about.highlights ? `
+          <ul class="highlights">
+            ${content.about.highlights.map((h: string) => `<li>âœ“ ${h}</li>`).join('')}
+          </ul>
+          ` : ''}
+        </div>
+      </div>
+    </div>
+  </section>`;
+  }
+  
+  // Features/Services
+  if ((sections.includes('features') || sections.includes('services')) && content.features) {
+    sectionsHTML += `
+  <section class="section fade-in-section" id="services">
+    <div class="container">
+      ${thirdImage ? `<img src="${thirdImage.url}" alt="Feature" class="section-hero-image">` : ''}
+      <h2 class="section-title">${sections.includes('services') ? 'Our Services' : 'Features'}</h2>
+      <div class="cards-grid">
+        ${content.features.map((f: any) => `
+        <div class="card">
+          <div class="card-icon">${f.icon || 'âœ¨'}</div>
+          <h3>${f.title}</h3>
+          <p>${f.description}</p>
+        </div>
+        `).join('')}
+      </div>
+    </div>
+  </section>`;
+  }
+  
+  // Testimonials
+  if (sections.includes('testimonials') && content.testimonials) {
+    sectionsHTML += `
+  <section class="section testimonials-section fade-in-section">
+    <div class="container">
+      <h2 class="section-title">What Our Clients Say</h2>
+      <div class="testimonials-grid">
+        ${content.testimonials.map((t: any) => `
+        <div class="testimonial">
+          <p class="quote">"${t.text}"</p>
+          <div class="author">
+            <strong>${t.author}</strong>
+            <span>${t.role}</span>
+          </div>
+        </div>
+        `).join('')}
+      </div>
+    </div>
+  </section>`;
+  }
+  
+  // Contact
+  if (sections.includes('contact')) {
+    sectionsHTML += `
+  <section class="section fade-in-section" id="contact">
+    <div class="container">
+      <h2 class="section-title">Get In Touch</h2>
+      ${content.location ? `
+      <div class="contact-info">
+        <p>ðŸ“ ${content.location.address}</p>
+        <p>ðŸ• ${content.location.hours}</p>
+        <p>ðŸ“ž ${content.location.phone}</p>
+        <p>âœ‰ï¸ ${content.location.email}</p>
+      </div>
+      ` : ''}
+      <form class="contact-form">
+        <input type="text" placeholder="Your Name" required>
+        <input type="email" placeholder="Your Email" required>
+        <textarea placeholder="Your Message" rows="5" required></textarea>
+        <button type="submit" class="cta-button">Send Message</button>
+      </form>
+    </div>
+  </section>`;
+  }
+  
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${content.businessName || 'Website'}</title>
+  <style>STYLES_PLACEHOLDER</style>
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <div class="nav-wrapper">
+        <div class="logo">
+          ${logoUrl ? `<img src="${logoUrl}" alt="${content.businessName}" class="logo-image">` : '<span class="logo-icon">âœ¨</span>'}
+          <span class="logo-text">${content.businessName || 'Business'}</span>
+        </div>
+        <nav class="nav-desktop">
+          <a href="#home">Home</a>
+          ${sections.includes('about') ? '<a href="#about">About</a>' : ''}
+          ${sections.includes('services') || sections.includes('features') ? '<a href="#services">Services</a>' : ''}
+          ${sections.includes('contact') ? '<a href="#contact">Contact</a>' : ''}
+        </nav>
+        <button class="mobile-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="#home" onclick="closeMobileMenu()">Home</a>
+      ${sections.includes('about') ? '<a href="#about" onclick="closeMobileMenu()">About</a>' : ''}
+      ${sections.includes('services') || sections.includes('features') ? '<a href="#services" onclick="closeMobileMenu()">Services</a>' : ''}
+      ${sections.includes('contact') ? '<a href="#contact" onclick="closeMobileMenu()">Contact</a>' : ''}
+    </div>
+  </header>
+
+  ${sectionsHTML}
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2026 ${content.businessName}. All rights reserved.</p>
+      ${content.tagline ? `<p class="tagline">${content.tagline}</p>` : ''}
+      ${images.length > 0 ? `<p class="credits">Photos: ${images.map(img => img.photographer).join(', ')}</p>` : ''}
+    </div>
+  </footer>
+  
+  <script>SCRIPTS_PLACEHOLDER</script>
+</body>
+</html>`;
+}
+
+function generateCSS(colors: any, fonts: { logo: string; heading: string; body: string }, images: any[]): string {
+  const primary = colors.primary || '#3B82F6';
+  const secondary = colors.secondary || '#06B6D4';
+  
+  const heroImage = images[0];
+  const isHeroLight = heroImage?.brightness === 'light';
+  
+  // Build Google Fonts import
+  const fontsToImport = Array.from(new Set([fonts.logo, fonts.heading, fonts.body]))
+    .map(font => font.replace(/ /g, '+') + ':wght@400;600;700;800;900')
+    .join('&family=');
+  
+  return `@import url('https://fonts.googleapis.com/css2?family=${fontsToImport}&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: '${fonts.body}', -apple-system, sans-serif;
+  color: #0f172a;
+  line-height: 1.6;
+  background: #ffffff;
+  overflow-x: hidden;
+}
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* HEADER */
+.header {
+  position: sticky;
+  top: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  z-index: 1000;
+}
+
+.nav-wrapper { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; }
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-image {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.logo-icon {
+  font-size: 32px;
+}
+
+.logo-text {
+  font-family: '${fonts.logo}', serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: ${primary};
+  letter-spacing: -0.02em;
+}
+
+.nav-desktop { display: flex; gap: 32px; }
+.nav-desktop a { 
+  text-decoration: none; 
+  color: #64748b; 
+  font-family: '${fonts.body}', sans-serif;
+  font-weight: 500; 
+  transition: color 0.2s; 
+}
+.nav-desktop a:hover { color: ${primary}; }
+
+.mobile-toggle { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; }
+.mobile-toggle span { width: 24px; height: 2px; background: #0f172a; transition: all 0.3s; }
+
+.mobile-menu { display: none; background: white; max-height: 0; overflow: hidden; transition: max-height 0.3s; }
+.mobile-menu.active { max-height: 300px; }
+.mobile-menu a { display: block; padding: 16px 24px; text-decoration: none; color: #0f172a; border-bottom: 1px solid rgba(15, 23, 42, 0.05); font-family: '${fonts.body}', sans-serif; }
+
+@media (max-width: 768px) {
+  .nav-desktop { display: none; }
+  .mobile-toggle { display: flex; }
+  .mobile-menu { display: block; }
+}
+
+/* HERO - ADAPTIVE CONTRAST */
+.hero { 
+  position: relative; 
+  min-height: 80vh; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  overflow: hidden; 
+}
+
+.hero-image { 
+  position: absolute; 
+  inset: 0; 
+  z-index: 0;
+}
+
+.hero-image img { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; 
+  filter: brightness(1.1) saturate(1.2); /* Brighter, more vibrant */
+  will-change: transform;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* Dark background (dark image) - use light text with gradient */
+.hero-on-dark .hero-overlay {
+  background: linear-gradient(135deg, rgba(0,0,0,0.2), rgba(0,0,0,0.1));
+}
+
+.hero-on-dark .hero-content h1 {
+  background: linear-gradient(135deg, #ffffff 0%, ${primary} 50%, ${secondary} 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 4px 24px rgba(0, 0, 0, 0.3)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+}
+
+.hero-on-dark .hero-content p {
+  color: #ffffff;
+  text-shadow: 
+    0 2px 10px rgba(0, 0, 0, 0.3),
+    0 4px 20px rgba(0, 0, 0, 0.7);
+}
+
+/* Light background (bright image) - use dark text with colored gradient */
+.hero-on-light .hero-overlay {
+  background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
+}
+
+.hero-on-light .hero-content h1 {
+  background: linear-gradient(135deg, ${primary} 0%, ${secondary} 50%, #0f172a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 3px 12px rgba(255, 255, 255, 0.6)) drop-shadow(0 1px 4px rgba(255, 255, 255, 0.4));
+}
+
+.hero-on-light .hero-content p {
+  color: #0f172a;
+  text-shadow: 
+    0 2px 8px rgba(255, 255, 255, 0.6),
+    0 4px 16px rgba(255, 255, 255, 0.6);
+}
+
+.hero-gradient { 
+  position: absolute; 
+  inset: 0; 
+  background: linear-gradient(135deg, ${primary}15, ${secondary}15); 
+  z-index: 0;
+}
+
+.hero-content { 
+  position: relative; 
+  z-index: 2; 
+  text-align: center; 
+  padding: 80px 24px; 
+  max-width: 900px; 
+}
+
+.hero-content h1 {
+  font-family: '${fonts.heading}', sans-serif;
+  font-size: 68px;
+  font-weight: 900;
+  margin-bottom: 28px;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+/* Fallback for browsers that don't support gradient text */
+@supports not (background-clip: text) {
+  .hero-on-dark .hero-content h1 {
+    color: #ffffff;
+    text-shadow: 
+      0 2px 6px rgba(0, 0, 0, 0.3),
+      0 4px 16px rgba(0, 0, 0, 0.7);
+  }
+  
+  .hero-on-light .hero-content h1 {
+    color: #0f172a;
+    text-shadow: 
+      0 2px 6px rgba(255, 255, 255, 0.6),
+      0 4px 16px rgba(255, 255, 255, 0.6);
+  }
+}
+
+.hero-content p { 
+  font-family: '${fonts.body}', sans-serif;
+  font-size: 24px; 
+  margin-bottom: 36px; 
+  font-weight: 500;
+  opacity: 0.98;
+  line-height: 1.5;
+}
+
+.cta-button {
+  padding: 18px 48px;
+  font-size: 17px;
+  font-weight: 700;
+  font-family: '${fonts.body}', sans-serif;
+  color: white;
+  background: linear-gradient(135deg, ${primary}, ${secondary});
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 6px 20px ${primary}40;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cta-button:hover { 
+  transform: translateY(-3px); 
+  box-shadow: 0 10px 32px ${primary}50; 
+}
+
+/* SECTIONS */
+.section { 
+  padding: 120px 24px;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.section.fade-in-section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.section:nth-child(even) { background: #f8fafc; }
+
+.section-title {
+  font-family: '${fonts.heading}', sans-serif;
+  text-align: center;
+  font-size: 48px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 64px;
+  letter-spacing: -0.02em;
+}
+
+.section-grid { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 80px; 
+  align-items: center; 
+}
+
+.section-image { 
+  width: 100%; 
+  border-radius: 20px; 
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.12);
+  transition: transform 0.3s;
+  filter: brightness(1.1) saturate(1.1); /* Brighter images */
+}
+
+.section-image:hover {
+  transform: scale(1.02);
+}
+
+.section-hero-image {
+  width: 100%;
+  max-height: 450px;
+  object-fit: cover;
+  border-radius: 20px;
+  margin-bottom: 48px;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.12);
+  filter: brightness(1.1) saturate(1.1); /* Brighter images */
+}
+
+.section-content h2 { 
+  font-family: '${fonts.heading}', sans-serif; 
+  font-size: 40px; 
+  font-weight: 800; 
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+}
+
+.section-content p { 
+  font-family: '${fonts.body}', sans-serif; 
+  font-size: 18px; 
+  color: #475569; 
+  line-height: 1.8;
+  margin-bottom: 16px;
+}
+
+.highlights {
+  list-style: none;
+  margin-top: 24px;
+}
+
+.highlights li {
+  font-family: '${fonts.body}', sans-serif;
+  font-size: 17px;
+  color: #64748b;
+  padding: 8px 0;
+  font-weight: 500;
+}
+
+.cards-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+  gap: 32px; 
+}
+
+.card {
+  padding: 40px;
+  background: white;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 20px;
+  transition: all 0.3s;
+}
+
+.card:hover { 
+  transform: translateY(-6px); 
+  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.1); 
+  border-color: ${primary}30; 
+}
+
+.card-icon { 
+  font-size: 48px; 
+  margin-bottom: 20px; 
+}
+
+.card h3 { 
+  font-family: '${fonts.heading}', sans-serif; 
+  font-size: 22px; 
+  font-weight: 700; 
+  margin-bottom: 14px;
+  color: #0f172a;
+}
+
+.card p { 
+  font-family: '${fonts.body}', sans-serif; 
+  color: #64748b; 
+  line-height: 1.7;
+  font-size: 16px;
+}
+
+.testimonials-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+  gap: 32px; 
+}
+
+.testimonial { 
+  padding: 40px; 
+  background: white; 
+  border-radius: 20px; 
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  transition: all 0.3s;
+}
+
+.testimonial:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+}
+
+.quote { 
+  font-family: '${fonts.body}', sans-serif; 
+  font-size: 17px; 
+  color: #475569; 
+  font-style: italic; 
+  margin-bottom: 24px;
+  line-height: 1.7;
+}
+
+.author strong { 
+  font-family: '${fonts.heading}', sans-serif; 
+  display: block; 
+  color: #0f172a; 
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.author span { 
+  font-family: '${fonts.body}', sans-serif; 
+  font-size: 14px; 
+  color: #64748b; 
+}
+
+.contact-info {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.contact-info p {
+  font-size: 17px;
+  color: #475569;
+  margin: 12px 0;
+}
+
+.contact-form { 
+  max-width: 600px; 
+  margin: 0 auto; 
+}
+
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  padding: 18px 24px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 12px;
+  font-family: '${fonts.body}', sans-serif;
+  font-size: 16px;
+  transition: border-color 0.2s;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none;
+  border-color: ${primary};
+}
+
+.footer { 
+  padding: 60px 24px; 
+  background: #0f172a; 
+  color: #94a3b8; 
+  text-align: center; 
+}
+
+.footer p { 
+  font-family: '${fonts.body}', sans-serif;
+  margin: 8px 0;
+}
+
+.footer .tagline {
+  color: #64748b;
+  font-style: italic;
+  font-size: 15px;
+}
+
+.credits { 
+  margin-top: 16px; 
+  font-size: 13px; 
+  opacity: 0.7; 
+}
+
+@media (max-width: 768px) {
+  .hero-content h1 { font-size: 42px; }
+  .hero-content p { font-size: 18px; }
+  .section-title { font-size: 36px; }
+  .section-grid { grid-template-columns: 1fr; }
+  .cards-grid { grid-template-columns: 1fr; }
+  .section { padding: 80px 20px; }
+  .logo-text { font-size: 22px; }
+}`;
+}
+
+function generateJS(): string {
+  return `function toggleMobileMenu() {
+  document.getElementById('mobileMenu').classList.toggle('active');
+}
+
+function closeMobileMenu() {
+  document.getElementById('mobileMenu').classList.remove('active');
+}
+
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      closeMobileMenu();
+    }
+  });
+});
+
+// Parallax effect
+window.addEventListener('scroll', () => {
+  const scrolled = window.pageYOffset;
+  const heroImg = document.getElementById('heroImg');
+  
+  if (heroImg) {
+    heroImg.style.transform = \`translateY(\${scrolled * 0.5}px)\`;
+  }
+});
+
+// Fade-in sections on scroll
+const observerOptions = {
+  threshold: 0.1,
+  rootMargin: '0px 0px -100px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, observerOptions);
+
+document.querySelectorAll('.fade-in-section').forEach(section => {
+  observer.observe(section);
+});
+
+// Form submission
+const forms = document.querySelectorAll('form');
+forms.forEach(form => {
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    alert('Thank you for your message! We\\'ll get back to you soon.');
+    form.reset();
+  });
+});`;
+}

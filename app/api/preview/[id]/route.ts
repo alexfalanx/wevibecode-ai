@@ -70,13 +70,17 @@ export async function GET(
 </html>
     `.trim();
 
-    // Return HTML with proper headers
+    // Return HTML with proper headers and caching
     return new NextResponse(fullHtml, {
       status: 200,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
         'X-Frame-Options': 'SAMEORIGIN',
         'Content-Security-Policy': "default-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src * data:; font-src *;",
+        // Cache for 1 hour (3600 seconds), revalidate in background
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        // ETag for efficient caching
+        'ETag': `W/"${previewId}-${Date.now()}"`,
       },
     });
   } catch (error) {

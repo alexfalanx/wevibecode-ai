@@ -5,6 +5,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { Eye, Trash2, Clock, Sparkles } from 'lucide-react';
+import { useToast } from '@/components/Toast';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { ListSkeleton } from '@/components/LoadingSkeleton';
 
 interface Preview {
   id: string;
@@ -17,9 +20,12 @@ interface Preview {
 
 export default function HistoryPage() {
   const router = useRouter();
+  const toast = useToast();
   const [previews, setPreviews] = useState<Preview[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [previewToDelete, setPreviewToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     loadHistory();
@@ -56,13 +62,16 @@ export default function HistoryPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this generated website?')) {
-      return;
-    }
+  const openDeleteDialog = (id: string) => {
+    setPreviewToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!previewToDelete) return;
 
     try {
-      setDeleting(id);
+      setDeleting(previewToDelete);
 
       const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -72,16 +81,18 @@ export default function HistoryPage() {
       const { error } = await supabase
         .from('previews')
         .delete()
-        .eq('id', id);
+        .eq('id', previewToDelete);
 
       if (error) throw error;
 
-      setPreviews(previews.filter(p => p.id !== id));
+      setPreviews(previews.filter(p => p.id !== previewToDelete));
+      toast.success('Website deleted successfully');
     } catch (error) {
       console.error('Error deleting preview:', error);
-      alert('Failed to delete website');
+      toast.error('Failed to delete website. Please try again.');
     } finally {
       setDeleting(null);
+      setPreviewToDelete(null);
     }
   };
 
@@ -110,8 +121,14 @@ export default function HistoryPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      <div className="min-h-screen bg-gray-50 py-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-8">
+            <div className="h-10 w-64 bg-gray-200 rounded animate-pulse mb-2"></div>
+            <div className="h-6 w-96 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+          <ListSkeleton count={5} />
+        </div>
       </div>
     );
   }
@@ -178,7 +195,7 @@ export default function HistoryPage() {
                     </button>
                     
                     <button
-                      onClick={() => handleDelete(preview.id)}
+                      onClick={() => openDeleteDialog(preview.id)}
                       disabled={deleting === preview.id}
                       className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
                       title="Delete"
@@ -206,6 +223,18 @@ export default function HistoryPage() {
           </button>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={handleDelete}
+        title="Delete Website"
+        message="Are you sure you want to delete this generated website? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmButtonClass="bg-red-600 hover:bg-red-700"
+      />
     </div>
   );
 }
