@@ -5,9 +5,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
-import { Loader2, RefreshCw, Maximize } from 'lucide-react';
+import { Loader2, RefreshCw, Maximize, Edit, Upload, Check, ExternalLink } from 'lucide-react';
 import { PreviewSkeleton } from './LoadingSkeleton';
 import { trackPreviewView, logError } from '@/lib/analytics';
+import SiteEditor from './SiteEditor';
+import PublishModal from './PublishModal';
+import PublishSuccessModal from './PublishSuccessModal';
 
 interface PreviewProps {
   previewId: string;
@@ -23,6 +26,12 @@ export default function Preview({ previewId }: PreviewProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [htmlContent, setHtmlContent] = useState<string>('');
+  const [showEditor, setShowEditor] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [publishedUrl, setPublishedUrl] = useState<string>('');
+  const [previewData, setPreviewData] = useState<any>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     loadAndRenderPreview();
@@ -78,12 +87,15 @@ export default function Preview({ previewId }: PreviewProps) {
       // Fetch HTML directly from database
       const { data, error: fetchError } = await supabase
         .from('previews')
-        .select('html_content, css_content, js_content')
+        .select('*')
         .eq('id', previewId)
         .single();
 
       if (fetchError) throw fetchError;
       if (!data) throw new Error('Preview not found');
+
+      // Store preview data for later use
+      setPreviewData(data);
 
       console.log(`✅ Preview loaded - HTML: ${data.html_content?.length || 0} chars`);
 
@@ -246,6 +258,50 @@ export default function Preview({ previewId }: PreviewProps) {
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setShowEditor(true)}
+            className="px-3 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm font-medium transition flex items-center gap-2"
+            title="Edit text and colors"
+          >
+            <Edit className="w-4 h-4" />
+            Edit
+          </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowPublishModal(true)}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
+                previewData?.is_published
+                  ? 'bg-green-100 hover:bg-green-200 text-green-700'
+                  : 'bg-purple-100 hover:bg-purple-200 text-purple-700'
+              }`}
+              title={previewData?.is_published ? 'Published' : 'Publish your site'}
+            >
+              {previewData?.is_published ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  Published
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4" />
+                  Publish
+                </>
+              )}
+            </button>
+
+            {previewData?.is_published && previewData?.published_url && (
+              <button
+                onClick={() => window.open(previewData.published_url, '_blank', 'noopener,noreferrer')}
+                className="px-3 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg text-sm font-medium transition flex items-center gap-2"
+                title={`Visit: ${previewData.published_url}`}
+              >
+                <ExternalLink className="w-4 h-4" />
+                View Live
+              </button>
+            )}
+          </div>
+
+          <button
             onClick={handleRefresh}
             className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition flex items-center gap-2"
             title="Refresh preview (Ctrl/Cmd + R)"
@@ -283,6 +339,73 @@ export default function Preview({ previewId }: PreviewProps) {
           />
         </div>
       </div>
+
+      {/* Site Editor Modal */}
+      {showEditor && previewData && (
+        <SiteEditor
+          previewId={previewId}
+          htmlContent={htmlContent}
+          onSave={async (editedHtml) => {
+            setIsSaving(true);
+            try {
+              const supabase = createBrowserClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+              );
+
+              // Update HTML content in database
+              const { error: updateError } = await supabase
+                .from('previews')
+                .update({
+                  html_content: editedHtml,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', previewId);
+
+              if (updateError) throw updateError;
+
+              // Reload preview
+              await loadAndRenderPreview();
+              setShowEditor(false);
+            } catch (err: any) {
+              console.error('Save error:', err);
+              alert('Failed to save changes: ' + err.message);
+            } finally {
+              setIsSaving(false);
+            }
+          }}
+          onClose={() => setShowEditor(false)}
+        />
+      )}
+
+      {/* Publish Modal */}
+      {showPublishModal && previewData && (
+        <PublishModal
+          previewId={previewId}
+          title={previewData.title || 'Untitled'}
+          currentSlug={previewData.slug}
+          currentDomain={previewData.custom_domain}
+          isPublished={previewData.is_published || false}
+          onClose={() => setShowPublishModal(false)}
+          onPublish={(url) => {
+            // Reload preview data to update published status
+            loadAndRenderPreview();
+            setShowPublishModal(false);
+
+            // Show success modal with published URL
+            setPublishedUrl(url);
+            setShowSuccessModal(true);
+          }}
+        />
+      )}
+
+      {/* Publish Success Modal */}
+      {showSuccessModal && publishedUrl && (
+        <PublishSuccessModal
+          publishedUrl={publishedUrl}
+          onClose={() => setShowSuccessModal(false)}
+        />
+      )}
     </div>
   );
 }

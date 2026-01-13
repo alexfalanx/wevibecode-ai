@@ -13,6 +13,7 @@
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.90.1",
     "cheerio": "^1.1.2",
+    "dompurify": "^3.1.7",
     "i18next": "^25.7.3",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.562.0",
@@ -21,6 +22,7 @@
     "next-intl": "^4.7.0",
     "openai": "^6.15.0",
     "react": "19.2.3",
+    "react-color": "^2.19.3",
     "react-dom": "19.2.3",
     "react-i18next": "^16.5.1",
     "zod": "^4.3.5"
@@ -28,9 +30,11 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/cheerio": "^0.22.35",
+    "@types/dompurify": "^3.0.5",
     "@types/js-cookie": "^3.0.6",
     "@types/node": "^20",
     "@types/react": "^19",
+    "@types/react-color": "^3.0.13",
     "@types/react-dom": "^19",
     "tailwindcss": "^4",
     "typescript": "^5"
