@@ -55,9 +55,9 @@ function stripExternalAssets(html: string): string {
   // Remove CTA/signup sections
   result = result.replace(/<section[^>]*id=["']cta["'][^>]*>[\s\S]*?<\/section>/gi, '');
 
-  // Remove "Sign Up" buttons from navigation
+  // Remove "Sign Up" buttons from navigation BUT KEEP OTHER MENU ITEMS
   result = result.replace(/<li><a[^>]*class=["'][^"']*button[^"']*["'][^>]*>Sign Up<\/a><\/li>/gi, '');
-  result = result.replace(/<a[^>]*class=["'][^"']*button[^"']*["'][^>]*>Sign Up<\/a>/gi, '');
+  // Don't remove all buttons, just signup specific ones
 
   // Remove social media links from footer (keep footer structure)
   result = result.replace(/<ul class="icons">[\s\S]*?<\/ul>/gi, '');
@@ -117,6 +117,17 @@ export function injectContent(
 
   // Replace ALL H1 tags with business name
   result = result.replace(/<h1[^>]*>([^<]*)<\/h1>/gi, `<h1>${content.businessName || 'Your Business'}</h1>`);
+
+  // Replace menu items with actual sections
+  result = result.replace(/<a[^>]*>Generic<\/a>/gi, '<a href="#about">About</a>');
+  result = result.replace(/<a[^>]*>Elements<\/a>/gi, '<a href="#services">Services</a>');
+  result = result.replace(/<a[^>]*>Sign Up<\/a>/gi, '<a href="#contact">Contact</a>');
+  result = result.replace(/<a[^>]*>Log In<\/a>/gi, ''); // Remove login link
+
+  // Replace CTA buttons
+  const ctaText = content.hero?.cta || 'Get Started';
+  result = result.replace(/Activate/gi, ctaText);
+  result = result.replace(/Learn More/gi, 'Discover More');
   
   // 4. SMART H2 REPLACEMENT - First H2 is hero, rest are section titles
   const allH2Headings = [
