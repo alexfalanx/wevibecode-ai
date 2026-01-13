@@ -115,7 +115,7 @@ export function injectContent(
     result = result.replace(titleTag, `<title>${content.businessName || 'Your Business'}</title>`);
   });
   
-  // 4. ALL H2 HEADINGS (from comprehensive analysis)
+  // 4. SMART H2 REPLACEMENT - First H2 is hero, rest are section titles
   const allH2Headings = [
     'Introducing the ultimate mobile app',
     'Sign up for beta access',
@@ -154,15 +154,27 @@ export function injectContent(
     'Massa sed condimentum',
     'Ipsum sed consequat'
   ];
-  
-  const replacementHeadline = content.hero?.headline || content.businessName || 'Welcome';
-  
+
+  // Build replacement text for different sections
+  const heroHeadline = content.hero?.headline || content.businessName || 'Welcome';
+  const heroSubtitle = content.hero?.subtitle || content.tagline || 'Professional services';
+  const aboutTitle = content.about?.title || 'About Us';
+  const servicesTitle = 'Our Services';
+  const contactTitle = 'Get In Touch';
+
+  // Replace H2s - Just use hero headline for main ones, content for others
+  const h2Replacements = [heroHeadline, aboutTitle, servicesTitle, contactTitle];
+  let h2Index = 0;
+
   allH2Headings.forEach(heading => {
-    const regex = new RegExp(`<h2[^>]*>[^<]*${heading}[^<]*<\\/h2>`, 'gi');
-    result = result.replace(regex, `<h2>${replacementHeadline}</h2>`);
+    const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(<h2[^>]*>)[^<]*${escapedHeading}[^<]*(<\\/h2>)`, 'gi');
+    const replacement = h2Replacements[Math.min(h2Index, h2Replacements.length - 1)];
+    result = result.replace(regex, `$1${replacement}$2`);
+    if (result.match(regex)) h2Index++; // Only increment if we actually replaced something
   });
   
-  // 5. ALL H3 HEADINGS (59 total!)
+  // 5. H3 HEADINGS - Use feature/service titles
   const allH3Headings = [
     'Magna etiam', 'Ipsum dolor', 'Sed feugiat', 'Enim phasellus',
     'Sed lorem adipiscing', 'Accumsan integer', 'Aliquam', 'Tempus',
@@ -177,15 +189,22 @@ export function injectContent(
     'Ultrices Magna', 'Ipsum Lorem', 'Magna Risus', 'Tempus Dolor',
     'Elit', 'Amet', 'Consectetur', 'Adipiscing'
   ];
-  
-  const shortReplacement = content.businessName || 'Services';
-  
+
+  // Use feature titles if available, otherwise generic
+  const featureTitles = content.features?.map((f: any) => f.title) || content.services?.map((s: any) => s.title) || [];
+  let h3Index = 0;
+
   allH3Headings.forEach(heading => {
-    const regex = new RegExp(`<h3[^>]*>(<a[^>]*>)?${heading}(<\\/a>)?<\\/h3>`, 'gi');
-    result = result.replace(regex, `<h3>$1${shortReplacement}$2</h3>`);
+    const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(<h3[^>]*>)(<a[^>]*>)?${escapedHeading}(<\\/a>)?(<\\/h3>)`, 'gi');
+    const replacement = featureTitles[h3Index] || content.businessName || 'Our Service';
+    result = result.replace(regex, `$1$2${replacement}$3$4`);
+    if (result.match(regex) && featureTitles.length > 0) {
+      h3Index = (h3Index + 1) % featureTitles.length; // Cycle through features
+    }
   });
   
-  // 6. ALL LOREM IPSUM PHRASES
+  // 6. ALL LOREM IPSUM PHRASES - Use actual content
   const allLoremPhrases = [
     'Etiam quis viverra lorem',
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
@@ -221,17 +240,30 @@ export function injectContent(
     'Nam maximus erat id euismod',
     'Congue imperdiet'
   ];
-  
-  const replacementText = content.about?.text?.split('\n\n')[0] || content.hero?.subtitle || `${content.businessName} provides professional services`;
-  const miniReplacement = content.hero?.subtitle || 'Professional services';
-  
+
+  // Build array of replacement texts from content
+  const replacementTexts = [
+    heroSubtitle,
+    content.about?.text || content.hero?.subtitle,
+    ...(content.features || content.services || []).map((f: any) => f.description),
+    content.tagline,
+    `${content.businessName} provides professional services.`
+  ].filter(Boolean); // Remove nulls
+
+  let textIndex = 0;
+
   allLoremPhrases.forEach(phrase => {
-    const useShort = phrase.length < 30;
-    const replaceWith = useShort ? miniReplacement : replacementText;
-    
-    const regex = new RegExp(`<p[^>]*>[^<]*${phrase}[^<]*<\\/p>`, 'gi');
-    result = result.replace(regex, `<p>${replaceWith}</p>`);
+    const escapedPhrase = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(<p[^>]*>)[^<]*${escapedPhrase}[^<]*(<\\/p>)`, 'gi');
+    const replacement = replacementTexts[textIndex % replacementTexts.length];
+    result = result.replace(regex, `$1${replacement}$2`);
+    if (result.match(regex)) textIndex++; // Cycle through different content
   });
+
+  // AGGRESSIVE: Replace any remaining lorem ipsum patterns
+  result = result.replace(/<p[^>]*>[^<]*lorem[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
+  result = result.replace(/<p[^>]*>[^<]*ipsum[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
+  result = result.replace(/<p[^>]*>[^<]*dolor sit amet[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
   
   // 7. Replace images
   if (images.length > 0) {
