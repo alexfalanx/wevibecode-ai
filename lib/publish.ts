@@ -411,3 +411,63 @@ export function generateCnameValue(baseUrl?: string): string {
   const base = baseUrl || process.env.NEXT_PUBLIC_BASE_URL || 'wevibecode.ai';
   return base.replace(/^https?:\/\//, '');
 }
+
+/**
+ * Extract all images from HTML
+ */
+export interface SiteImage {
+  id: string;
+  src: string;
+  alt: string;
+  selector: string;
+  width?: number;
+  height?: number;
+}
+
+export function extractImages(html: string): SiteImage[] {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const images: SiteImage[] = [];
+  const imgElements = doc.querySelectorAll('img');
+
+  imgElements.forEach((img, index) => {
+    const id = `img-${index}`;
+    const src = img.getAttribute('src') || '';
+    const alt = img.getAttribute('alt') || '';
+    const width = img.getAttribute('width') ? parseInt(img.getAttribute('width')!) : undefined;
+    const height = img.getAttribute('height') ? parseInt(img.getAttribute('height')!) : undefined;
+
+    // Generate selector
+    const parent = img.parentElement;
+    const tagName = parent?.tagName.toLowerCase() || 'body';
+    const siblings = parent ? Array.from(parent.children) : [];
+    const imgIndex = siblings.filter(el => el.tagName === 'IMG').indexOf(img) + 1;
+    const selector = `${tagName} > img:nth-of-type(${imgIndex})`;
+
+    images.push({
+      id,
+      src,
+      alt,
+      selector,
+      width,
+      height
+    });
+  });
+
+  return images;
+}
+
+/**
+ * Replace an image in HTML
+ */
+export function replaceImage(html: string, selector: string, newSrc: string): string {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+
+  const img = doc.querySelector(selector);
+  if (img) {
+    img.setAttribute('src', newSrc);
+  }
+
+  return doc.documentElement.outerHTML;
+}
