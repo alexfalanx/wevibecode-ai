@@ -111,17 +111,32 @@ export function injectContent(
     `Our team of professionals is dedicated to your success.`
   ].filter(Boolean);
 
-  // 1. SYSTEMATICALLY REPLACE ALL H1 TAGS
+  // 1. SYSTEMATICALLY REPLACE ALL H1 TAGS (PRESERVE NESTED ELEMENTS)
   const h1Elements = document.querySelectorAll('h1');
   h1Elements.forEach((h1) => {
-    // Keep the structure but replace text
+    // PHASE 2 FIX: Preserve nested elements by targeting text nodes only
     const links = h1.querySelectorAll('a');
     if (links.length > 0) {
+      // Replace text in links while preserving link structure
       links.forEach(link => {
-        link.textContent = businessName;
+        // Find text nodes within link
+        const textNodes = Array.from(link.childNodes).filter(node => node.nodeType === 3);
+        if (textNodes.length > 0) {
+          textNodes[0].textContent = businessName;
+          textNodes.slice(1).forEach(node => node.textContent = '');
+        } else {
+          link.textContent = businessName;
+        }
       });
     } else {
-      h1.textContent = businessName;
+      // Find first text node in h1
+      const textNodes = Array.from(h1.childNodes).filter(node => node.nodeType === 3);
+      if (textNodes.length > 0 && textNodes[0].textContent?.trim()) {
+        textNodes[0].textContent = businessName;
+        textNodes.slice(1).forEach(node => node.textContent = '');
+      } else {
+        h1.textContent = businessName;
+      }
     }
   });
   console.log(`✅ Replaced ${h1Elements.length} H1 tags with business name`);
@@ -189,24 +204,32 @@ export function injectContent(
   });
   console.log(`✅ Replaced ${pElements.length} paragraph tags with business content`);
 
-  // 5. REPLACE MENU ITEMS
-  const menuLinks = document.querySelectorAll('nav a, #nav a, .menu a');
+  // 5. REPLACE MENU ITEMS (EXPANDED SELECTORS, HIDE INSTEAD OF REMOVE)
+  const menuLinks = document.querySelectorAll(
+    'nav a, #nav a, .menu a, header a, ul.nav a, .navigation a, #menu a'
+  );
+  let menuLinksReplaced = 0;
   menuLinks.forEach(link => {
     const text = link.textContent?.trim().toLowerCase() || '';
     if (text.includes('generic') || text.includes('dropdown')) {
       link.textContent = 'About';
       link.setAttribute('href', '#about');
+      menuLinksReplaced++;
     } else if (text.includes('elements') || text.includes('layouts')) {
       link.textContent = 'Services';
       link.setAttribute('href', '#services');
+      menuLinksReplaced++;
     } else if (text.includes('sign up') || text.includes('signup')) {
       link.textContent = 'Contact';
       link.setAttribute('href', '#contact');
+      menuLinksReplaced++;
     } else if (text.includes('log in') || text.includes('login')) {
-      link.remove();
+      // PHASE 2 FIX: Hide instead of remove to preserve menu structure
+      (link as HTMLElement).style.display = 'none';
+      menuLinksReplaced++;
     }
   });
-  console.log(`✅ Replaced menu navigation links`);
+  console.log(`✅ Updated ${menuLinksReplaced} menu navigation links`);
 
   // 6. REPLACE CTA BUTTONS
   const buttons = document.querySelectorAll('button, .button, input[type="submit"], input[type="button"]');
@@ -228,19 +251,24 @@ export function injectContent(
     titleElement.textContent = `${businessName} - ${heroSubtitle}`;
   }
 
-  // 8. CLEAN FOOTER - Remove HTML5 UP credits
-  const footerElements = document.querySelectorAll('footer, #footer, .copyright');
-  footerElements.forEach(footer => {
-    // Replace copyright text
-    const copyrightText = footer.textContent || '';
-    if (copyrightText.includes('Untitled') || copyrightText.includes('HTML5 UP')) {
-      footer.innerHTML = `<p class="copyright">&copy; ${businessName}. All rights reserved.</p>`;
+  // 8. CLEAN FOOTER - Remove HTML5 UP credits (PRESERVE STRUCTURE)
+  // PHASE 2 FIX: Target specific elements instead of replacing entire innerHTML
+  const copyrightParagraphs = document.querySelectorAll(
+    'footer p.copyright, #footer p.copyright, .copyright, footer p'
+  );
+  copyrightParagraphs.forEach(p => {
+    const text = p.textContent || '';
+    if (text.includes('Untitled') || text.includes('HTML5 UP') || text.includes('Design:')) {
+      // Replace just the text content, preserving paragraph element and classes
+      p.textContent = `© ${businessName}. All rights reserved.`;
     }
   });
 
-  // Remove design credit links
+  // Hide (don't remove) design credit links to preserve layout
   const designLinks = document.querySelectorAll('a[href*="html5up"]');
-  designLinks.forEach(link => link.remove());
+  designLinks.forEach(link => {
+    (link as HTMLElement).style.display = 'none';
+  });
 
   console.log(`✅ Cleaned footer and removed template credits`);
 
@@ -271,18 +299,38 @@ export function injectContent(
     console.log(`✅ Added logo to header`);
   }
 
-  // 11. ADD HERO BACKGROUND IMAGE
+  // 11. ADD HERO BACKGROUND IMAGE (EXPANDED SELECTORS)
   if (images.length > 0) {
     const heroImage = images[0].url;
+
+    // PHASE 2 FIX: Expanded selectors for hero sections
+    // Try multiple common hero section patterns
     result = result.replace(
       /(<section[^>]*id=["']banner["'][^>]*)(>)/gi,
+      `$1 style="background-image: url('${heroImage}'); background-size: cover; background-position: center; background-attachment: fixed;"$2`
+    );
+    result = result.replace(
+      /(<section[^>]*id=["']hero["'][^>]*)(>)/gi,
+      `$1 style="background-image: url('${heroImage}'); background-size: cover; background-position: center; background-attachment: fixed;"$2`
+    );
+    result = result.replace(
+      /(<section[^>]*id=["']intro["'][^>]*)(>)/gi,
       `$1 style="background-image: url('${heroImage}'); background-size: cover; background-position: center; background-attachment: fixed;"$2`
     );
     result = result.replace(
       /(<section[^>]*class=["'][^"']*banner[^"']*["'][^>]*)(>)/gi,
       `$1 style="background-image: url('${heroImage}'); background-size: cover; background-position: center;"$2`
     );
-    console.log(`✅ Added hero background image`);
+    result = result.replace(
+      /(<section[^>]*class=["'][^"']*hero[^"']*["'][^>]*)(>)/gi,
+      `$1 style="background-image: url('${heroImage}'); background-size: cover; background-position: center;"$2`
+    );
+    result = result.replace(
+      /(<div[^>]*id=["']header["'][^>]*)(>)/gi,
+      `$1 style="background-image: url('${heroImage}'); background-size: cover; background-position: center;"$2`
+    );
+
+    console.log(`✅ Added hero background image with expanded selectors`);
   }
 
   console.log(`✅ v6.0 DOM-BASED INJECTION COMPLETE - NO LOREM IPSUM LEFT!`);

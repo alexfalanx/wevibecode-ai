@@ -111,11 +111,12 @@ export async function POST(request: NextRequest) {
       console.log(`🎨 Using template: ${templateId}`);
       console.log(`🔍 DEBUG - templateId raw: "${templateId}" (type: ${typeof templateId})`);
 
-      // CRITICAL: Normalize template ID to lowercase for case-insensitive matching
-      const normalizedTemplateId = templateId.toLowerCase().trim();
-      console.log(`🔍 DEBUG - normalized: "${normalizedTemplateId}"`);
+      // PHASE 1 FIX: Robust template ID normalization
+      // Handle spaces, hyphens, and mixed case
+      const normalizedId = templateId?.trim().toLowerCase().replace(/\s+/g, '-');
+      console.log(`🔍 DEBUG - normalized: "${normalizedId}"`);
 
-      // Map template IDs to actual folder names (case sensitive!)
+      // Map template IDs to actual folder names (must match file system exactly!)
       const templateNameMap: { [key: string]: string } = {
         'alpha': 'Alpha',
         'dimension': 'Dimension',
@@ -123,18 +124,59 @@ export async function POST(request: NextRequest) {
         'hyperspace': 'Hyperspace',
         'massively': 'Massively',
         'phantom': 'Phantom',
-        'solid-state': 'Solid State', // CRITICAL: Has space!
+        'solid-state': 'Solid State', // CRITICAL: Has space in folder name!
         'spectral': 'Spectral',
         'stellar': 'Stellar',
         'story': 'Story',
       };
 
-      const templateName = templateNameMap[normalizedTemplateId] || templateId.charAt(0).toUpperCase() + templateId.slice(1);
-      console.log(`🔍 DEBUG - mapped to folder name: "${templateName}"`);
-      console.log(`🔍 DEBUG - match found: ${!!templateNameMap[normalizedTemplateId]}`);
+      // Try direct lookup, then reverse lookup, then smart fallback
+      let templateName = templateNameMap[normalizedId];
 
-      finalHtml = generateFromTemplate(templateName, content, images, logoUrl, colors);
-      console.log(`✅ Template website built: ${Math.round(finalHtml.length / 1024)}KB`);
+      if (!templateName) {
+        // Reverse lookup: find by comparing folder names
+        templateName = Object.values(templateNameMap).find(
+          name => name.toLowerCase().replace(/\s+/g, '-') === normalizedId
+        ) as string;
+      }
+
+      if (!templateName) {
+        // Smart fallback: convert kebab-case to Title Case with spaces
+        templateName = normalizedId
+          .split('-')
+          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+        console.warn(`⚠️ Template ID "${templateId}" normalized to "${normalizedId}" not found in map. Using fallback: "${templateName}"`);
+      }
+
+      console.log(`🔍 DEBUG - mapped to folder name: "${templateName}"`);
+      console.log(`🔍 DEBUG - direct match: ${!!templateNameMap[normalizedId]}`);
+
+      // Generate with error handling and fallback
+      try {
+        finalHtml = generateFromTemplate(templateName, content, images, logoUrl, colors);
+
+        // CRITICAL: Check if generation failed (blank page)
+        if (!finalHtml || finalHtml.length < 100) {
+          throw new Error(`Template generation failed - output too small (${finalHtml.length} bytes)`);
+        }
+
+        console.log(`✅ Template website built: ${Math.round(finalHtml.length / 1024)}KB`);
+      } catch (error) {
+        console.error(`❌ Template generation error for "${templateName}":`, error);
+
+        // Fallback to Alpha template as default
+        console.log(`🔄 Falling back to Alpha template...`);
+        finalHtml = generateFromTemplate('Alpha', content, images, logoUrl, colors);
+
+        // Add user-visible warning in HTML
+        if (finalHtml) {
+          finalHtml = finalHtml.replace(
+            '<body',
+            `<body><div style="background: #ff9800; color: white; padding: 10px; text-align: center; font-weight: bold;">Template "${templateName}" unavailable - using default template</div><body style="display:none"`
+          );
+        }
+      }
     } else {
       // Use custom AI-generated layout
       console.log(`🏗️  Building custom website for ${websiteType}...`);
