@@ -101,19 +101,22 @@ export function injectContent(
   result = result.replace(/designed by HTML5 UP/gi, '');
   result = result.replace(/designed by/gi, '');
   
-  // 3. NUCLEAR: Replace ALL template names
+  // 3. NUCLEAR: Replace ALL template names and H1 tags
   const allTemplateNames = [
-    'Alpha', 'Dimension', 'Spectral', 'Stellar', 'Phantom', 
+    'Alpha', 'Dimension', 'Spectral', 'Stellar', 'Phantom',
     'Forty', 'Solid State', 'Story', 'Massively', 'Hyperspace'
   ];
-  
+
   allTemplateNames.forEach(name => {
     const regex = new RegExp(`\\b${name}\\b`, 'gi');
     result = result.replace(regex, content.businessName || 'Your Business');
-    
+
     const titleTag = new RegExp(`<title>${name}[^<]*<\\/title>`, 'gi');
     result = result.replace(titleTag, `<title>${content.businessName || 'Your Business'}</title>`);
   });
+
+  // Replace ALL H1 tags with business name
+  result = result.replace(/<h1[^>]*>([^<]*)<\/h1>/gi, `<h1>${content.businessName || 'Your Business'}</h1>`);
   
   // 4. SMART H2 REPLACEMENT - First H2 is hero, rest are section titles
   const allH2Headings = [
@@ -264,6 +267,22 @@ export function injectContent(
   result = result.replace(/<p[^>]*>[^<]*lorem[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
   result = result.replace(/<p[^>]*>[^<]*ipsum[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
   result = result.replace(/<p[^>]*>[^<]*dolor sit amet[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
+  result = result.replace(/<p[^>]*>[^<]*consectetur adipiscing[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
+  result = result.replace(/<p[^>]*>[^<]*sed do eiusmod[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
+  result = result.replace(/<p[^>]*>[^<]*tempor incididunt[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
+
+  // Replace common placeholder paragraphs
+  result = result.replace(/<p[^>]*>Aliquam ut ex ut augue[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
+  result = result.replace(/<p[^>]*>Another[^<]*site[^<]*template[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
+  result = result.replace(/<p[^>]*>Another[^<]*responsive[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
+  result = result.replace(/<p[^>]*>crafted by[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
+
+  // Spectral specific banner text
+  result = result.replace(/Another fine responsive<br \/>[^<]*site template freebie<br \/>[^<]*crafted by[^<]*/gi, heroSubtitle);
+
+  // Replace multiline lorem patterns in paragraphs (with <br> tags)
+  result = result.replace(/<p[^>]*>[^<]*Aliquam ut ex[^<]*<br[^>]*>[^<]*fringilla[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
+  result = result.replace(/<p[^>]*>[^<]*Arcu aliquet[^<]*<br[^>]*>[^<]*eget augue[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
   
   // 7. Replace images
   if (images.length > 0) {
