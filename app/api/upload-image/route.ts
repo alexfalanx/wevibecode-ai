@@ -84,7 +84,10 @@ export async function POST(request: NextRequest) {
       .from('user-images')
       .getPublicUrl(storagePath);
 
-    console.log(`✅ Image uploaded: ${publicUrl}`);
+    console.log(`✅ Image uploaded successfully`);
+    console.log(`   Storage path: ${storagePath}`);
+    console.log(`   Public URL: ${publicUrl}`);
+    console.log(`   Bucket: user-images`);
 
     // Save metadata to database
     const { data: imageRecord, error: dbError } = await supabase

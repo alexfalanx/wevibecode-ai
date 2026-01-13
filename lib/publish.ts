@@ -424,7 +424,11 @@ export interface SiteImage {
   height?: number;
 }
 
-export function extractImages(html: string): SiteImage[] {
+/**
+ * Extract images and add data attributes for tracking
+ * Returns both the images and the modified HTML
+ */
+export function extractImagesWithHtml(html: string): { images: SiteImage[]; html: string } {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
   const images: SiteImage[] = [];
@@ -437,12 +441,11 @@ export function extractImages(html: string): SiteImage[] {
     const width = img.getAttribute('width') ? parseInt(img.getAttribute('width')!) : undefined;
     const height = img.getAttribute('height') ? parseInt(img.getAttribute('height')!) : undefined;
 
-    // Generate selector
-    const parent = img.parentElement;
-    const tagName = parent?.tagName.toLowerCase() || 'body';
-    const siblings = parent ? Array.from(parent.children) : [];
-    const imgIndex = siblings.filter(el => el.tagName === 'IMG').indexOf(img) + 1;
-    const selector = `${tagName} > img:nth-of-type(${imgIndex})`;
+    // Add unique data attribute to each image for reliable selection
+    (img as HTMLElement).setAttribute('data-img-id', id);
+
+    // Use data attribute as selector - this is unique and persists across HTML changes
+    const selector = `[data-img-id="${id}"]`;
 
     images.push({
       id,
@@ -454,6 +457,17 @@ export function extractImages(html: string): SiteImage[] {
     });
   });
 
+  return {
+    images,
+    html: doc.documentElement.outerHTML
+  };
+}
+
+/**
+ * Extract images from HTML (backward compatible version)
+ */
+export function extractImages(html: string): SiteImage[] {
+  const { images } = extractImagesWithHtml(html);
   return images;
 }
 
@@ -464,9 +478,15 @@ export function replaceImage(html: string, selector: string, newSrc: string): st
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
 
+  console.log('🔍 Looking for image with selector:', selector);
   const img = doc.querySelector(selector);
+
   if (img) {
+    const oldSrc = img.getAttribute('src');
     img.setAttribute('src', newSrc);
+    console.log('✅ Image src updated:', { oldSrc, newSrc });
+  } else {
+    console.error('❌ Image not found with selector:', selector);
   }
 
   return doc.documentElement.outerHTML;

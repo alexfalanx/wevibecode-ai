@@ -5,9 +5,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { ChromePicker } from 'react-color';
-import { extractColorPalette, extractEditableElements, extractEditableElementsWithHtml, applyTextEdit, applyColorEdit } from '@/lib/publish';
+import { extractColorPalette, extractEditableElements, extractEditableElementsWithHtml, applyTextEdit, applyColorEdit, extractImages, extractImagesWithHtml, replaceImage, type SiteImage } from '@/lib/publish';
 import type { ColorPalette, EditableElement } from '@/types/publish';
-import { X, Type, Palette, Save, RotateCcw } from 'lucide-react';
+import { X, Type, Palette, Save, RotateCcw, Image as ImageIcon } from 'lucide-react';
+import ImageUploader from './ImageUploader';
+import ImageGallery from './ImageGallery';
 
 interface SiteEditorProps {
   previewId: string;
@@ -17,7 +19,7 @@ interface SiteEditorProps {
 }
 
 export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: SiteEditorProps) {
-  const [editMode, setEditMode] = useState<'text' | 'color'>('text');
+  const [editMode, setEditMode] = useState<'text' | 'color' | 'images'>('text');
   const [editedHtml, setEditedHtml] = useState(htmlContent);
   const [colorPalette, setColorPalette] = useState<ColorPalette>({});
   const [editableElements, setEditableElements] = useState<EditableElement[]>([]);
@@ -28,19 +30,39 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [tempColor, setTempColor] = useState<string>('');
 
+  // Image management state
+  const [siteImages, setSiteImages] = useState<SiteImage[]>([]);
+  const [replacingImage, setReplacingImage] = useState<SiteImage | null>(null);
+  const [showImageSelector, setShowImageSelector] = useState(false);
+  const [refreshGallery, setRefreshGallery] = useState(0);
+  const [imageReplaceSuccess, setImageReplaceSuccess] = useState(false);
+
   useEffect(() => {
     // Extract editable elements and color palette on mount
     // Use the version that returns both elements and HTML with data attributes
-    const { elements, html } = extractEditableElementsWithHtml(htmlContent);
+    const { elements, html: htmlWithEditableIds } = extractEditableElementsWithHtml(htmlContent);
     const palette = extractColorPalette(htmlContent);
+
+    // Now extract images and add data-img-id attributes
+    const { images, html: finalHtml } = extractImagesWithHtml(htmlWithEditableIds);
+
+    console.log('📸 Initialized with', images.length, 'images');
 
     setEditableElements(elements);
     setColorPalette(palette);
+    setSiteImages(images);
 
-    // Initialize editedHtml with the version that has data-editable-id attributes
+    // Initialize editedHtml with the version that has both data-editable-id and data-img-id attributes
     // This ensures selectors work correctly from the start
-    setEditedHtml(html);
+    setEditedHtml(finalHtml);
   }, [htmlContent]);
+
+  // Re-extract images when edited HTML changes (for after replacements)
+  useEffect(() => {
+    const { images } = extractImagesWithHtml(editedHtml);
+    console.log('🔄 Re-extracted', images.length, 'images after HTML change');
+    setSiteImages(images);
+  }, [editedHtml]);
 
   const handleTextEdit = (element: EditableElement) => {
     setSelectedElement(element);
@@ -90,6 +112,42 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
     setShowColorPicker(false);
     setSelectedColor(null);
     setTempColor('');
+  };
+
+  const handleReplaceImageClick = (image: SiteImage) => {
+    console.log('Opening replacement modal for:', image.id);
+    setReplacingImage(image);
+    setShowImageSelector(true);
+  };
+
+  const handleSelectReplacement = (newUrl: string) => {
+    if (!replacingImage) return;
+
+    console.log('🔄 Replacing image:', {
+      selector: replacingImage.selector,
+      oldSrc: replacingImage.src,
+      newSrc: newUrl
+    });
+
+    // Replace the image in HTML
+    const newHtml = replaceImage(editedHtml, replacingImage.selector, newUrl);
+
+    console.log('✅ Image replaced, new HTML length:', newHtml.length);
+
+    // Update the HTML - this will trigger the useEffect to re-extract images
+    setEditedHtml(newHtml);
+
+    // Close modal and reset state
+    setShowImageSelector(false);
+    setReplacingImage(null);
+
+    // Show success message
+    setImageReplaceSuccess(true);
+    setTimeout(() => setImageReplaceSuccess(false), 2000);
+  };
+
+  const handleUploadComplete = () => {
+    setRefreshGallery(prev => prev + 1);
   };
 
   const handleSave = async () => {
@@ -150,6 +208,17 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
             <Palette className="w-5 h-5" />
             Edit Colors
           </button>
+          <button
+            onClick={() => setEditMode('images')}
+            className={`flex-1 flex items-center justify-center gap-2 p-3 font-medium transition ${
+              editMode === 'images'
+                ? 'bg-indigo-50 text-indigo-600 border-b-2 border-indigo-600'
+                : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <ImageIcon className="w-5 h-5" />
+            Edit Images
+          </button>
         </div>
 
         {/* Content */}
@@ -207,6 +276,93 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {editMode === 'images' && (
+            <div className="space-y-6">
+              {/* Debug Info */}
+              <details className="text-xs bg-gray-50 p-2 rounded">
+                <summary className="cursor-pointer font-mono text-gray-600">Debug Info (click to expand)</summary>
+                <div className="mt-2 space-y-1 font-mono">
+                  <div>Total images: {siteImages.length}</div>
+                  {siteImages.map((img, idx) => (
+                    <div key={idx} className="pl-2 text-gray-500">
+                      {idx + 1}. {img.selector} → {img.src.substring(0, 50)}...
+                    </div>
+                  ))}
+                </div>
+              </details>
+
+              {/* Success Message */}
+              {imageReplaceSuccess && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+                  <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-sm font-medium text-green-800">Image replaced successfully!</span>
+                </div>
+              )}
+
+              {/* Current Images in Site */}
+              {siteImages.length > 0 ? (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                    Current Images in Site ({siteImages.length})
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {siteImages.map((image) => (
+                      <div
+                        key={image.id}
+                        className="border rounded-lg overflow-hidden bg-white hover:border-indigo-300 transition"
+                      >
+                        <div className="aspect-video bg-gray-100 relative">
+                          <img
+                            src={image.src}
+                            alt={image.alt || 'Site image'}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="p-2">
+                          <p className="text-xs text-gray-600 truncate mb-2">
+                            {image.alt || 'No description'}
+                          </p>
+                          <button
+                            onClick={() => handleReplaceImageClick(image)}
+                            className="w-full px-3 py-1.5 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700 transition"
+                          >
+                            Replace Image
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center p-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                  <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-600">No images found in this site</p>
+                </div>
+              )}
+
+              {/* Upload New Image */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                  Upload New Image
+                </h3>
+                <ImageUploader onUploadComplete={handleUploadComplete} />
+              </div>
+
+              {/* Your Uploaded Images Gallery */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                  Your Uploaded Images
+                </h3>
+                <ImageGallery
+                  selectable={false}
+                  refreshTrigger={refreshGallery}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -314,6 +470,61 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
               >
                 Apply
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Selector Modal */}
+      {showImageSelector && replacingImage && (
+        <div
+          key={replacingImage.id}
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4"
+        >
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-bold">Select Replacement Image</h3>
+              <button
+                onClick={() => {
+                  setShowImageSelector(false);
+                  setReplacingImage(null);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-full transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+              {/* Upload Section */}
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">
+                  Upload New Image
+                </h4>
+                <ImageUploader onUploadComplete={handleUploadComplete} />
+              </div>
+
+              {/* Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">Or choose from your library</span>
+                </div>
+              </div>
+
+              {/* Gallery Section */}
+              <div>
+                <p className="text-sm text-gray-600 mb-4">
+                  Click on an image to use it as the replacement
+                </p>
+                <ImageGallery
+                  selectable={true}
+                  onSelectImage={handleSelectReplacement}
+                  refreshTrigger={refreshGallery}
+                />
+              </div>
             </div>
           </div>
         </div>

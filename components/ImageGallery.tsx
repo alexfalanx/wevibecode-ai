@@ -15,6 +15,10 @@ interface UserImage {
   created_at: string;
 }
 
+interface ImageLoadState {
+  [key: string]: 'loading' | 'loaded' | 'error';
+}
+
 interface ImageGalleryProps {
   onSelectImage?: (imageUrl: string) => void;
   selectable?: boolean;
@@ -31,6 +35,7 @@ export default function ImageGallery({
   const [error, setError] = useState<string | null>(null);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [imageLoadStates, setImageLoadStates] = useState<ImageLoadState>({});
 
   const fetchImages = async () => {
     try {
@@ -168,6 +173,20 @@ export default function ImageGallery({
         </button>
       </div>
 
+      {/* Debug Panel */}
+      {images.length > 0 && (
+        <details className="text-xs bg-yellow-50 border border-yellow-200 p-2 rounded">
+          <summary className="cursor-pointer font-mono text-yellow-800">🐛 Image URLs (click to debug)</summary>
+          <div className="mt-2 space-y-1 font-mono max-h-40 overflow-y-auto">
+            {images.map((img, idx) => (
+              <div key={idx} className="pl-2 text-gray-600 break-all">
+                {idx + 1}. {img.url}
+              </div>
+            ))}
+          </div>
+        </details>
+      )}
+
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {images.map((image) => (
           <div
@@ -193,26 +212,24 @@ export default function ImageGallery({
 
               {/* Selected Checkmark */}
               {selectedImageId === image.id && (
-                <div className="absolute top-2 right-2 bg-indigo-500 rounded-full p-1">
+                <div className="absolute top-2 right-2 bg-indigo-500 rounded-full p-1 z-20">
                   <CheckCircle2 className="w-5 h-5 text-white" />
                 </div>
               )}
 
-              {/* Hover Overlay */}
-              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-center justify-center">
-                <button
-                  onClick={(e) => handleDelete(image.id, e)}
-                  disabled={deletingId === image.id}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg disabled:opacity-50"
-                  title="Delete image"
-                >
-                  {deletingId === image.id ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <Trash2 className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
+              {/* Delete Button - Only shows on hover */}
+              <button
+                onClick={(e) => handleDelete(image.id, e)}
+                disabled={deletingId === image.id}
+                className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg disabled:opacity-50 z-20"
+                title="Delete image"
+              >
+                {deletingId === image.id ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+              </button>
             </div>
 
             {/* Image Info */}
