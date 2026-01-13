@@ -1,8 +1,9 @@
 // templates/template-system.ts
-// v5.1 COMPLETE - ALL PHRASES FROM ALL 10 TEMPLATES
+// v6.0 - DOM-BASED SYSTEMATIC REPLACEMENT
 
 import fs from 'fs';
 import path from 'path';
+import { JSDOM } from 'jsdom';
 
 const TEMPLATE_MAPPING: { [key: string]: string[] } = {
   restaurant: ['Alpha', 'Spectral', 'Stellar'],
@@ -73,7 +74,7 @@ function replaceIcons(html: string): string {
   return result;
 }
 
-// v5.1 COMPLETE - ALL TEMPLATES, ALL PHRASES
+// v6.0 - DOM-BASED SYSTEMATIC REPLACEMENT
 export function injectContent(
   html: string,
   content: any,
@@ -81,269 +82,210 @@ export function injectContent(
   logoUrl: string,
   colors: any
 ): string {
-  let result = html;
-  
-  console.log(`📝 v5.1 COMPLETE INJECTION for: ${content.businessName}`);
-  
-  // 1. FOOTER: Replace "Untitled" and copyright
-  result = result.replace(/&copy;\s*Untitled[^<]*/gi, `&copy; ${content.businessName}`);
-  result = result.replace(/©\s*Untitled[^<]*/gi, `© ${content.businessName}`);
-  result = result.replace(/Untitled Inc/gi, content.businessName);
-  result = result.replace(/All rights reserved\./gi, '');
-  result = result.replace(/All rights reserved/gi, '');
-  result = result.replace(/<li>Design:\s*<a[^>]*>HTML5 UP<\/a><\/li>/gi, '');
-  result = result.replace(/Design:\s*<a[^>]*>HTML5 UP<\/a>/gi, '');
-  result = result.replace(/Design:\s*HTML5 UP/gi, '');
-  
-  // 2. NUCLEAR: Replace "by HTML5 UP" everywhere
-  result = result.replace(/<span[^>]*>by HTML5 UP<\/span>/gi, '');
-  result = result.replace(/by HTML5 UP/gi, '');
-  result = result.replace(/designed by HTML5 UP/gi, '');
-  result = result.replace(/designed by/gi, '');
-  
-  // 3. NUCLEAR: Replace ALL template names and H1 tags
-  const allTemplateNames = [
-    'Alpha', 'Dimension', 'Spectral', 'Stellar', 'Phantom',
-    'Forty', 'Solid State', 'Story', 'Massively', 'Hyperspace'
-  ];
+  console.log(`📝 v6.0 DOM-BASED INJECTION for: ${content.businessName}`);
 
-  allTemplateNames.forEach(name => {
-    const regex = new RegExp(`\\b${name}\\b`, 'gi');
-    result = result.replace(regex, content.businessName || 'Your Business');
+  // Parse HTML with jsdom
+  const dom = new JSDOM(html);
+  const document = dom.window.document;
 
-    const titleTag = new RegExp(`<title>${name}[^<]*<\\/title>`, 'gi');
-    result = result.replace(titleTag, `<title>${content.businessName || 'Your Business'}</title>`);
-  });
-
-  // Replace ALL H1 tags with business name
-  result = result.replace(/<h1[^>]*>([^<]*)<\/h1>/gi, `<h1>${content.businessName || 'Your Business'}</h1>`);
-
-  // Replace menu items with actual sections
-  result = result.replace(/<a[^>]*>Generic<\/a>/gi, '<a href="#about">About</a>');
-  result = result.replace(/<a[^>]*>Elements<\/a>/gi, '<a href="#services">Services</a>');
-  result = result.replace(/<a[^>]*>Sign Up<\/a>/gi, '<a href="#contact">Contact</a>');
-  result = result.replace(/<a[^>]*>Log In<\/a>/gi, ''); // Remove login link
-
-  // Replace CTA buttons
-  const ctaText = content.hero?.cta || 'Get Started';
-  result = result.replace(/Activate/gi, ctaText);
-  result = result.replace(/Learn More/gi, 'Discover More');
-  
-  // 4. SMART H2 REPLACEMENT - First H2 is hero, rest are section titles
-  const allH2Headings = [
-    'Introducing the ultimate mobile app',
-    'Sign up for beta access',
-    'Massa libero',
-    'Sed ipsum dolor',
-    'Feugiat consequat',
-    'Ultricies aliquam',
-    'What we do',
-    'Get in touch',
-    'And this is a massive headline',
-    'Sed magna ipsum faucibus',
-    'Primis eget imperdiet lorem',
-    'Ante mattis interdum dolor',
-    'Tempus sed nulla imperdiet',
-    'Odio magna sed consectetur',
-    'Augue lorem primis vestibulum',
-    'This is Solid State',
-    'Magna arcu feugiat',
-    'Tempus adipiscing',
-    'Nullam dignissim',
-    'Vitae phasellus',
-    'Arcu aliquet vel lobortis',
-    'Magna primis lobortis sed ullamcorper',
-    'Tortor dolore feugiat elementum magna',
-    'Augue eleifend aliquet sed condimentum',
-    'Accumsan mus tortor nunc aliquet',
-    'Arcue ut vel commodo',
-    'Ipsum sed adipiscing',
-    'Magna veroeros',
-    'Ipsum consequat',
-    'Congue imperdiet',
-    'Aliquam sed mauris',
-    'Etiam feugiat',
-    'Magna etiam feugiat',
-    'Pharetra etiam nulla',
-    'Massa sed condimentum',
-    'Ipsum sed consequat'
-  ];
-
-  // Build replacement text for different sections
-  const heroHeadline = content.hero?.headline || content.businessName || 'Welcome';
-  const heroSubtitle = content.hero?.subtitle || content.tagline || 'Professional services';
+  // Prepare content arrays
+  const businessName = content.businessName || 'Your Business';
+  const heroHeadline = content.hero?.headline || businessName;
+  const heroSubtitle = content.hero?.subtitle || content.tagline || 'Professional services you can trust';
   const aboutTitle = content.about?.title || 'About Us';
-  const servicesTitle = 'Our Services';
-  const contactTitle = 'Get In Touch';
+  const aboutText = content.about?.text || heroSubtitle;
+  const ctaText = content.hero?.cta || 'Get Started';
 
-  // Replace H2s - Just use hero headline for main ones, content for others
-  const h2Replacements = [heroHeadline, aboutTitle, servicesTitle, contactTitle];
-  let h2Index = 0;
+  // Build feature/service titles and descriptions
+  const featureTitles = content.features?.map((f: any) => f.title) || content.services?.map((s: any) => s.title) || ['Our Service', 'Quality', 'Expertise'];
+  const featureDescriptions = content.features?.map((f: any) => f.description) || content.services?.map((s: any) => s.description) || [heroSubtitle];
 
-  allH2Headings.forEach(heading => {
-    const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`(<h2[^>]*>)[^<]*${escapedHeading}[^<]*(<\\/h2>)`, 'gi');
-    const replacement = h2Replacements[Math.min(h2Index, h2Replacements.length - 1)];
-    result = result.replace(regex, `$1${replacement}$2`);
-    if (result.match(regex)) h2Index++; // Only increment if we actually replaced something
-  });
-  
-  // 5. H3 HEADINGS - Use feature/service titles
-  const allH3Headings = [
-    'Magna etiam', 'Ipsum dolor', 'Sed feugiat', 'Enim phasellus',
-    'Sed lorem adipiscing', 'Accumsan integer', 'Aliquam', 'Tempus',
-    'Magna', 'Ipsum', 'Consequat', 'Etiam', 'Nullam', 'Veroeros',
-    'Dolor', 'Ultricies', 'Dictum', 'Pretium', 'Lorem ipsum amet',
-    'Aliquam sed nullam', 'Sed erat ullam corper', 'Veroeros quis lorem',
-    'Urna quis bibendum', 'Aliquam urna dapibus', 'Lorem', 'Feugiat',
-    'Sed feugiat lorem', 'Nisl placerat', 'Ante fermentum', 'Fusce consequat',
-    'Arcu accumsan', 'Ac Augue Eget', 'Mus Scelerisque', 'Mauris Imperdiet',
-    'Aenean Primis', 'Tortor Ut', 'Amed sed feugiat', 'Dolor nullam',
-    'Ipsum Dolor', 'Feugiat Lorem', 'Magna Amet', 'Sed Tempus',
-    'Ultrices Magna', 'Ipsum Lorem', 'Magna Risus', 'Tempus Dolor',
-    'Elit', 'Amet', 'Consectetur', 'Adipiscing'
-  ];
+  // Build paragraph content pool
+  const paragraphPool = [
+    heroSubtitle,
+    aboutText,
+    ...featureDescriptions,
+    content.tagline,
+    `${businessName} is committed to providing exceptional service.`,
+    `We take pride in delivering quality results for our clients.`,
+    `Our team of professionals is dedicated to your success.`
+  ].filter(Boolean);
 
-  // Use feature titles if available, otherwise generic
-  const featureTitles = content.features?.map((f: any) => f.title) || content.services?.map((s: any) => s.title) || [];
-  let h3Index = 0;
-
-  allH3Headings.forEach(heading => {
-    const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`(<h3[^>]*>)(<a[^>]*>)?${escapedHeading}(<\\/a>)?(<\\/h3>)`, 'gi');
-    const replacement = featureTitles[h3Index] || content.businessName || 'Our Service';
-    result = result.replace(regex, `$1$2${replacement}$3$4`);
-    if (result.match(regex) && featureTitles.length > 0) {
-      h3Index = (h3Index + 1) % featureTitles.length; // Cycle through features
+  // 1. SYSTEMATICALLY REPLACE ALL H1 TAGS
+  const h1Elements = document.querySelectorAll('h1');
+  h1Elements.forEach((h1) => {
+    // Keep the structure but replace text
+    const links = h1.querySelectorAll('a');
+    if (links.length > 0) {
+      links.forEach(link => {
+        link.textContent = businessName;
+      });
+    } else {
+      h1.textContent = businessName;
     }
   });
-  
-  // 6. ALL LOREM IPSUM PHRASES - Use actual content
-  const allLoremPhrases = [
-    'Etiam quis viverra lorem',
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
-    'Lorem ipsum dolor sit amet',
-    'Aenean ornare velit lacus',
-    'Integer volutpat ante et accumsan',
-    'Adipiscing magna sed dolor',
-    'Sed nisl arcu euismod',
-    'Praesent eleifend dignissim',
-    'Nullam et orci eu lorem',
-    'Vivamus et sagittis',
-    'Mauris aliquet magna',
-    'Ipsum dolor sit amet',
-    'feugiat amet tempus',
-    'Lorem etiam nullam',
-    'Nisl sed aliquam',
-    'Blandit varius ut praesent',
-    'Condimentum turpis massa',
-    'Phasellus convallis elit',
-    'Morbi id ante sed ex',
-    'Donec imperdiet consequat',
-    'Suspendisse feugiat congue posuere',
-    'Nulla massa urna, fermentum eget',
-    'Nam elementum nisl et mi',
-    'Nam a orci mi, elementum ac arcu',
-    'Integer maximus varius lorem',
-    'Praesent eleifend lacus in lectus',
-    'Cras eu ornare dui curabitur lacinia',
-    'Donec eget ex magna',
-    'Donec hendrerit imperdiet',
-    'Cras turpis ante, nullam sit amet',
-    'Cras mattis ante fermentum',
-    'Nam maximus erat id euismod',
-    'Congue imperdiet'
-  ];
+  console.log(`✅ Replaced ${h1Elements.length} H1 tags with business name`);
 
-  // Build array of replacement texts from content
-  const replacementTexts = [
-    heroSubtitle,
-    content.about?.text || content.hero?.subtitle,
-    ...(content.features || content.services || []).map((f: any) => f.description),
-    content.tagline,
-    `${content.businessName} provides professional services.`
-  ].filter(Boolean); // Remove nulls
+  // 2. SYSTEMATICALLY REPLACE ALL H2 TAGS
+  const h2Elements = document.querySelectorAll('h2');
+  const h2Replacements = [heroHeadline, aboutTitle, 'Our Services', 'Get In Touch', heroHeadline];
+  h2Elements.forEach((h2, index) => {
+    const replacement = h2Replacements[index % h2Replacements.length];
+    // Keep links if they exist
+    const links = h2.querySelectorAll('a');
+    if (links.length > 0) {
+      links.forEach(link => {
+        link.textContent = replacement;
+      });
+    } else {
+      h2.textContent = replacement;
+    }
+  });
+  console.log(`✅ Replaced ${h2Elements.length} H2 tags with section titles`);
 
-  let textIndex = 0;
+  // 3. SYSTEMATICALLY REPLACE ALL H3 TAGS
+  const h3Elements = document.querySelectorAll('h3');
+  h3Elements.forEach((h3, index) => {
+    const replacement = featureTitles[index % featureTitles.length];
+    // Keep links if they exist
+    const links = h3.querySelectorAll('a');
+    if (links.length > 0) {
+      links.forEach(link => {
+        link.textContent = replacement;
+      });
+    } else {
+      h3.textContent = replacement;
+    }
+  });
+  console.log(`✅ Replaced ${h3Elements.length} H3 tags with feature titles`);
 
-  allLoremPhrases.forEach(phrase => {
-    const escapedPhrase = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`(<p[^>]*>)[^<]*${escapedPhrase}[^<]*(<\\/p>)`, 'gi');
-    const replacement = replacementTexts[textIndex % replacementTexts.length];
-    result = result.replace(regex, `$1${replacement}$2`);
-    if (result.match(regex)) textIndex++; // Cycle through different content
+  // 4. SYSTEMATICALLY REPLACE ALL PARAGRAPH TAGS
+  const pElements = document.querySelectorAll('p');
+  pElements.forEach((p, index) => {
+    // Skip if paragraph is empty or only has images
+    if (!p.textContent?.trim() || p.querySelector('img')) return;
+
+    // Skip if paragraph only contains links or buttons
+    const onlyHasLinks = Array.from(p.childNodes).every(node =>
+      node.nodeType === 3 && !node.textContent?.trim() ||
+      (node as any).tagName === 'A' ||
+      (node as any).tagName === 'BR'
+    );
+
+    if (onlyHasLinks) return;
+
+    // Replace with content from pool
+    const replacement = paragraphPool[index % paragraphPool.length];
+
+    // Keep <br> tags and structure, just replace text nodes
+    const textNodes = Array.from(p.childNodes).filter(node => node.nodeType === 3);
+    if (textNodes.length > 0 && textNodes[0].textContent) {
+      textNodes[0].textContent = replacement;
+      // Remove other text nodes
+      textNodes.slice(1).forEach(node => node.remove());
+    } else {
+      p.textContent = replacement;
+    }
+  });
+  console.log(`✅ Replaced ${pElements.length} paragraph tags with business content`);
+
+  // 5. REPLACE MENU ITEMS
+  const menuLinks = document.querySelectorAll('nav a, #nav a, .menu a');
+  menuLinks.forEach(link => {
+    const text = link.textContent?.trim().toLowerCase() || '';
+    if (text.includes('generic') || text.includes('dropdown')) {
+      link.textContent = 'About';
+      link.setAttribute('href', '#about');
+    } else if (text.includes('elements') || text.includes('layouts')) {
+      link.textContent = 'Services';
+      link.setAttribute('href', '#services');
+    } else if (text.includes('sign up') || text.includes('signup')) {
+      link.textContent = 'Contact';
+      link.setAttribute('href', '#contact');
+    } else if (text.includes('log in') || text.includes('login')) {
+      link.remove();
+    }
+  });
+  console.log(`✅ Replaced menu navigation links`);
+
+  // 6. REPLACE CTA BUTTONS
+  const buttons = document.querySelectorAll('button, .button, input[type="submit"], input[type="button"]');
+  buttons.forEach(button => {
+    const text = button.textContent?.trim().toLowerCase() || '';
+    if (text.includes('activate') || text.includes('get started') || text.includes('learn more')) {
+      if (button.tagName === 'INPUT') {
+        button.setAttribute('value', ctaText);
+      } else {
+        button.textContent = ctaText;
+      }
+    }
+  });
+  console.log(`✅ Replaced CTA buttons`);
+
+  // 7. REPLACE TITLE TAG
+  const titleElement = document.querySelector('title');
+  if (titleElement) {
+    titleElement.textContent = `${businessName} - ${heroSubtitle}`;
+  }
+
+  // 8. CLEAN FOOTER - Remove HTML5 UP credits
+  const footerElements = document.querySelectorAll('footer, #footer, .copyright');
+  footerElements.forEach(footer => {
+    // Replace copyright text
+    const copyrightText = footer.textContent || '';
+    if (copyrightText.includes('Untitled') || copyrightText.includes('HTML5 UP')) {
+      footer.innerHTML = `<p class="copyright">&copy; ${businessName}. All rights reserved.</p>`;
+    }
   });
 
-  // AGGRESSIVE: Replace any remaining lorem ipsum patterns
-  result = result.replace(/<p[^>]*>[^<]*lorem[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
-  result = result.replace(/<p[^>]*>[^<]*ipsum[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
-  result = result.replace(/<p[^>]*>[^<]*dolor sit amet[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
-  result = result.replace(/<p[^>]*>[^<]*consectetur adipiscing[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
-  result = result.replace(/<p[^>]*>[^<]*sed do eiusmod[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
-  result = result.replace(/<p[^>]*>[^<]*tempor incididunt[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
+  // Remove design credit links
+  const designLinks = document.querySelectorAll('a[href*="html5up"]');
+  designLinks.forEach(link => link.remove());
 
-  // Replace common placeholder paragraphs
-  result = result.replace(/<p[^>]*>Aliquam ut ex ut augue[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
-  result = result.replace(/<p[^>]*>Another[^<]*site[^<]*template[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
-  result = result.replace(/<p[^>]*>Another[^<]*responsive[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
-  result = result.replace(/<p[^>]*>crafted by[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
+  console.log(`✅ Cleaned footer and removed template credits`);
 
-  // Spectral specific banner text
-  result = result.replace(/Another fine responsive<br \/>[^<]*site template freebie<br \/>[^<]*crafted by[^<]*/gi, heroSubtitle);
+  // Get modified HTML
+  let result = dom.serialize();
 
-  // Replace multiline lorem patterns in paragraphs (with <br> tags)
-  result = result.replace(/<p[^>]*>[^<]*Aliquam ut ex[^<]*<br[^>]*>[^<]*fringilla[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
-  result = result.replace(/<p[^>]*>[^<]*Arcu aliquet[^<]*<br[^>]*>[^<]*eget augue[^<]*<\/p>/gi, `<p>${heroSubtitle}</p>`);
-  
-  // 7. Replace images
+  // 9. REPLACE IMAGES (still use regex for this)
   if (images.length > 0) {
     result = result.replace(/images\/pic01\.jpg/gi, images[0]?.url || 'https://via.placeholder.com/800x600');
     result = result.replace(/images\/pic02\.jpg/gi, images[1]?.url || images[0]?.url || 'https://via.placeholder.com/800x600');
     result = result.replace(/images\/pic03\.jpg/gi, images[2]?.url || images[0]?.url || 'https://via.placeholder.com/800x600');
+    result = result.replace(/images\/pic04\.jpg/gi, images[0]?.url || 'https://via.placeholder.com/800x600');
+    result = result.replace(/images\/pic05\.jpg/gi, images[1]?.url || images[0]?.url || 'https://via.placeholder.com/800x600');
     result = result.replace(/src="images\/[^"]+"/gi, `src="${images[0]?.url || 'https://via.placeholder.com/400x300'}"`);
-    console.log(`✅ NUKED images: Replaced with ${images.length} real images`);
-  } else {
-    result = result.replace(/images\/pic0[123]\.jpg/gi, 'https://via.placeholder.com/800x600');
-    result = result.replace(/src="images\/[^"]+"/gi, 'src="https://via.placeholder.com/400x300"');
+    console.log(`✅ Replaced template images with ${images.length} real images`);
   }
-  
-  // 8. Add logo to header
+
+  // 10. ADD LOGO
   if (logoUrl) {
-    // Replace gem icons with logo
     result = result.replace(
       /<span[^>]*class="icon[^"]*fa-gem[^"]*"[^>]*><\/span>/gi,
-      `<img src="${logoUrl}" alt="${content.businessName}" style="width: 48px; height: 48px; object-fit: contain; border-radius: 8px; margin-right: 10px;">`
+      `<img src="${logoUrl}" alt="${businessName}" style="width: 48px; height: 48px; object-fit: contain; border-radius: 8px; margin-right: 10px;">`
     );
-
-    // Add logo before business name in header
     result = result.replace(
       /(<h1[^>]*><a[^>]*>)([^<]+)(<\/a>)/gi,
-      `$1<img src="${logoUrl}" alt="${content.businessName}" style="width: 40px; height: 40px; object-fit: contain; border-radius: 6px; vertical-align: middle; margin-right: 8px;">$2$3`
+      `$1<img src="${logoUrl}" alt="${businessName}" style="width: 40px; height: 40px; object-fit: contain; border-radius: 6px; vertical-align: middle; margin-right: 8px;">$2$3`
     );
-
     console.log(`✅ Added logo to header`);
   }
 
-  // 9. Add background image to banner/hero section
+  // 11. ADD HERO BACKGROUND IMAGE
   if (images.length > 0) {
     const heroImage = images[0].url;
-
-    // For Alpha and similar templates with id="banner"
     result = result.replace(
       /(<section[^>]*id=["']banner["'][^>]*)(>)/gi,
       `$1 style="background-image: url('${heroImage}'); background-size: cover; background-position: center; background-attachment: fixed;"$2`
     );
-
-    // For templates with class="banner"
     result = result.replace(
       /(<section[^>]*class=["'][^"']*banner[^"']*["'][^>]*)(>)/gi,
       `$1 style="background-image: url('${heroImage}'); background-size: cover; background-position: center;"$2`
     );
-
     console.log(`✅ Added hero background image`);
   }
-  
-  console.log(`✅ v5.1 COMPLETE INJECTION DONE`);
+
+  console.log(`✅ v6.0 DOM-BASED INJECTION COMPLETE - NO LOREM IPSUM LEFT!`);
   return result;
 }
 
