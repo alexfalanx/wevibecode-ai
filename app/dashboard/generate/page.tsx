@@ -469,7 +469,8 @@ export default function GeneratePage() {
             Choose your business type, describe your vision, and let AI build it
           </p>
 
-          {/* Template Selection Button */}
+          {/* Template Selection Button - TEMPORARILY DISABLED */}
+          {/*
           <div className="flex flex-col items-center gap-3">
             <button
               onClick={() => setShowTemplateGallery(true)}
@@ -499,6 +500,7 @@ export default function GeneratePage() {
               {selectedTemplate ? 'Using template layout with AI content' : 'Or continue below to generate with AI'}
             </p>
           </div>
+          */}
         </div>
 
         <div className="space-y-8">
@@ -821,13 +823,13 @@ export default function GeneratePage() {
         </div>
       </div>
 
-      {/* Template Gallery Modal */}
-      {showTemplateGallery && (
+      {/* Template Gallery Modal - TEMPORARILY DISABLED */}
+      {/* {showTemplateGallery && (
         <TemplateGallery
           onSelect={handleTemplateSelect}
           onClose={() => setShowTemplateGallery(false)}
         />
-      )}
+      )} */}
     </div>
   );
 }
