@@ -109,7 +109,22 @@ export async function POST(request: NextRequest) {
     if (templateId) {
       // Use HTML5UP template system
       console.log(`🎨 Using template: ${templateId}`);
-      const templateName = templateId.charAt(0).toUpperCase() + templateId.slice(1);
+
+      // Map template IDs to actual folder names (case sensitive!)
+      const templateNameMap: { [key: string]: string } = {
+        'alpha': 'Alpha',
+        'dimension': 'Dimension',
+        'forty': 'Forty',
+        'hyperspace': 'Hyperspace',
+        'massively': 'Massively',
+        'phantom': 'Phantom',
+        'solid-state': 'Solid State', // Has space!
+        'spectral': 'Spectral',
+        'stellar': 'Stellar',
+        'story': 'Story',
+      };
+
+      const templateName = templateNameMap[templateId] || templateId.charAt(0).toUpperCase() + templateId.slice(1);
       finalHtml = generateFromTemplate(templateName, content, images, logoUrl, colors);
       console.log(`✅ Template website built: ${Math.round(finalHtml.length / 1024)}KB`);
     } else {
