@@ -7,10 +7,10 @@ import path from 'path';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { template: string; image: string } }
+  { params }: { params: Promise<{ template: string; image: string }> }
 ) {
   try {
-    const { template, image } = params;
+    const { template, image } = await params;
 
     // Security: Only allow certain image extensions
     if (!/\.(jpg|jpeg|png|gif)$/i.test(image)) {
