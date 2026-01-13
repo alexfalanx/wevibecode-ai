@@ -4,6 +4,7 @@
 // UI for editing text and colors in generated sites
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChromePicker } from 'react-color';
 import { extractColorPalette, extractEditableElements, extractEditableElementsWithHtml, applyTextEdit, applyColorEdit, extractImages, extractImagesWithHtml, replaceImage, type SiteImage } from '@/lib/publish';
 import type { ColorPalette, EditableElement } from '@/types/publish';
@@ -19,6 +20,7 @@ interface SiteEditorProps {
 }
 
 export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: SiteEditorProps) {
+  const { t } = useTranslation();
   const [editMode, setEditMode] = useState<'text' | 'color' | 'images'>('text');
   const [editedHtml, setEditedHtml] = useState(htmlContent);
   const [colorPalette, setColorPalette] = useState<ColorPalette>({});
@@ -175,7 +177,7 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-xl font-bold">Edit Your Site</h2>
+          <h2 className="text-xl font-bold">{t('editor.title')}</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition"
@@ -195,7 +197,7 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
             }`}
           >
             <Type className="w-5 h-5" />
-            Edit Text
+            {t('editor.editText')}
           </button>
           <button
             onClick={() => setEditMode('color')}
@@ -206,7 +208,7 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
             }`}
           >
             <Palette className="w-5 h-5" />
-            Edit Colors
+            {t('editor.editColors')}
           </button>
           <button
             onClick={() => setEditMode('images')}
@@ -217,7 +219,7 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
             }`}
           >
             <ImageIcon className="w-5 h-5" />
-            Edit Images
+            {t('images.editImages')}
           </button>
         </div>
 
