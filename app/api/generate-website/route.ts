@@ -109,6 +109,11 @@ export async function POST(request: NextRequest) {
     if (templateId) {
       // Use HTML5UP template system
       console.log(`🎨 Using template: ${templateId}`);
+      console.log(`🔍 DEBUG - templateId raw: "${templateId}" (type: ${typeof templateId})`);
+
+      // CRITICAL: Normalize template ID to lowercase for case-insensitive matching
+      const normalizedTemplateId = templateId.toLowerCase().trim();
+      console.log(`🔍 DEBUG - normalized: "${normalizedTemplateId}"`);
 
       // Map template IDs to actual folder names (case sensitive!)
       const templateNameMap: { [key: string]: string } = {
@@ -118,13 +123,16 @@ export async function POST(request: NextRequest) {
         'hyperspace': 'Hyperspace',
         'massively': 'Massively',
         'phantom': 'Phantom',
-        'solid-state': 'Solid State', // Has space!
+        'solid-state': 'Solid State', // CRITICAL: Has space!
         'spectral': 'Spectral',
         'stellar': 'Stellar',
         'story': 'Story',
       };
 
-      const templateName = templateNameMap[templateId] || templateId.charAt(0).toUpperCase() + templateId.slice(1);
+      const templateName = templateNameMap[normalizedTemplateId] || templateId.charAt(0).toUpperCase() + templateId.slice(1);
+      console.log(`🔍 DEBUG - mapped to folder name: "${templateName}"`);
+      console.log(`🔍 DEBUG - match found: ${!!templateNameMap[normalizedTemplateId]}`);
+
       finalHtml = generateFromTemplate(templateName, content, images, logoUrl, colors);
       console.log(`✅ Template website built: ${Math.round(finalHtml.length / 1024)}KB`);
     } else {
