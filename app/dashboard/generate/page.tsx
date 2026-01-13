@@ -5,9 +5,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
-import { Sparkles, Loader2, CreditCard, Check } from 'lucide-react';
+import { Sparkles, Loader2, CreditCard, Check, Layout } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 import { trackGeneration, trackPageView, logError } from '@/lib/analytics';
+import TemplateGallery from '@/components/TemplateGallery';
 
 // IMPROVED: Professional business categories based on market research
 const WEBSITE_TYPES = [
@@ -271,6 +272,8 @@ export default function GeneratePage() {
   const [credits, setCredits] = useState<number | null>(null);
   const [user, setUser] = useState<any>(null);
   const [generationStep, setGenerationStep] = useState<string>('');
+  const [showTemplateGallery, setShowTemplateGallery] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -328,6 +331,18 @@ export default function GeneratePage() {
     const imageCredits = includeImages ? 3 : 0;
     const logoCredits = customLogo ? 3 : 0;
     return baseCredits + imageCredits + logoCredits;
+  };
+
+  const handleTemplateSelect = async (templateId: string) => {
+    setSelectedTemplate(templateId);
+    setShowTemplateGallery(false);
+
+    // For now, just redirect to AI generation with template hint
+    // In the future, we could have a separate template customization flow
+    toast.success(`Template selected: ${templateId}. Customize below and generate!`);
+
+    // Scroll to the prompt section
+    window.scrollTo({ top: 300, behavior: 'smooth' });
   };
 
   const handleGenerate = async () => {
@@ -445,12 +460,24 @@ export default function GeneratePage() {
               {credits !== null ? credits : '...'} Credits
             </span>
           </div>
-          
+
           <h1 className="text-4xl sm:text-5xl font-bold mb-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
             Build Your Professional Website
           </h1>
-          <p className="text-xl text-gray-700">
+          <p className="text-xl text-gray-700 mb-6">
             Choose your business type, describe your vision, and let AI build it
+          </p>
+
+          {/* Template Selection Button */}
+          <button
+            onClick={() => setShowTemplateGallery(true)}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition shadow-lg"
+          >
+            <Layout className="w-5 h-5" />
+            Start from a Template
+          </button>
+          <p className="text-sm text-gray-600 mt-2">
+            Or continue below to generate with AI
           </p>
         </div>
 
@@ -773,6 +800,14 @@ export default function GeneratePage() {
           </button>
         </div>
       </div>
+
+      {/* Template Gallery Modal */}
+      {showTemplateGallery && (
+        <TemplateGallery
+          onSelect={handleTemplateSelect}
+          onClose={() => setShowTemplateGallery(false)}
+        />
+      )}
     </div>
   );
 }
