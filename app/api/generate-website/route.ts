@@ -7,8 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import OpenAI from 'openai';
-// Note: Using custom HTML builder instead of HTML5UP templates
-// import { selectTemplate, generateFromTemplate } from '../../../templates/template-system';
+import { selectTemplate, generateFromTemplate } from '../../../templates/template-system';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -17,8 +16,8 @@ const openai = new OpenAI({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { 
-      prompt, 
+    const {
+      prompt,
       websiteType,
       sections,
       vibe,
@@ -27,7 +26,8 @@ export async function POST(request: NextRequest) {
       customLogo,
       logoColorMode,
       logoColorPalette,
-      includeImages 
+      includeImages,
+      templateId // NEW: Selected template ID
     } = body;
 
     if (!prompt || !websiteType || !sections) {
@@ -103,20 +103,31 @@ export async function POST(request: NextRequest) {
       console.log(`✅ Images fetched: ${images.length}/3`);
     }
 
-    // STEP 5: Build custom website with proper sections
-    console.log(`🏗️  Building custom website for ${websiteType}...`);
-    const { html, css, js } = buildWebsite(content, sections, colors, images, logoUrl, websiteType, vibe);
+    // STEP 5: Build website - Use template if selected, otherwise custom build
+    let finalHtml: string;
 
-    if (!html) {
-      throw new Error('Website generation failed');
+    if (templateId) {
+      // Use HTML5UP template system
+      console.log(`🎨 Using template: ${templateId}`);
+      const templateName = templateId.charAt(0).toUpperCase() + templateId.slice(1);
+      finalHtml = generateFromTemplate(templateName, content, images, logoUrl, colors);
+      console.log(`✅ Template website built: ${Math.round(finalHtml.length / 1024)}KB`);
+    } else {
+      // Use custom AI-generated layout
+      console.log(`🏗️  Building custom website for ${websiteType}...`);
+      const { html, css, js } = buildWebsite(content, sections, colors, images, logoUrl, websiteType, vibe);
+
+      if (!html) {
+        throw new Error('Website generation failed');
+      }
+
+      // Combine HTML with inline CSS and JS
+      finalHtml = html
+        .replace('STYLES_PLACEHOLDER', css)
+        .replace('SCRIPTS_PLACEHOLDER', js);
+
+      console.log(`✅ Custom website built: ${Math.round(finalHtml.length / 1024)}KB`);
     }
-
-    // Combine HTML with inline CSS and JS
-    const finalHtml = html
-      .replace('STYLES_PLACEHOLDER', css)
-      .replace('SCRIPTS_PLACEHOLDER', js);
-
-    console.log(`✅ Custom website built: ${Math.round(finalHtml.length / 1024)}KB`);
 
     // STEP 6: Save
     const { data: preview, error: previewError } = await supabase

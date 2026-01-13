@@ -337,9 +337,9 @@ export default function GeneratePage() {
     setSelectedTemplate(templateId);
     setShowTemplateGallery(false);
 
-    // For now, just redirect to AI generation with template hint
-    // In the future, we could have a separate template customization flow
-    toast.success(`Template selected: ${templateId}. Customize below and generate!`);
+    // Show which template was selected
+    const templateName = templateId.charAt(0).toUpperCase() + templateId.slice(1);
+    toast.success(`${templateName} template selected! Customize and generate.`);
 
     // Scroll to the prompt section
     window.scrollTo({ top: 300, behavior: 'smooth' });
@@ -400,6 +400,7 @@ export default function GeneratePage() {
             secondary: logoSecondary
           } : null,
           includeImages,
+          templateId: selectedTemplate, // Pass selected template ID
         }),
       });
 
@@ -469,16 +470,35 @@ export default function GeneratePage() {
           </p>
 
           {/* Template Selection Button */}
-          <button
-            onClick={() => setShowTemplateGallery(true)}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition shadow-lg"
-          >
-            <Layout className="w-5 h-5" />
-            Start from a Template
-          </button>
-          <p className="text-sm text-gray-600 mt-2">
-            Or continue below to generate with AI
-          </p>
+          <div className="flex flex-col items-center gap-3">
+            <button
+              onClick={() => setShowTemplateGallery(true)}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition shadow-lg"
+            >
+              <Layout className="w-5 h-5" />
+              {selectedTemplate ? 'Change Template' : 'Start from a Template'}
+            </button>
+
+            {selectedTemplate && (
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg border-2 border-green-300">
+                <Check className="w-4 h-4" />
+                <span className="font-medium">
+                  {selectedTemplate.charAt(0).toUpperCase() + selectedTemplate.slice(1)} template selected
+                </span>
+                <button
+                  onClick={() => setSelectedTemplate(null)}
+                  className="ml-2 text-green-600 hover:text-green-800"
+                  title="Clear template"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+
+            <p className="text-sm text-gray-600">
+              {selectedTemplate ? 'Using template layout with AI content' : 'Or continue below to generate with AI'}
+            </p>
+          </div>
         </div>
 
         <div className="space-y-8">
