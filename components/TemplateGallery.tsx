@@ -63,8 +63,22 @@ export default function TemplateGallery({ onSelect, onClose }: TemplateGalleryPr
   });
 
   const getTemplatePreview = (template: Template) => {
-    // Use template's banner image as preview via API route
-    return `/api/template-preview/${template.name}/banner.jpg`;
+    // Map each template to its actual image file based on what exists
+    const imageMap: { [key: string]: string } = {
+      'Alpha': 'banner.jpg',
+      'Dimension': 'bg.jpg',
+      'Forty': 'banner.jpg',
+      'Hyperspace': 'pic01.jpg',
+      'Massively': 'bg.jpg',
+      'Phantom': 'pic01.jpg',
+      'Solid State': 'bg.jpg',
+      'Spectral': 'banner.jpg',
+      'Stellar': 'pic01.jpg',
+      'Story': 'banner.jpg',
+    };
+
+    const imageName = imageMap[template.name] || 'pic01.jpg';
+    return `/api/template-preview/${template.name}/${imageName}`;
   };
 
   return (
@@ -135,8 +149,17 @@ export default function TemplateGallery({ onSelect, onClose }: TemplateGalleryPr
                         alt={template.name}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          // Fallback to placeholder if image fails to load
-                          (e.target as HTMLImageElement).src = 'https://via.placeholder.com/600x400?text=' + template.name;
+                          // Fallback to a simple gradient if image fails to load
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                            const text = document.createElement('div');
+                            text.className = 'flex items-center justify-center h-full text-white font-bold text-xl';
+                            text.textContent = template.name;
+                            parent.appendChild(text);
+                          }
                         }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
