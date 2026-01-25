@@ -116,24 +116,44 @@ export function injectContent(
   ].filter(Boolean);
 
   // 0. REPLACE LOGO/BRAND NAME AND REMOVE LOGO IMAGES
-  // First, remove any logo images and replace with business name
-  $('.logo img, .logo .symbol, span.symbol').each((i, elem) => {
-    $(elem).remove();
+  console.log('=== BEFORE LOGO REPLACEMENT ===');
+  console.log('Logo elements:', $('.logo, span.title, .brand, .icon.fa-gem').length);
+  $('.logo, span.title, .brand').each((i, elem) => {
+    console.log(`Logo ${i} before:`, $(elem).html()?.substring(0, 100));
   });
+
+  // First, remove any logo images and replace with business name
+  $('.logo img, .logo .symbol, span.symbol, .icon.fa-gem').remove();
 
   // Then replace text in logo/brand elements
-  $('span.title, .logo .title, .brand, #logo .title, .logo, a.logo').each((i, elem) => {
+  $('.logo, span.title, .brand, #logo .title, a.logo').each((i, elem) => {
     const $elem = $(elem);
-    // If it's a link, preserve the link but replace content
-    if ($elem.is('a')) {
-      $elem.html(businessName);
+    if (logoUrl) {
+      // If logo provided, insert img via Cheerio (not regex later)
+      $elem.html(`<img src="${logoUrl}" alt="${businessName}" style="max-height: 2em; vertical-align: middle;">`);
     } else {
-      $elem.text(businessName);
+      // Otherwise, just show business name as text
+      if ($elem.is('a')) {
+        $elem.html(businessName);
+      } else {
+        $elem.text(businessName);
+      }
     }
   });
-  console.log(`✅ Replaced logo/brand name elements with: ${businessName}`);
+
+  console.log('=== AFTER LOGO REPLACEMENT ===');
+  $('.logo, span.title, .brand').each((i, elem) => {
+    console.log(`Logo ${i} after:`, $(elem).html()?.substring(0, 100));
+  });
+  console.log(`✅ Replaced logo/brand name elements with: ${logoUrl ? 'logo image' : businessName}`);
 
   // 1. REPLACE ALL H1 TAGS (COMPLETELY REPLACE CONTENT)
+  console.log('=== BEFORE H1 REPLACEMENT ===');
+  console.log('H1 count:', $('h1').length);
+  $('h1').each((i, elem) => {
+    console.log(`H1 ${i} before:`, $(elem).html()?.substring(0, 80));
+  });
+
   $('h1').each((i, elem) => {
     const $h1 = $(elem);
 
@@ -144,6 +164,11 @@ export function injectContent(
     } else {
       $h1.html(businessName);
     }
+  });
+
+  console.log('=== AFTER H1 REPLACEMENT ===');
+  $('h1').each((i, elem) => {
+    console.log(`H1 ${i} after:`, $(elem).html()?.substring(0, 80));
   });
   console.log(`✅ Replaced ${$('h1').length} H1 tags with headline/business name`);
 
@@ -181,6 +206,9 @@ export function injectContent(
   console.log(`✅ Replaced ${$('h3').length} H3 tags with feature titles`);
 
   // 4. REPLACE ALL PARAGRAPH TAGS
+  console.log('=== BEFORE PARAGRAPH REPLACEMENT ===');
+  console.log('Paragraph count:', $('p').length);
+
   $('p').each((i, elem) => {
     const $p = $(elem);
 
@@ -200,6 +228,14 @@ export function injectContent(
     // Replace with content from pool
     const replacement = paragraphPool[i % paragraphPool.length];
     $p.text(replacement);
+  });
+
+  console.log('=== AFTER PARAGRAPH REPLACEMENT ===');
+  console.log('Paragraphs after replacement:', $('p').length);
+  $('p').each((i, elem) => {
+    if (i < 5) { // Log first 5 paragraphs
+      console.log(`P ${i}:`, $(elem).text().substring(0, 50));
+    }
   });
   console.log(`✅ Replaced ${$('p').length} paragraph tags with business content`);
 
@@ -346,29 +382,31 @@ export function injectContent(
   // Get modified HTML
   let result = $.html();
 
-  // 9. REPLACE IMAGES (still use regex for this - cheerio would load all images)
+  console.log('=== POST-INJECTION STATS ===');
+  console.log('Business name occurrences:', (result.match(new RegExp(businessName, 'gi')) || []).length);
+  console.log('Image src count before regex:', (result.match(/<img[^>]*src=/gi) || []).length);
+
+  // 9. REPLACE IMAGES - SPECIFIC PATHS ONLY (no catch-all to avoid replacing logo)
   if (images.length > 0) {
     result = result.replace(/images\/pic01\.jpg/gi, images[0]?.url || 'https://via.placeholder.com/800x600');
     result = result.replace(/images\/pic02\.jpg/gi, images[1]?.url || images[0]?.url || 'https://via.placeholder.com/800x600');
     result = result.replace(/images\/pic03\.jpg/gi, images[2]?.url || images[0]?.url || 'https://via.placeholder.com/800x600');
     result = result.replace(/images\/pic04\.jpg/gi, images[0]?.url || 'https://via.placeholder.com/800x600');
     result = result.replace(/images\/pic05\.jpg/gi, images[1]?.url || images[0]?.url || 'https://via.placeholder.com/800x600');
-    result = result.replace(/src="images\/[^"]+"/gi, `src="${images[0]?.url || 'https://via.placeholder.com/400x300'}"`);
-    console.log(`✅ Replaced template images with ${images.length} real images`);
+    result = result.replace(/images\/pic06\.jpg/gi, images[2]?.url || images[0]?.url || 'https://via.placeholder.com/800x600');
+    result = result.replace(/images\/pic07\.jpg/gi, images[0]?.url || 'https://via.placeholder.com/800x600');
+    result = result.replace(/images\/pic08\.jpg/gi, images[1]?.url || images[0]?.url || 'https://via.placeholder.com/800x600');
+
+    // REMOVED: Catch-all regex that was replacing ALL images including logo
+    // result = result.replace(/src="images\/[^"]+"/gi, `src="${images[0]?.url}"`);
+
+    console.log(`✅ Replaced template images with ${images.length} real images (specific paths only)`);
   }
 
-  // 10. ADD LOGO
-  if (logoUrl) {
-    result = result.replace(
-      /<span[^>]*class="icon[^"]*fa-gem[^"]*"[^>]*><\/span>/gi,
-      `<img src="${logoUrl}" alt="${businessName}" style="width: 48px; height: 48px; object-fit: contain; border-radius: 8px; margin-right: 10px;">`
-    );
-    result = result.replace(
-      /(<h1[^>]*><a[^>]*>)([^<]+)(<\/a>)/gi,
-      `$1<img src="${logoUrl}" alt="${businessName}" style="width: 40px; height: 40px; object-fit: contain; border-radius: 6px; vertical-align: middle; margin-right: 8px;">$2$3`
-    );
-    console.log(`✅ Added logo to header`);
-  }
+  console.log('Image src count after regex:', (result.match(/<img[^>]*src=/gi) || []).length);
+
+  // REMOVED: Logo regex insertion (now handled by Cheerio in step 0)
+  // Logo is already inserted via Cheerio DOM manipulation above
 
   // 11. ADD HERO BACKGROUND IMAGE
   if (images.length > 0) {
@@ -431,19 +469,127 @@ export function applyColors(css: string, colors: any): string {
 }
 
 export function inlineCSS(html: string, css: string): string {
+  console.log('=== CSS INLINING STATS ===');
+  console.log('Template CSS size:', Math.round(css.length / 1024), 'KB');
+
   let result = html;
   result = result.replace(/<link[^>]*rel="stylesheet"[^>]*>/gi, '');
 
-  // Add custom CSS for better logo, banner visibility, and business name styling
+  // Add custom CSS for better visibility, centering, and template compatibility
   const customCSS = `
-/* Enhanced business name in header */
-#header h1 a {
-  font-size: 1.5em !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.025em !important;
+/* ============================================ */
+/* CONTENT VISIBILITY (Critical Fix)           */
+/* ============================================ */
+
+/* Ensure all content is visible - white text on white was making content invisible */
+body, #main, .inner, section, article {
+  background-color: #ffffff !important;
+  color: #333333 !important;
 }
 
-/* Banner/Hero text visibility over background image */
+p, li, span, div {
+  color: #333333 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+h2, h3, h4, h5, h6 {
+  color: #1a1a1a !important;
+}
+
+/* Override dark mode styles if present */
+.dark, .alt {
+  background-color: #f8f8f8 !important;
+  color: #333333 !important;
+}
+
+/* ============================================ */
+/* HERO CENTERING (All Templates)              */
+/* ============================================ */
+
+/* Hero sections - broad selectors to cover multiple templates */
+#main > .inner > header,
+#banner,
+#hero,
+section.banner,
+section#intro,
+.hero-section,
+header.major {
+  text-align: center !important;
+  padding: 4em 3em !important;
+  border-radius: 12px !important;
+  margin-bottom: 2em !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Hero headings - all variations */
+#main > .inner > header h1,
+#main > .inner > header h2,
+#banner h1,
+#banner h2,
+#hero h1,
+#hero h2,
+section.banner h1,
+section.banner h2,
+section#intro h1,
+section#intro h2,
+header.major h1,
+header.major h2 {
+  text-align: center !important;
+  color: #ffffff !important;
+  font-size: 2.5em !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  text-shadow: 0 2px 15px rgba(0, 0, 0, 0.5) !important;
+  margin-bottom: 0.5em !important;
+}
+
+/* Hero paragraphs */
+#main > .inner > header p,
+#banner p,
+#hero p,
+section.banner p,
+section#intro p,
+header.major p {
+  color: #e0e0e0 !important;
+  font-size: 1.25em !important;
+  line-height: 1.6 !important;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4) !important;
+  text-align: center !important;
+}
+
+/* ============================================ */
+/* PHANTOM TEMPLATE SPECIFIC                   */
+/* ============================================ */
+
+/* Phantom uses #main > .inner > header for hero */
+#main > .inner > header {
+  background: linear-gradient(135deg, rgba(30, 30, 40, 0.95) 0%, rgba(50, 50, 70, 0.90) 100%) !important;
+}
+
+/* Phantom tile cards */
+.tiles article {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tiles article:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+.tiles article h2 {
+  color: #ffffff !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.tiles article .content p {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* ============================================ */
+/* BANNER BACKGROUND IMAGE OVERLAY             */
+/* ============================================ */
+
 #banner {
   position: relative;
 }
@@ -464,91 +610,10 @@ export function inlineCSS(html: string, css: string): string {
   z-index: 1;
 }
 
-#banner h2,
-#banner p {
-  color: #fff !important;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-}
-
 /* ============================================ */
-/* PHANTOM TEMPLATE - Hero Section Styling      */
+/* LOGO/BRAND STYLING                          */
 /* ============================================ */
 
-/* Phantom uses #main > .inner > header for hero */
-#main > .inner > header {
-  background: linear-gradient(135deg, rgba(30, 30, 40, 0.95) 0%, rgba(50, 50, 70, 0.90) 100%);
-  padding: 4em 3em;
-  border-radius: 12px;
-  margin-bottom: 2em;
-  text-align: center !important;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-}
-
-#main > .inner > header h1 {
-  color: #ffffff !important;
-  font-size: 2.5em !important;
-  font-weight: 700 !important;
-  line-height: 1.3 !important;
-  text-shadow: 0 2px 15px rgba(0, 0, 0, 0.5) !important;
-  margin-bottom: 0.5em !important;
-  text-align: center !important;
-}
-
-#main > .inner > header p {
-  color: #e0e0e0 !important;
-  font-size: 1.25em !important;
-  line-height: 1.6 !important;
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4) !important;
-  max-width: 800px;
-  margin: 0 auto;
-  text-align: center !important;
-}
-
-/* Phantom template - improved tile cards */
-.tiles article {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.tiles article:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-}
-
-.tiles article h2 {
-  color: #ffffff !important;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-}
-
-.tiles article .content p {
-  color: rgba(255, 255, 255, 0.9) !important;
-}
-
-/* ============================================ */
-/* GENERAL HERO STYLES (for other templates)   */
-/* ============================================ */
-
-/* Generic hero section styling */
-section.banner,
-section#hero,
-.hero-section,
-header.major {
-  position: relative;
-}
-
-section.banner h1,
-section.banner h2,
-section.banner p,
-section#hero h1,
-section#hero h2,
-section#hero p,
-header.major h1,
-header.major h2,
-header.major p {
-  color: #ffffff !important;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5) !important;
-}
-
-/* Logo/Brand name styling */
 #header .logo,
 a.logo,
 .logo .title,
@@ -560,14 +625,16 @@ span.title {
   letter-spacing: 0.05em !important;
 }
 
-/* Hide logo images if they weren't replaced */
-.logo img,
+/* Hide logo symbol containers (images handled by Cheerio) */
 .logo .symbol,
 span.symbol {
   display: none !important;
 }
 
-/* Footer improvements */
+/* ============================================ */
+/* FOOTER & MENU                               */
+/* ============================================ */
+
 #footer {
   text-align: center;
 }
@@ -577,7 +644,6 @@ span.symbol {
   margin-top: 1em;
 }
 
-/* Menu styling for Phantom */
 #menu {
   background: rgba(30, 30, 40, 0.98) !important;
 }
@@ -596,8 +662,27 @@ span.symbol {
 }
 `;
 
-  result = result.replace('</head>', `<style>${css}${customCSS}</style></head>`);
-  console.log(`✅ CSS inlined (${Math.round(css.length / 1024)}KB + custom styles)`);
+  console.log('Custom CSS size:', customCSS.length, 'bytes');
+  console.log('CSS contains hero centering:', customCSS.includes('text-align: center'));
+  console.log('CSS contains visibility fixes:', customCSS.includes('visibility: visible'));
+
+  // Robust CSS inlining - use lastIndexOf to find </head>
+  const headCloseIndex = result.lastIndexOf('</head>');
+  if (headCloseIndex === -1) {
+    console.error('❌ No </head> tag found - CSS not inlined!');
+    return result;
+  }
+
+  const beforeHead = result.substring(0, headCloseIndex);
+  const afterHead = result.substring(headCloseIndex);
+  const fullCSS = css + '\n\n' + customCSS;
+
+  result = beforeHead + `<style>${fullCSS}</style>\n` + afterHead;
+
+  console.log('✅ CSS inlined successfully at position', headCloseIndex);
+  console.log('HTML contains style tag:', result.includes('<style>'));
+  console.log('Style tag position:', result.indexOf('<style>'));
+
   return result;
 }
 
@@ -632,6 +717,13 @@ export function generateFromTemplate(
 
   console.log(`✅ === TEMPLATE GENERATION COMPLETE ===`);
   console.log(`📦 Final size: ${Math.round(result.length / 1024)}KB`);
+  console.log('=== FINAL HTML STATS ===');
+  console.log('Total length:', result.length);
+  console.log('Contains business name:', result.includes(content.businessName));
+  console.log('Style tag count:', (result.match(/<style>/g) || []).length);
+  console.log('Image count:', (result.match(/<img/g) || []).length);
+  console.log('H1 count:', (result.match(/<h1[^>]*>/g) || []).length);
+  console.log('Paragraph count:', (result.match(/<p[^>]*>/g) || []).length);
 
   return result;
 }
