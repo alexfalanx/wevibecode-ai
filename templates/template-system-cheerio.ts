@@ -387,20 +387,39 @@ export function injectContent(
   console.log('Image src count before regex:', (result.match(/<img[^>]*src=/gi) || []).length);
 
   // 9. REPLACE IMAGES - SPECIFIC PATHS ONLY (no catch-all to avoid replacing logo)
+  // Extended to cover pic01-pic20 to handle all template images
   if (images.length > 0) {
-    result = result.replace(/images\/pic01\.jpg/gi, images[0]?.url || 'https://via.placeholder.com/800x600');
-    result = result.replace(/images\/pic02\.jpg/gi, images[1]?.url || images[0]?.url || 'https://via.placeholder.com/800x600');
-    result = result.replace(/images\/pic03\.jpg/gi, images[2]?.url || images[0]?.url || 'https://via.placeholder.com/800x600');
-    result = result.replace(/images\/pic04\.jpg/gi, images[0]?.url || 'https://via.placeholder.com/800x600');
-    result = result.replace(/images\/pic05\.jpg/gi, images[1]?.url || images[0]?.url || 'https://via.placeholder.com/800x600');
-    result = result.replace(/images\/pic06\.jpg/gi, images[2]?.url || images[0]?.url || 'https://via.placeholder.com/800x600');
-    result = result.replace(/images\/pic07\.jpg/gi, images[0]?.url || 'https://via.placeholder.com/800x600');
-    result = result.replace(/images\/pic08\.jpg/gi, images[1]?.url || images[0]?.url || 'https://via.placeholder.com/800x600');
+    const fallback = 'https://via.placeholder.com/800x600';
+
+    // Helper to get image with cycling fallback
+    const getImage = (index: number) => images[index % images.length]?.url || images[0]?.url || fallback;
+
+    // Replace pic01-pic20 with cycling through available images
+    result = result.replace(/images\/pic01\.jpg/gi, getImage(0));
+    result = result.replace(/images\/pic02\.jpg/gi, getImage(1));
+    result = result.replace(/images\/pic03\.jpg/gi, getImage(2));
+    result = result.replace(/images\/pic04\.jpg/gi, getImage(0));
+    result = result.replace(/images\/pic05\.jpg/gi, getImage(1));
+    result = result.replace(/images\/pic06\.jpg/gi, getImage(2));
+    result = result.replace(/images\/pic07\.jpg/gi, getImage(0));
+    result = result.replace(/images\/pic08\.jpg/gi, getImage(1));
+    result = result.replace(/images\/pic09\.jpg/gi, getImage(2));
+    result = result.replace(/images\/pic10\.jpg/gi, getImage(0));
+    result = result.replace(/images\/pic11\.jpg/gi, getImage(1));
+    result = result.replace(/images\/pic12\.jpg/gi, getImage(2));
+    result = result.replace(/images\/pic13\.jpg/gi, getImage(0));
+    result = result.replace(/images\/pic14\.jpg/gi, getImage(1));
+    result = result.replace(/images\/pic15\.jpg/gi, getImage(2));
+    result = result.replace(/images\/pic16\.jpg/gi, getImage(0));
+    result = result.replace(/images\/pic17\.jpg/gi, getImage(1));
+    result = result.replace(/images\/pic18\.jpg/gi, getImage(2));
+    result = result.replace(/images\/pic19\.jpg/gi, getImage(0));
+    result = result.replace(/images\/pic20\.jpg/gi, getImage(1));
 
     // REMOVED: Catch-all regex that was replacing ALL images including logo
     // result = result.replace(/src="images\/[^"]+"/gi, `src="${images[0]?.url}"`);
 
-    console.log(`✅ Replaced template images with ${images.length} real images (specific paths only)`);
+    console.log(`✅ Replaced template images pic01-pic20 with ${images.length} real images (specific paths only)`);
   }
 
   console.log('Image src count after regex:', (result.match(/<img[^>]*src=/gi) || []).length);
