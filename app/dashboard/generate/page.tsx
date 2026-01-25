@@ -205,13 +205,18 @@ function ColorPicker({ value, onChange, label }: { value: string; label: string;
     if (!ctx) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+
+    // Calculate the position relative to the canvas
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    const x = Math.floor((e.clientX - rect.left) * scaleX);
+    const y = Math.floor((e.clientY - rect.top) * scaleY);
 
     const imageData = ctx.getImageData(x, y, 1, 1);
     const pixel = imageData.data;
 
-    const hex = '#' + 
+    const hex = '#' +
       ('0' + pixel[0].toString(16)).slice(-2) +
       ('0' + pixel[1].toString(16)).slice(-2) +
       ('0' + pixel[2].toString(16)).slice(-2);
