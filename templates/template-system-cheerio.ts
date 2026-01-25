@@ -483,6 +483,11 @@ export function applyColors(css: string, colors: any): string {
     result = result.replace(from, to);
   });
 
+  // CRITICAL FIX: Remove @import statements that load external CSS (overrides our custom CSS!)
+  console.log(`🧹 Removing @import statements from CSS...`);
+  result = result.replace(/@import\s+url\([^)]+\);?/gi, '');
+  console.log(`✅ @import statements removed`);
+
   // CRITICAL FIX: Remove references to template assets (causes 404 errors)
   // These image references won't work in the preview context
   console.log(`🧹 Removing template asset references from CSS...`);
@@ -598,23 +603,159 @@ header.major p {
   background: linear-gradient(135deg, rgba(30, 30, 40, 0.95) 0%, rgba(50, 50, 70, 0.90) 100%) !important;
 }
 
-/* Phantom tile cards */
+/* ============================================ */
+/* PHANTOM TILES - CRITICAL VISIBILITY FIX     */
+/* When background images are missing/404,     */
+/* tiles have white bg with white text = invisible */
+/* These rules FORCE visibility with max specificity */
+/* ============================================ */
+
+/* Force dark background on ALL tiles articles to ensure text visibility */
+section.tiles article,
+.tiles article,
+#main .tiles article,
+body .tiles article,
+html body .tiles article,
+html body #wrapper #main .tiles article {
+  background-color: #2a2a3a !important;
+  background-image: linear-gradient(135deg, #2a2a3a 0%, #3a3a4a 100%) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* Force the inner content container to be visible */
+section.tiles article .content,
+.tiles article .content,
+#main .tiles article .content,
+body .tiles article .content,
+html body .tiles article .content,
+html body #wrapper #main .tiles article .content {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+  position: relative !important;
+  z-index: 10 !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  padding: 1.5em !important;
+}
+
+/* Force ALL text inside tiles to be white and visible */
+section.tiles article h1,
+section.tiles article h2,
+section.tiles article h3,
+section.tiles article h4,
+section.tiles article p,
+section.tiles article span,
+section.tiles article a,
+.tiles article h1,
+.tiles article h2,
+.tiles article h3,
+.tiles article h4,
+.tiles article p,
+.tiles article span,
+.tiles article a,
+#main .tiles article h1,
+#main .tiles article h2,
+#main .tiles article h3,
+#main .tiles article h4,
+#main .tiles article p,
+#main .tiles article span,
+#main .tiles article a {
+  color: #ffffff !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+}
+
+/* Even more specific selectors for .content elements */
+section.tiles article .content h1,
+section.tiles article .content h2,
+section.tiles article .content h3,
+section.tiles article .content h4,
+section.tiles article .content p,
+section.tiles article .content span,
+section.tiles article .content a,
+.tiles article .content h1,
+.tiles article .content h2,
+.tiles article .content h3,
+.tiles article .content h4,
+.tiles article .content p,
+.tiles article .content span,
+.tiles article .content a,
+body .tiles article .content h2,
+body .tiles article .content p,
+html body .tiles article .content h2,
+html body .tiles article .content p {
+  color: #ffffff !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Force headings to have good contrast */
+.tiles article h2,
+.tiles article .content h2,
+section.tiles article h2,
+section.tiles article .content h2,
+#main .tiles article h2,
+body .tiles article h2,
+html body .tiles article h2,
+html body #wrapper .tiles article h2 {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.9) !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Force paragraphs to be visible */
+.tiles article p,
+.tiles article .content p,
+section.tiles article p,
+section.tiles article .content p,
+#main .tiles article p,
+body .tiles article p,
+html body .tiles article p,
+html body #wrapper .tiles article p {
+  color: rgba(255, 255, 255, 0.95) !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Override any ::before or ::after pseudo-elements that might hide content */
+.tiles article::before,
+.tiles article::after,
+section.tiles article::before,
+section.tiles article::after {
+  background: transparent !important;
+  opacity: 0.3 !important;
+}
+
+/* Ensure links within tiles are visible */
+.tiles article a,
+.tiles article .content a,
+section.tiles article a,
+#main .tiles article a {
+  color: #8cc9f0 !important;
+  text-decoration: underline !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Hover effects - keep tiles interactive */
+.tiles article:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4) !important;
+}
+
+.tiles article:hover .content {
+  background: rgba(0, 0, 0, 0.75) !important;
+}
+
+/* Legacy tile card rules kept for compatibility */
 .tiles article {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.tiles article:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-}
-
-.tiles article h2 {
-  color: #ffffff !important;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-}
-
-.tiles article .content p {
-  color: rgba(255, 255, 255, 0.9) !important;
 }
 
 /* ============================================ */
