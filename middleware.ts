@@ -4,6 +4,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
 export async function middleware(request: NextRequest) {
+  // CRITICAL: Skip middleware for API routes
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    return NextResponse.next();
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -65,8 +70,9 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except static files and api routes
+     * Match all request paths except static files
+     * API routes are excluded via early return in middleware function
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\..*|api).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)',
   ],
 };

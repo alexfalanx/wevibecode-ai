@@ -6,10 +6,13 @@ import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { DashboardSkeleton } from '@/components/LoadingSkeleton';
 import { useToast } from '@/components/Toast';
+import SimpleLanguageSwitcher from '@/components/SimpleLanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 export default function DashboardPage() {
   const router = useRouter();
   const toast = useToast();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [credits, setCredits] = useState<number>(0);
   const [totalProjects, setTotalProjects] = useState<number>(0);
@@ -97,15 +100,16 @@ export default function DashboardPage() {
             </div>
             
             <div className="flex items-center gap-4">
+              <SimpleLanguageSwitcher />
               <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 rounded-lg">
                 <Zap className="w-4 h-4 text-indigo-600" />
-                <span className="font-semibold text-indigo-900">{credits} credits</span>
+                <span className="font-semibold text-indigo-900">{credits} {t('common.credits')}</span>
               </div>
               <button
                 onClick={handleLogout}
                 className="text-gray-700 hover:text-gray-900 font-medium"
               >
-                Logout
+                {t('logout')}
               </button>
             </div>
           </div>
@@ -117,10 +121,10 @@ export default function DashboardPage() {
         {/* Welcome Section */}
         <div className="mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-            Welcome back! 👋
+            {t('dashboard.welcome')} 👋
           </h1>
           <p className="text-xl text-gray-600">
-            You have <span className="font-bold text-indigo-600">{credits} credits</span> remaining.
+            <span className="font-bold text-indigo-600">{credits} {t('common.credits')}</span> {t('dashboard.remaining', 'remaining')}.
           </p>
         </div>
 
@@ -134,10 +138,10 @@ export default function DashboardPage() {
             <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
               <Store className="w-8 h-8" />
             </div>
-            <h3 className="text-2xl font-bold mb-2">Create Website</h3>
-            <p className="text-white/90 mb-4">Build a professional website in seconds</p>
+            <h3 className="text-2xl font-bold mb-2">{t('dashboard.createWebsite', 'Create Website')}</h3>
+            <p className="text-white/90 mb-4">{t('dashboard.createWebsiteDesc', 'Build a professional website in seconds')}</p>
             <div className="flex items-center gap-2 text-sm font-semibold">
-              <span>Get Started</span>
+              <span>{t('dashboard.getStarted', 'Get Started')}</span>
               <Plus className="w-4 h-4" />
             </div>
           </button>
@@ -150,10 +154,10 @@ export default function DashboardPage() {
             <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
               <Zap className="w-8 h-8" />
             </div>
-            <h3 className="text-2xl font-bold mb-2">Create Simple App</h3>
-            <p className="text-white/90 mb-4">Booking, directory, calculator & more</p>
+            <h3 className="text-2xl font-bold mb-2">{t('dashboard.createApp', 'Create Simple App')}</h3>
+            <p className="text-white/90 mb-4">{t('dashboard.createAppDesc', 'Booking, directory, calculator & more')}</p>
             <div className="flex items-center gap-2 text-sm font-semibold">
-              <span>Get Started</span>
+              <span>{t('dashboard.getStarted', 'Get Started')}</span>
               <Plus className="w-4 h-4" />
             </div>
           </button>
@@ -164,15 +168,15 @@ export default function DashboardPage() {
               <div className="text-center">
                 <div className="text-5xl mb-2">📁</div>
                 <div className="text-3xl font-bold text-gray-900">{totalProjects}</div>
-                <div className="text-gray-600 font-medium">Total Projects</div>
+                <div className="text-gray-600 font-medium">{t('dashboard.totalProjects', 'Total Projects')}</div>
               </div>
             </div>
-            
+
             <div className="bg-white rounded-2xl p-6 border-2 border-gray-200">
               <div className="text-center">
                 <div className="text-5xl mb-2">✨</div>
                 <div className="text-3xl font-bold text-gray-900">{currentPlan}</div>
-                <div className="text-gray-600 font-medium">Current Plan</div>
+                <div className="text-gray-600 font-medium">{t('dashboard.currentPlan', 'Current Plan')}</div>
               </div>
             </div>
           </div>
@@ -180,29 +184,29 @@ export default function DashboardPage() {
 
         {/* Projects Section */}
         <div className="bg-white rounded-2xl border-2 border-gray-200 p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Projects</h2>
-          
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('dashboard.yourProjects', 'Your Projects')}</h2>
+
           {totalProjects === 0 ? (
             <div className="text-center py-12">
               <div className="w-24 h-24 mx-auto mb-6">
                 <FolderOpen className="w-full h-full text-gray-300" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No projects yet</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">{t('dashboard.noProjects', 'No projects yet')}</h3>
               <p className="text-gray-600 mb-6">
-                Create your first website or app to get started!
+                {t('dashboard.createFirstProject', 'Create your first website or app to get started!')}
               </p>
               <div className="flex gap-4 justify-center">
                 <button
                   onClick={() => router.push('/dashboard/generate')}
                   className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition"
                 >
-                  Create Website
+                  {t('dashboard.createWebsite', 'Create Website')}
                 </button>
                 <button
                   onClick={() => router.push('/dashboard/create-app')}
                   className="px-6 py-3 bg-pink-600 text-white rounded-xl font-semibold hover:bg-pink-700 transition"
                 >
-                  Create Simple App
+                  {t('dashboard.createApp', 'Create Simple App')}
                 </button>
               </div>
             </div>
@@ -215,10 +219,10 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-600 mb-4">Website • Created 2 days ago</p>
                 <div className="flex gap-2">
                   <button className="flex-1 px-3 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition">
-                    Edit
+                    {t('common.edit')}
                   </button>
                   <button className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-200 transition">
-                    View
+                    {t('dashboard.viewSite', 'View')}
                   </button>
                 </div>
               </div>
@@ -228,19 +232,19 @@ export default function DashboardPage() {
 
         {/* Quick Tips */}
         <div className="mt-8 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6 border-2 border-indigo-100">
-          <h3 className="text-lg font-bold text-gray-900 mb-3">💡 Quick Tips</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-3">💡 {t('dashboard.quickTips', 'Quick Tips')}</h3>
           <ul className="space-y-2 text-gray-700">
             <li className="flex items-start gap-2">
               <span className="text-indigo-600 font-bold">•</span>
-              <span><strong>Websites cost 1 credit</strong> - Perfect for restaurants, gyms, portfolios</span>
+              <span><strong>{t('dashboard.tip1Title', 'Websites cost 1 credit')}</strong> - {t('dashboard.tip1Desc', 'Perfect for restaurants, gyms, portfolios')}</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-pink-600 font-bold">•</span>
-              <span><strong>Simple Apps cost 1 credit</strong> - Great for booking, directories, calculators</span>
+              <span><strong>{t('dashboard.tip2Title', 'Simple Apps cost 1 credit')}</strong> - {t('dashboard.tip2Desc', 'Great for booking, directories, calculators')}</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-purple-600 font-bold">•</span>
-              <span><strong>Edit anytime for free</strong> - No extra credits needed for updates</span>
+              <span><strong>{t('dashboard.tip3Title', 'Edit anytime for free')}</strong> - {t('dashboard.tip3Desc', 'No extra credits needed for updates')}</span>
             </li>
           </ul>
         </div>

@@ -25,7 +25,10 @@
       "Bash(psql:*)",
       "Bash(curl:*)",
       "Bash(npx tsc:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(vercel --version:*)"
     ]
   }
 }

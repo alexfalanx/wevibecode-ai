@@ -41,3 +41,31 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# claude temp files
+tmpclaude-*-cwd
+
+# backup files
+*-BACKUP-*.ts
+*-BACKUP-*.tsx
+*-backup.ts
+*-backup.tsx
+*.backup
+
+# debug/utility scripts (optional - remove if you want to track them)
+check-*.js
+check-*.ps1
+diagnose-*.js
+fix-*.ps1
+install-*.ps1
+list-*.js
+test-*.js
+verify-*.ps1
+
+# large documentation exports
+tree.txt
+project-structure.txt
+*.md.pdf
+
+# logs
+deploy.log

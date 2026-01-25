@@ -4,6 +4,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Trash2, Loader2, Image as ImageIcon, CheckCircle2 } from 'lucide-react';
 
 interface UserImage {
@@ -30,6 +31,7 @@ export default function ImageGallery({
   selectable = false,
   refreshTrigger = 0
 }: ImageGalleryProps) {
+  const { t } = useTranslation();
   const [images, setImages] = useState<UserImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +68,7 @@ export default function ImageGallery({
   const handleDelete = async (imageId: string, event: React.MouseEvent) => {
     event.stopPropagation();
 
-    if (!confirm('Are you sure you want to delete this image?')) {
+    if (!confirm(t('images.confirmDeleteImage'))) {
       return;
     }
 
@@ -129,7 +131,7 @@ export default function ImageGallery({
     return (
       <div className="flex items-center justify-center p-12">
         <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
-        <span className="ml-3 text-gray-600">Loading images...</span>
+        <span className="ml-3 text-gray-600">{t('images.loadingImages')}</span>
       </div>
     );
   }
@@ -137,13 +139,13 @@ export default function ImageGallery({
   if (error) {
     return (
       <div className="p-6 bg-red-50 border border-red-200 rounded-lg text-center">
-        <p className="text-red-800 font-medium">Error loading images</p>
+        <p className="text-red-800 font-medium">{t('images.errorLoadingImages')}</p>
         <p className="text-red-600 text-sm mt-1">{error}</p>
         <button
           onClick={fetchImages}
           className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
         >
-          Try Again
+          {t('images.tryAgain')}
         </button>
       </div>
     );
@@ -153,8 +155,8 @@ export default function ImageGallery({
     return (
       <div className="text-center p-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
         <ImageIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <p className="text-gray-600 font-medium">No images uploaded yet</p>
-        <p className="text-gray-500 text-sm mt-1">Upload your first image to get started</p>
+        <p className="text-gray-600 font-medium">{t('images.noImages')}</p>
+        <p className="text-gray-500 text-sm mt-1">{t('images.uploadFirst')}</p>
       </div>
     );
   }
@@ -163,13 +165,13 @@ export default function ImageGallery({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">
-          Your Images ({images.length})
+          {t('images.yourUploadedImages')} ({images.length})
         </h3>
         <button
           onClick={fetchImages}
           className="text-sm text-indigo-600 hover:text-indigo-700"
         >
-          Refresh
+          {t('images.refresh')}
         </button>
       </div>
 
@@ -222,7 +224,7 @@ export default function ImageGallery({
                 onClick={(e) => handleDelete(image.id, e)}
                 disabled={deletingId === image.id}
                 className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg disabled:opacity-50 z-20"
-                title="Delete image"
+                title={t('images.deleteImage')}
               >
                 {deletingId === image.id ? (
                   <Loader2 className="w-4 h-4 animate-spin" />

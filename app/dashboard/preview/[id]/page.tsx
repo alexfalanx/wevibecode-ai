@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import Preview from '@/components/Preview';
 import { ArrowLeft, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -14,6 +15,7 @@ interface PageProps {
 export default function PreviewPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const router = useRouter();
+  const { t } = useTranslation();
   const [preview, setPreview] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,7 +80,7 @@ export default function PreviewPage({ params }: PageProps) {
             className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Dashboard
+            {t('preview.backToDashboard')}
           </button>
         </div>
       </div>
@@ -101,7 +103,7 @@ export default function PreviewPage({ params }: PageProps) {
                 className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span className="hidden sm:inline">Back to History</span>
+                <span className="hidden sm:inline">{t('preview.backToHistory')}</span>
               </button>
               <div className="h-6 w-px bg-gray-300" />
               <div>

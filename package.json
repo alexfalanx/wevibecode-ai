@@ -16,6 +16,8 @@
     "cheerio": "^1.1.2",
     "dompurify": "^3.1.7",
     "i18next": "^25.7.3",
+    "i18next-browser-languagedetector": "^8.2.0",
+    "i18next-http-backend": "^3.0.2",
     "js-cookie": "^3.0.5",
     "jsdom": "^27.4.0",
     "lucide-react": "^0.562.0",

@@ -11,6 +11,7 @@ import { trackPreviewView, logError } from '@/lib/analytics';
 import SiteEditor from './SiteEditor';
 import PublishModal from './PublishModal';
 import PublishSuccessModal from './PublishSuccessModal';
+import { useTranslation } from 'react-i18next';
 
 interface PreviewProps {
   previewId: string;
@@ -19,6 +20,7 @@ interface PreviewProps {
 type ViewportMode = 'desktop' | 'tablet' | 'mobile';
 
 export default function Preview({ previewId }: PreviewProps) {
+  const { t } = useTranslation();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -197,7 +199,7 @@ export default function Preview({ previewId }: PreviewProps) {
       {/* Viewport Toggle */}
       <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600 font-medium">View:</span>
+          <span className="text-sm text-gray-600 font-medium">{t('preview.view')}</span>
 
         <button
           onClick={() => setViewportMode('desktop')}
@@ -213,7 +215,7 @@ export default function Preview({ previewId }: PreviewProps) {
             <path d="M8 21h8" strokeWidth="2" strokeLinecap="round"/>
             <path d="M12 17v4" strokeWidth="2" strokeLinecap="round"/>
           </svg>
-          Desktop
+          {t('preview.desktop')}
         </button>
 
         <button
@@ -229,7 +231,7 @@ export default function Preview({ previewId }: PreviewProps) {
             <rect x="5" y="2" width="14" height="20" rx="2" strokeWidth="2"/>
             <path d="M12 18h.01" strokeWidth="2" strokeLinecap="round"/>
           </svg>
-          Tablet
+          {t('preview.tablet')}
         </button>
 
         <button
@@ -245,11 +247,11 @@ export default function Preview({ previewId }: PreviewProps) {
             <rect x="7" y="2" width="10" height="20" rx="2" strokeWidth="2"/>
             <path d="M12 18h.01" strokeWidth="2" strokeLinecap="round"/>
           </svg>
-          Mobile
+          {t('preview.mobile')}
         </button>
 
           <span className="ml-4 text-xs text-gray-500">
-            {viewportMode === 'desktop' && 'Full width'}
+            {viewportMode === 'desktop' && t('preview.fullWidth')}
             {viewportMode === 'tablet' && '768px wide'}
             {viewportMode === 'mobile' && '375px wide'}
           </span>
@@ -263,7 +265,7 @@ export default function Preview({ previewId }: PreviewProps) {
             title="Edit text and colors"
           >
             <Edit className="w-4 h-4" />
-            Edit
+            {t('preview.edit')}
           </button>
 
           <div className="flex items-center gap-2">
@@ -274,17 +276,17 @@ export default function Preview({ previewId }: PreviewProps) {
                   ? 'bg-green-100 hover:bg-green-200 text-green-700'
                   : 'bg-purple-100 hover:bg-purple-200 text-purple-700'
               }`}
-              title={previewData?.is_published ? 'Published' : 'Publish your site'}
+              title={previewData?.is_published ? t('preview.published') : t('preview.publish')}
             >
               {previewData?.is_published ? (
                 <>
                   <Check className="w-4 h-4" />
-                  Published
+                  {t('preview.published')}
                 </>
               ) : (
                 <>
                   <Upload className="w-4 h-4" />
-                  Publish
+                  {t('preview.publish')}
                 </>
               )}
             </button>
@@ -296,7 +298,7 @@ export default function Preview({ previewId }: PreviewProps) {
                 title={`Visit: ${previewData.published_url}`}
               >
                 <ExternalLink className="w-4 h-4" />
-                View Live
+                {t('preview.viewLive')}
               </button>
             )}
           </div>
@@ -307,7 +309,7 @@ export default function Preview({ previewId }: PreviewProps) {
             title="Refresh preview (Ctrl/Cmd + R)"
           >
             <RefreshCw className="w-4 h-4" />
-            Refresh
+            {t('preview.refresh')}
           </button>
 
           <button
@@ -316,7 +318,7 @@ export default function Preview({ previewId }: PreviewProps) {
             title={isFullscreen ? "Exit fullscreen (Esc)" : "Enter fullscreen"}
           >
             <Maximize className="w-4 h-4" />
-            {isFullscreen ? 'Exit' : 'Fullscreen'}
+            {isFullscreen ? t('preview.exit') : t('preview.fullscreen')}
           </button>
         </div>
       </div>

@@ -228,7 +228,7 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
           {editMode === 'text' && (
             <div className="space-y-3">
               <p className="text-sm text-gray-600 mb-4">
-                Click on any text element below to edit it
+                {t('editor.clickToEdit')}
               </p>
 
               {editableElements.map(element => (
@@ -254,7 +254,7 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
           {editMode === 'color' && (
             <div className="space-y-3">
               <p className="text-sm text-gray-600 mb-4">
-                Click on any color to change it
+                {t('editor.clickToChangeColor')}
               </p>
 
               {Object.entries(colorPalette).map(([key, value]) => {
@@ -302,7 +302,7 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
                   <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span className="text-sm font-medium text-green-800">Image replaced successfully!</span>
+                  <span className="text-sm font-medium text-green-800">{t('images.imageReplaced')}</span>
                 </div>
               )}
 
@@ -310,7 +310,7 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
               {siteImages.length > 0 ? (
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                    Current Images in Site ({siteImages.length})
+                    {t('images.currentImages')} ({siteImages.length})
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
                     {siteImages.map((image) => (
@@ -333,7 +333,7 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
                             onClick={() => handleReplaceImageClick(image)}
                             className="w-full px-3 py-1.5 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700 transition"
                           >
-                            Replace Image
+                            {t('images.replaceImage')}
                           </button>
                         </div>
                       </div>
@@ -343,14 +343,14 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
               ) : (
                 <div className="text-center p-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
                   <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-600">No images found in this site</p>
+                  <p className="text-sm text-gray-600">{t('images.noImagesInSite')}</p>
                 </div>
               )}
 
               {/* Upload New Image */}
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                  Upload New Image
+                  {t('images.uploadNewImage')}
                 </h3>
                 <ImageUploader onUploadComplete={handleUploadComplete} />
               </div>
@@ -358,7 +358,7 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
               {/* Your Uploaded Images Gallery */}
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                  Your Uploaded Images
+                  {t('images.yourUploadedImages')}
                 </h3>
                 <ImageGallery
                   selectable={false}
@@ -376,7 +376,7 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
             className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition"
           >
             <RotateCcw className="w-4 h-4" />
-            Reset
+            {t('editor.reset')}
           </button>
 
           <div className="flex gap-2">
@@ -384,7 +384,7 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
               onClick={onClose}
               className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               onClick={handleSave}
@@ -392,7 +392,7 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
               className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
-              {isSaving ? 'Saving...' : 'Save Changes'}
+              {isSaving ? t('editor.saving') : t('editor.saveChanges')}
             </button>
           </div>
         </div>
@@ -402,13 +402,13 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
       {selectedElement && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
-            <h3 className="text-lg font-bold mb-4">Edit {selectedElement.type}</h3>
+            <h3 className="text-lg font-bold mb-4">{t('editor.editElement')} {selectedElement.type}</h3>
 
             <textarea
               value={editText}
               onChange={(e) => setEditText(e.target.value)}
               className="w-full p-3 border rounded-lg min-h-[100px] focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              placeholder="Enter new text..."
+              placeholder={t('editor.enterNewText')}
               autoFocus
             />
 
@@ -420,13 +420,13 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
                 }}
                 className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50 transition"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={applyTextChange}
                 className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
               >
-                Apply
+                {t('editor.applyChanges')}
               </button>
             </div>
           </div>
@@ -446,7 +446,7 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
           }}
         >
           <div className="bg-white rounded-lg shadow-xl p-6">
-            <h3 className="text-lg font-bold mb-4">Edit Color: {selectedColor.key}</h3>
+            <h3 className="text-lg font-bold mb-4">{t('editor.editColorKey')}: {selectedColor.key}</h3>
 
             <ChromePicker
               color={tempColor || selectedColor.value}
@@ -464,13 +464,13 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
                 }}
                 className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50 transition"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={applyColorChange}
                 className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
               >
-                Apply
+                {t('editor.applyChanges')}
               </button>
             </div>
           </div>
@@ -485,7 +485,7 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
         >
           <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] flex flex-col">
             <div className="flex items-center justify-between p-4 border-b">
-              <h3 className="text-lg font-bold">Select Replacement Image</h3>
+              <h3 className="text-lg font-bold">{t('images.selectReplacement')}</h3>
               <button
                 onClick={() => {
                   setShowImageSelector(false);
@@ -501,7 +501,7 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
               {/* Upload Section */}
               <div>
                 <h4 className="text-sm font-semibold text-gray-900 mb-3">
-                  Upload New Image
+                  {t('images.uploadNewImage')}
                 </h4>
                 <ImageUploader onUploadComplete={handleUploadComplete} />
               </div>
@@ -512,14 +512,14 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
                   <div className="w-full border-t border-gray-300"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Or choose from your library</span>
+                  <span className="px-2 bg-white text-gray-500">{t('images.orChooseFromLibrary')}</span>
                 </div>
               </div>
 
               {/* Gallery Section */}
               <div>
                 <p className="text-sm text-gray-600 mb-4">
-                  Click on an image to use it as the replacement
+                  {t('images.clickToSelectReplacement')}
                 </p>
                 <ImageGallery
                   selectable={true}

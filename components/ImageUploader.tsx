@@ -4,6 +4,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Upload, X, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 interface UploadedImage {
@@ -24,6 +25,7 @@ export default function ImageUploader({
   onError,
   maxSizeMB = 5
 }: ImageUploaderProps) {
+  const { t } = useTranslation();
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -44,12 +46,12 @@ export default function ImageUploader({
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
 
     if (!allowedTypes.includes(file.type)) {
-      return 'Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image.';
+      return t('images.invalidFileType');
     }
 
     const maxSize = maxSizeMB * 1024 * 1024;
     if (file.size > maxSize) {
-      return `File too large. Maximum size is ${maxSizeMB}MB.`;
+      return `${t('images.fileTooLarge')} ${maxSizeMB}MB.`;
     }
 
     return null;
@@ -75,7 +77,7 @@ export default function ImageUploader({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Upload failed');
+        throw new Error(data.error || t('images.uploadError'));
       }
 
       console.log('✅ Upload successful:', data.image.url);
@@ -94,7 +96,7 @@ export default function ImageUploader({
       }, 2000);
 
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Upload failed';
+      const errorMessage = err instanceof Error ? err.message : t('images.uploadError');
       console.error('❌ Upload error:', errorMessage);
       setError(errorMessage);
 
@@ -173,7 +175,7 @@ export default function ImageUploader({
           {isUploading ? (
             <>
               <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
-              <p className="text-sm font-medium text-gray-700">Uploading...</p>
+              <p className="text-sm font-medium text-gray-700">{t('images.uploading')}</p>
               {uploadProgress > 0 && (
                 <div className="w-full max-w-xs bg-gray-200 rounded-full h-2 overflow-hidden">
                   <div
@@ -186,17 +188,17 @@ export default function ImageUploader({
           ) : success ? (
             <>
               <CheckCircle className="w-12 h-12 text-green-500" />
-              <p className="text-sm font-medium text-green-700">Upload successful!</p>
+              <p className="text-sm font-medium text-green-700">{t('images.uploadSuccess')}</p>
             </>
           ) : (
             <>
               <Upload className="w-12 h-12 text-gray-400" />
               <div>
                 <p className="text-sm font-medium text-gray-700">
-                  Drag & drop your image here, or <span className="text-indigo-600">browse</span>
+                  {t('images.dragDrop')} <span className="text-indigo-600">{t('images.browse')}</span>
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  JPEG, PNG, GIF, WebP up to {maxSizeMB}MB
+                  {t('images.fileTypes')} {maxSizeMB}MB
                 </p>
               </div>
             </>
@@ -209,7 +211,7 @@ export default function ImageUploader({
         <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
           <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-red-800">Upload Error</p>
+            <p className="text-sm font-medium text-red-800">{t('images.uploadError')}</p>
             <p className="text-xs text-red-600 mt-1">{error}</p>
           </div>
           <button

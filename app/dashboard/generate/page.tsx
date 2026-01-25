@@ -9,6 +9,8 @@ import { Sparkles, Loader2, CreditCard, Check, Layout } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 import { trackGeneration, trackPageView, logError } from '@/lib/analytics';
 import TemplateGallery from '@/components/TemplateGallery';
+import SimpleLanguageSwitcher from '@/components/SimpleLanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 // IMPROVED: Professional business categories based on market research
 const WEBSITE_TYPES = [
@@ -118,44 +120,44 @@ const AVAILABLE_SECTIONS = {
 // Example prompts for each business type
 const EXAMPLE_PROMPTS = {
   restaurant: [
-    { icon: '🍕', text: 'Italian pizzeria with authentic wood-fired oven and cozy atmosphere' },
-    { icon: '🍜', text: 'Modern ramen restaurant with traditional Japanese recipes and sake bar' },
-    { icon: '☕', text: 'Artisan coffee shop with locally roasted beans and fresh pastries' },
+    { icon: '🍕', key: 'restaurant1', text: 'Italian pizzeria with authentic wood-fired oven and cozy atmosphere' },
+    { icon: '🍜', key: 'restaurant2', text: 'Modern ramen restaurant with traditional Japanese recipes and sake bar' },
+    { icon: '☕', key: 'restaurant3', text: 'Artisan coffee shop with locally roasted beans and fresh pastries' },
   ],
   landing: [
-    { icon: '📱', text: 'SaaS productivity app that helps teams collaborate efficiently' },
-    { icon: '💪', text: 'Online fitness program with personalized workout plans' },
-    { icon: '🎓', text: 'Online course platform teaching web development' },
+    { icon: '📱', key: 'landing1', text: 'SaaS productivity app that helps teams collaborate efficiently' },
+    { icon: '💪', key: 'landing2', text: 'Online fitness program with personalized workout plans' },
+    { icon: '🎓', key: 'landing3', text: 'Online course platform teaching web development' },
   ],
   real_estate: [
-    { icon: '🏡', text: 'Luxury real estate agent specializing in waterfront properties' },
-    { icon: '🏢', text: 'Commercial real estate firm for office and retail spaces' },
-    { icon: '🏠', text: 'First-time homebuyer specialist in suburban neighborhoods' },
+    { icon: '🏡', key: 'realEstate1', text: 'Luxury real estate agent specializing in waterfront properties' },
+    { icon: '🏢', key: 'realEstate2', text: 'Commercial real estate firm for office and retail spaces' },
+    { icon: '🏠', key: 'realEstate3', text: 'First-time homebuyer specialist in suburban neighborhoods' },
   ],
   professional: [
-    { icon: '⚖️', text: 'Family law attorney with 15 years of divorce and custody experience' },
-    { icon: '💼', text: 'Management consulting firm helping businesses optimize operations' },
-    { icon: '📊', text: 'CPA firm specializing in small business tax planning' },
+    { icon: '⚖️', key: 'professional1', text: 'Family law attorney with 15 years of divorce and custody experience' },
+    { icon: '💼', key: 'professional2', text: 'Management consulting firm helping businesses optimize operations' },
+    { icon: '📊', key: 'professional3', text: 'CPA firm specializing in small business tax planning' },
   ],
   healthcare: [
-    { icon: '⚕️', text: 'Family medicine practice providing comprehensive primary care' },
-    { icon: '🦷', text: 'Modern dental practice with cosmetic and implant services' },
-    { icon: '🧘', text: 'Physical therapy clinic specializing in sports injuries' },
+    { icon: '⚕️', key: 'healthcare1', text: 'Family medicine practice providing comprehensive primary care' },
+    { icon: '🦷', key: 'healthcare2', text: 'Modern dental practice with cosmetic and implant services' },
+    { icon: '🧘', key: 'healthcare3', text: 'Physical therapy clinic specializing in sports injuries' },
   ],
   salon: [
-    { icon: '✨', text: 'Upscale hair salon specializing in balayage and color correction' },
-    { icon: '💅', text: 'Nail salon and spa with organic products and relaxing atmosphere' },
-    { icon: '💆', text: 'Day spa offering massage, facials, and wellness treatments' },
+    { icon: '✨', key: 'salon1', text: 'Upscale hair salon specializing in balayage and color correction' },
+    { icon: '💅', key: 'salon2', text: 'Nail salon and spa with organic products and relaxing atmosphere' },
+    { icon: '💆', key: 'salon3', text: 'Day spa offering massage, facials, and wellness treatments' },
   ],
   business: [
-    { icon: '💼', text: 'B2B software company providing cloud solutions for enterprises' },
-    { icon: '📈', text: 'Marketing agency specializing in digital strategy and branding' },
-    { icon: '🏗️', text: 'Construction company for commercial and residential projects' },
+    { icon: '💼', key: 'business1', text: 'B2B software company providing cloud solutions for enterprises' },
+    { icon: '📈', key: 'business2', text: 'Marketing agency specializing in digital strategy and branding' },
+    { icon: '🏗️', key: 'business3', text: 'Construction company for commercial and residential projects' },
   ],
   ecommerce: [
-    { icon: '👕', text: 'Sustainable fashion brand with eco-friendly clothing' },
-    { icon: '🎮', text: 'Gaming accessories store with custom controllers and peripherals' },
-    { icon: '🌿', text: 'Organic skincare products made from natural ingredients' },
+    { icon: '👕', key: 'ecommerce1', text: 'Sustainable fashion brand with eco-friendly clothing' },
+    { icon: '🎮', key: 'ecommerce2', text: 'Gaming accessories store with custom controllers and peripherals' },
+    { icon: '🌿', key: 'ecommerce3', text: 'Organic skincare products made from natural ingredients' },
   ],
 };
 
@@ -253,6 +255,7 @@ function ColorPicker({ value, onChange, label }: { value: string; label: string;
 export default function GeneratePage() {
   const router = useRouter();
   const toast = useToast();
+  const { t } = useTranslation();
   const [prompt, setPrompt] = useState('');
   const [websiteType, setWebsiteType] = useState('restaurant');
   const [selectedSections, setSelectedSections] = useState<string[]>(['hero']);
@@ -452,21 +455,26 @@ export default function GeneratePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">
-        
+
+        {/* Language Switcher - Top Right */}
+        <div className="flex justify-end mb-4">
+          <SimpleLanguageSwitcher />
+        </div>
+
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 bg-white px-6 py-3 rounded-full shadow-lg mb-6">
             <CreditCard className="w-5 h-5 text-indigo-600" />
             <span className="font-semibold text-gray-900">
-              {credits !== null ? credits : '...'} Credits
+              {credits !== null ? credits : '...'} {t('common.credits', 'Credits')}
             </span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl font-bold mb-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-            Build Your Professional Website
+            {t('generate.title')}
           </h1>
           <p className="text-xl text-gray-700 mb-6">
-            Choose your business type, describe your vision, and let AI build it
+            {t('generate.describe')}
           </p>
 
           {/* Template Selection Button - TEMPORARILY DISABLED */}
@@ -508,7 +516,7 @@ export default function GeneratePage() {
           {/* Business Type */}
           <div className="bg-white p-6 rounded-xl shadow-lg border-2 border-indigo-100">
             <label className="text-lg font-semibold text-gray-900 mb-4 block">
-              1. What type of website do you need?
+              1. {t('generate.websiteType', 'What type of website do you need?')}
             </label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {WEBSITE_TYPES.map((type) => (
@@ -523,7 +531,9 @@ export default function GeneratePage() {
                   }`}
                 >
                   <div className="text-3xl mb-2">{type.icon}</div>
-                  <div className="text-sm font-medium text-gray-900">{type.label}</div>
+                  <div className="text-sm font-medium text-gray-900">
+                    {t(`generate.businessTypes.${type.value === 'real_estate' ? 'realEstate' : type.value === 'professional' ? 'professionalServices' : type.value}`, type.label)}
+                  </div>
                 </button>
               ))}
             </div>
@@ -532,12 +542,12 @@ export default function GeneratePage() {
           {/* Prompt with Examples */}
           <div className="bg-white p-6 rounded-xl shadow-lg border-2 border-purple-100">
             <label className="text-lg font-semibold text-gray-900 mb-4 block">
-              2. Describe your business
+              2. {t('generate.describe')}
             </label>
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Example: Cozy Italian restaurant with wood-fired pizzas, homemade pasta, and local wine selection..."
+              placeholder={examplePrompts && examplePrompts[0] ? t(`generate.examples.${examplePrompts[0].key}`, examplePrompts[0].text) : t('generate.placeholder')}
               disabled={loading}
               rows={4}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition resize-none"
@@ -545,24 +555,27 @@ export default function GeneratePage() {
             
             {/* Example Prompts */}
             <div className="mt-4 space-y-2">
-              <div className="text-sm font-medium text-gray-600 mb-2">Try these examples:</div>
-              {examplePrompts.map((example, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setPrompt(example.text)}
-                  className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-purple-50 border border-gray-200 hover:border-purple-300 rounded-lg transition flex items-start gap-3 group"
-                >
-                  <span className="text-2xl group-hover:scale-110 transition">{example.icon}</span>
-                  <span className="text-sm text-gray-700 group-hover:text-purple-700">{example.text}</span>
-                </button>
-              ))}
+              <div className="text-sm font-medium text-gray-600 mb-2">{t('generate.tryExamples', 'Try these examples:')}</div>
+              {examplePrompts.map((example, idx) => {
+                const translatedText = t(`generate.examples.${example.key}`, example.text);
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => setPrompt(translatedText)}
+                    className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-purple-50 border border-gray-200 hover:border-purple-300 rounded-lg transition flex items-start gap-3 group"
+                  >
+                    <span className="text-2xl group-hover:scale-110 transition">{example.icon}</span>
+                    <span className="text-sm text-gray-700 group-hover:text-purple-700">{translatedText}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {/* Vibe */}
           <div className="bg-white p-6 rounded-xl shadow-lg border-2 border-pink-100">
             <label className="text-lg font-semibold text-gray-900 mb-4 block">
-              3. Choose your vibe
+              3. {t('generate.selectStyle')}
             </label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {VIBES.map((v) => (
@@ -577,7 +590,9 @@ export default function GeneratePage() {
                   }`}
                 >
                   <div className="text-2xl mb-1">{v.icon}</div>
-                  <div className="text-sm font-medium text-gray-900">{v.label}</div>
+                  <div className="text-sm font-medium text-gray-900">
+                    {t(`generate.vibes.${v.value === 'bold' ? 'boldVibrant' : v.value === 'fun' ? 'fun' : v.value}`, v.label)}
+                  </div>
                 </button>
               ))}
             </div>
@@ -586,46 +601,52 @@ export default function GeneratePage() {
           {/* Sections */}
           <div className="bg-white p-6 rounded-xl shadow-lg border-2 border-blue-100">
             <label className="text-lg font-semibold text-gray-900 mb-4 block">
-              4. Select sections for your {WEBSITE_TYPES.find(t => t.value === websiteType)?.label}
+              4. {t('generate.selectSections')} - {t(`generate.businessTypes.${websiteType === 'real_estate' ? 'realEstate' : websiteType === 'professional' ? 'professionalServices' : websiteType}`, WEBSITE_TYPES.find(wt => wt.value === websiteType)?.label || '')}
             </label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {availableSections.map((section) => (
-                <button
-                  key={section.id}
-                  onClick={() => toggleSection(section.id)}
-                  disabled={loading || section.required}
-                  className={`p-4 rounded-lg border-2 transition text-left flex items-center gap-3 ${
-                    selectedSections.includes(section.id)
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300 bg-white'
-                  } ${section.required ? 'opacity-75 cursor-not-allowed' : ''}`}
-                >
-                  <div className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
-                    selectedSections.includes(section.id)
-                      ? 'bg-blue-500 border-blue-500'
-                      : 'border-gray-300'
-                  }`}>
-                    {selectedSections.includes(section.id) && (
-                      <Check className="w-4 h-4 text-white" />
-                    )}
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">{section.label}</div>
-                    {section.required && (
-                      <div className="text-xs text-gray-500">Required</div>
-                    )}
-                  </div>
-                </button>
-              ))}
+              {availableSections.map((section) => {
+                // Convert section.id to camelCase for translation key lookup
+                const sectionKey = section.id.replace(/_/g, ' ').replace(/\b\w/g, (l, i) => i === 0 ? l : l.toUpperCase()).replace(/ /g, '');
+                const translationKey = `generate.sections.${sectionKey}`;
+
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => toggleSection(section.id)}
+                    disabled={loading || section.required}
+                    className={`p-4 rounded-lg border-2 transition text-left flex items-center gap-3 ${
+                      selectedSections.includes(section.id)
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                    } ${section.required ? 'opacity-75 cursor-not-allowed' : ''}`}
+                  >
+                    <div className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+                      selectedSections.includes(section.id)
+                        ? 'bg-blue-500 border-blue-500'
+                        : 'border-gray-300'
+                    }`}>
+                      {selectedSections.includes(section.id) && (
+                        <Check className="w-4 h-4 text-white" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900">{t(translationKey, section.label)}</div>
+                      {section.required && (
+                        <div className="text-xs text-gray-500">{t('generate.required', 'Required')}</div>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {/* Colors */}
           <div className="bg-white p-6 rounded-xl shadow-lg border-2 border-emerald-100">
             <label className="text-lg font-semibold text-gray-900 mb-4 block">
-              5. Choose your brand colors
+              5. {t('generate.chooseBrandColors')}
             </label>
-            
+
             <div className="flex items-center gap-4 mb-6">
               <button
                 onClick={() => setColorMode('custom')}
@@ -633,7 +654,7 @@ export default function GeneratePage() {
                   colorMode === 'custom' ? 'bg-emerald-600 text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                🎨 Pick Custom Colors
+                🎨 {t('generate.pickCustomColors')}
               </button>
               <button
                 onClick={() => setColorMode('ai')}
@@ -641,7 +662,7 @@ export default function GeneratePage() {
                   colorMode === 'ai' ? 'bg-emerald-600 text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                ✨ Let AI Choose
+                ✨ {t('generate.letAIChoose')}
               </button>
             </div>
 
@@ -662,7 +683,7 @@ export default function GeneratePage() {
 
             {colorMode === 'ai' && (
               <div className="text-center py-6 text-gray-600">
-                ✨ AI will analyze your business and choose the perfect color scheme
+                ✨ {t('generate.aiWillChooseColors')}
               </div>
             )}
           </div>
@@ -672,12 +693,12 @@ export default function GeneratePage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <label className="text-lg font-semibold text-gray-900 block mb-1">
-                  6. AI-Generated Custom Logo
+                  6. {t('generate.aiGeneratedLogo')}
                 </label>
                 <p className="text-sm text-gray-600">
-                  {customLogo 
-                    ? '✨ AI will create a unique simple icon logo'
-                    : '📝 Text-only logo will be used'}
+                  {customLogo
+                    ? '✨ ' + t('generate.aiWillCreateLogo')
+                    : '📝 ' + t('generate.textOnlyLogo')}
                 </p>
               </div>
               <button
@@ -705,7 +726,7 @@ export default function GeneratePage() {
                       logoColorMode === 'custom' ? 'bg-violet-600 text-white' : 'bg-white text-gray-700 border border-gray-300'
                     }`}
                   >
-                    Pick Logo Colors
+                    {t('generate.pickLogoColors')}
                   </button>
                   <button
                     onClick={() => setLogoColorMode('ai')}
@@ -713,19 +734,19 @@ export default function GeneratePage() {
                       logoColorMode === 'ai' ? 'bg-violet-600 text-white' : 'bg-white text-gray-700 border border-gray-300'
                     }`}
                   >
-                    AI Choose
+                    {t('generate.aiChoose')}
                   </button>
                 </div>
 
                 {logoColorMode === 'custom' && (
                   <div className="grid grid-cols-2 gap-4">
-                    <ColorPicker 
-                      value={logoPrimary} 
+                    <ColorPicker
+                      value={logoPrimary}
                       onChange={setLogoPrimary}
                       label="Logo Primary"
                     />
-                    <ColorPicker 
-                      value={logoSecondary} 
+                    <ColorPicker
+                      value={logoSecondary}
                       onChange={setLogoSecondary}
                       label="Logo Secondary"
                     />
@@ -734,7 +755,7 @@ export default function GeneratePage() {
 
                 {logoColorMode === 'ai' && (
                   <div className="text-center py-3 text-sm text-gray-600">
-                    AI will choose perfect logo colors
+                    {t('generate.aiWillChooseLogoColors')}
                   </div>
                 )}
               </div>
@@ -745,7 +766,7 @@ export default function GeneratePage() {
           <div className="bg-white p-6 rounded-xl shadow-lg border-2 border-green-100">
             <div className="flex items-center justify-between mb-3">
               <label className="text-lg font-semibold text-gray-900">
-                7. Include Professional Photos
+                7. {t('generate.includeProfessionalPhotos')}
               </label>
               <button
                 onClick={() => setIncludeImages(!includeImages)}
@@ -759,9 +780,9 @@ export default function GeneratePage() {
               </button>
             </div>
             <p className="text-sm text-gray-600">
-              {includeImages 
-                ? '✨ +3 credits - Include 2-3 strategic professional photos from Unsplash'
-                : 'Use colors and gradients only (no photos)'}
+              {includeImages
+                ? '✨ ' + t('generate.includePhotosDesc')
+                : t('generate.colorsGradientsOnly')}
             </p>
           </div>
 
@@ -769,11 +790,11 @@ export default function GeneratePage() {
           <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-6 rounded-xl shadow-lg border-2 border-amber-200">
             <div className="flex items-center justify-between">
               <div>
-                <div className="font-bold text-gray-900 text-lg mb-2">Total Cost</div>
+                <div className="font-bold text-gray-900 text-lg mb-2">{t('generate.totalCredits')}</div>
                 <div className="text-sm text-gray-600 space-y-1">
-                  <div>• 1 credit (website generation)</div>
-                  {includeImages && <div>• 3 credits (professional photos)</div>}
-                  {customLogo && <div>• 3 credits (AI custom logo)</div>}
+                  <div>• 1 {t('common.credit')} ({t('generate.websiteGeneration')})</div>
+                  {includeImages && <div>• 3 {t('common.credits')} ({t('generate.professionalPhotos')})</div>}
+                  {customLogo && <div>• 3 {t('common.credits')} ({t('generate.aiCustomLogo')})</div>}
                 </div>
               </div>
               <div className="text-4xl font-bold text-indigo-600">
@@ -811,12 +832,12 @@ export default function GeneratePage() {
             {loading ? (
               <>
                 <Loader2 className="w-6 h-6 animate-spin" />
-                Creating Your Website...
+                {t('generate.generating')}
               </>
             ) : (
               <>
                 <Sparkles className="w-6 h-6" />
-                Generate Website ({totalCredits} {totalCredits === 1 ? 'Credit' : 'Credits'})
+                {t('generate.generate')} ({totalCredits} {totalCredits === 1 ? t('common.credit', 'Credit') : t('common.credits', 'Credits')})
               </>
             )}
           </button>
