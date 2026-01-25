@@ -115,15 +115,25 @@ export function injectContent(
     `Our team of professionals is dedicated to your success.`
   ].filter(Boolean);
 
+  // 0. REPLACE LOGO/BRAND NAME (span.title, .logo elements, etc.)
+  $('span.title, .logo .title, .brand, #logo .title').each((i, elem) => {
+    $(elem).text(businessName);
+  });
+  console.log(`✅ Replaced logo/brand name elements with: ${businessName}`);
+
   // 1. REPLACE ALL H1 TAGS (COMPLETELY REPLACE CONTENT)
   $('h1').each((i, elem) => {
     const $h1 = $(elem);
 
-    // For ALL H1 tags, completely replace content with business name
-    // This handles templates with <br> tags, links, and other nested elements
-    $h1.html(businessName);
+    // For ALL H1 tags, completely replace content with hero headline or business name
+    // Use heroHeadline for the first H1 (main hero), businessName for others
+    if (i === 0) {
+      $h1.html(heroHeadline);
+    } else {
+      $h1.html(businessName);
+    }
   });
-  console.log(`✅ Replaced ${$('h1').length} H1 tags with business name`);
+  console.log(`✅ Replaced ${$('h1').length} H1 tags with headline/business name`);
 
   // 2. REPLACE ALL H2 TAGS
   const h2Replacements = [heroHeadline, aboutTitle, 'Our Services', 'Get In Touch', heroHeadline];
@@ -181,15 +191,63 @@ export function injectContent(
   });
   console.log(`✅ Replaced ${$('p').length} paragraph tags with business content`);
 
-  // 5. REPLACE MENU ITEMS
-  const menuSelectors = 'nav a, #nav a, .menu a, header a, ul.nav a, .navigation a, #menu a';
+  // 5. REPLACE MENU ITEMS - Check both text AND href for template placeholders
+  const menuSelectors = 'nav a, #nav a, .menu a, header a, ul.nav a, .navigation a, #menu a, #menu ul li a';
   let menuLinksReplaced = 0;
+
+  // Define menu structure for business websites
+  const menuItems = [
+    { label: 'Home', href: '#home' },
+    { label: 'About', href: '#about' },
+    { label: 'Services', href: '#services' },
+    { label: 'Contact', href: '#contact' }
+  ];
+  let menuIndex = 0;
 
   $(menuSelectors).each((i, elem) => {
     const $link = $(elem);
     const text = $link.text().trim().toLowerCase();
+    const href = ($link.attr('href') || '').toLowerCase();
 
-    if (text.includes('generic') || text.includes('dropdown')) {
+    // Skip Menu toggle button and index.html (Home) links
+    if (text === 'menu' || href === '#menu') {
+      return;
+    }
+
+    // Keep Home link but update href
+    if (text === 'home' || href === 'index.html') {
+      $link.text('Home');
+      $link.attr('href', '#home');
+      menuLinksReplaced++;
+      return;
+    }
+
+    // Check if href points to template pages (generic.html, elements.html, etc.)
+    if (href.includes('generic.html') || href.includes('elements.html') ||
+        href.includes('.html') && !href.includes('index.html')) {
+      // Assign menu items in order: About, Services, Contact
+      if (menuIndex === 0) {
+        $link.text('About');
+        $link.attr('href', '#about');
+      } else if (menuIndex === 1) {
+        $link.text('Services');
+        $link.attr('href', '#services');
+      } else if (menuIndex === 2) {
+        $link.text('Contact');
+        $link.attr('href', '#contact');
+      } else {
+        // Hide extra menu items
+        $link.closest('li').css('display', 'none');
+      }
+      menuIndex++;
+      menuLinksReplaced++;
+      return;
+    }
+
+    // Check text content for template placeholders
+    if (text.includes('generic') || text.includes('dropdown') ||
+        text.includes('ipsum') || text.includes('tempus') ||
+        text.includes('consequat') || text.includes('veroeros')) {
       $link.text('About');
       $link.attr('href', '#about');
       menuLinksReplaced++;
@@ -208,6 +266,34 @@ export function injectContent(
     }
   });
   console.log(`✅ Updated ${menuLinksReplaced} menu navigation links`);
+
+  // 5b. REPLACE ALL TEMPLATE PAGE LINKS (generic.html, elements.html, etc.)
+  // This catches links outside the menu (like tile articles in Phantom)
+  let templateLinksReplaced = 0;
+  $('a').each((i, elem) => {
+    const $link = $(elem);
+    const href = ($link.attr('href') || '').toLowerCase();
+
+    // Skip already processed links (anchors starting with #)
+    if (href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto')) {
+      return;
+    }
+
+    // Replace template page links with javascript:void(0) to prevent navigation
+    if (href === 'generic.html' || href === 'elements.html' ||
+        (href.endsWith('.html') && href !== 'index.html')) {
+      $link.attr('href', 'javascript:void(0)');
+      $link.css('cursor', 'pointer');
+      templateLinksReplaced++;
+    }
+
+    // Update index.html to #home
+    if (href === 'index.html') {
+      $link.attr('href', '#home');
+      templateLinksReplaced++;
+    }
+  });
+  console.log(`✅ Replaced ${templateLinksReplaced} template page links`);
 
   // 6. REPLACE CTA BUTTONS
   $('button, .button, input[type="submit"], input[type="button"]').each((i, elem) => {
@@ -372,6 +458,82 @@ export function inlineCSS(html: string, css: string): string {
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
+/* ============================================ */
+/* PHANTOM TEMPLATE - Hero Section Styling      */
+/* ============================================ */
+
+/* Phantom uses #main > .inner > header for hero */
+#main > .inner > header {
+  background: linear-gradient(135deg, rgba(30, 30, 40, 0.95) 0%, rgba(50, 50, 70, 0.90) 100%);
+  padding: 4em 3em;
+  border-radius: 12px;
+  margin-bottom: 2em;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+#main > .inner > header h1 {
+  color: #ffffff !important;
+  font-size: 2.5em !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  text-shadow: 0 2px 15px rgba(0, 0, 0, 0.5) !important;
+  margin-bottom: 0.5em !important;
+}
+
+#main > .inner > header p {
+  color: #e0e0e0 !important;
+  font-size: 1.25em !important;
+  line-height: 1.6 !important;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4) !important;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Phantom template - improved tile cards */
+.tiles article {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tiles article:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+.tiles article h2 {
+  color: #ffffff !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.tiles article .content p {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* ============================================ */
+/* GENERAL HERO STYLES (for other templates)   */
+/* ============================================ */
+
+/* Generic hero section styling */
+section.banner,
+section#hero,
+.hero-section,
+header.major {
+  position: relative;
+}
+
+section.banner h1,
+section.banner h2,
+section.banner p,
+section#hero h1,
+section#hero h2,
+section#hero p,
+header.major h1,
+header.major h2,
+header.major p {
+  color: #ffffff !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5) !important;
+}
+
 /* Logo styling */
 #header img[alt] {
   display: inline-block;
@@ -386,6 +548,24 @@ export function inlineCSS(html: string, css: string): string {
 #footer .copyright {
   font-size: 0.9em;
   margin-top: 1em;
+}
+
+/* Menu styling for Phantom */
+#menu {
+  background: rgba(30, 30, 40, 0.98) !important;
+}
+
+#menu h2 {
+  color: #ffffff !important;
+}
+
+#menu ul li a {
+  color: #ffffff !important;
+  border-bottom-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+#menu ul li a:hover {
+  color: #8cc9f0 !important;
 }
 `;
 
