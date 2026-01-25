@@ -115,9 +115,21 @@ export function injectContent(
     `Our team of professionals is dedicated to your success.`
   ].filter(Boolean);
 
-  // 0. REPLACE LOGO/BRAND NAME (span.title, .logo elements, etc.)
-  $('span.title, .logo .title, .brand, #logo .title').each((i, elem) => {
-    $(elem).text(businessName);
+  // 0. REPLACE LOGO/BRAND NAME AND REMOVE LOGO IMAGES
+  // First, remove any logo images and replace with business name
+  $('.logo img, .logo .symbol, span.symbol').each((i, elem) => {
+    $(elem).remove();
+  });
+
+  // Then replace text in logo/brand elements
+  $('span.title, .logo .title, .brand, #logo .title, .logo, a.logo').each((i, elem) => {
+    const $elem = $(elem);
+    // If it's a link, preserve the link but replace content
+    if ($elem.is('a')) {
+      $elem.html(businessName);
+    } else {
+      $elem.text(businessName);
+    }
   });
   console.log(`✅ Replaced logo/brand name elements with: ${businessName}`);
 
@@ -468,7 +480,7 @@ export function inlineCSS(html: string, css: string): string {
   padding: 4em 3em;
   border-radius: 12px;
   margin-bottom: 2em;
-  text-align: center;
+  text-align: center !important;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 }
 
@@ -479,6 +491,7 @@ export function inlineCSS(html: string, css: string): string {
   line-height: 1.3 !important;
   text-shadow: 0 2px 15px rgba(0, 0, 0, 0.5) !important;
   margin-bottom: 0.5em !important;
+  text-align: center !important;
 }
 
 #main > .inner > header p {
@@ -488,6 +501,7 @@ export function inlineCSS(html: string, css: string): string {
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4) !important;
   max-width: 800px;
   margin: 0 auto;
+  text-align: center !important;
 }
 
 /* Phantom template - improved tile cards */
@@ -534,10 +548,23 @@ header.major p {
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5) !important;
 }
 
-/* Logo styling */
-#header img[alt] {
-  display: inline-block;
-  vertical-align: middle;
+/* Logo/Brand name styling */
+#header .logo,
+a.logo,
+.logo .title,
+span.title {
+  font-size: 1.5em !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  text-decoration: none !important;
+  letter-spacing: 0.05em !important;
+}
+
+/* Hide logo images if they weren't replaced */
+.logo img,
+.logo .symbol,
+span.symbol {
+  display: none !important;
 }
 
 /* Footer improvements */
