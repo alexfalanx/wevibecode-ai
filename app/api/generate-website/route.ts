@@ -1,36 +1,17 @@
 // app/api/generate-website/route.ts
-// COMPLETE v7.0 - HTML5UP TEMPLATE SYSTEM RE-ENABLED WITH CHEERIO! 🎨
-// ✅ NEW: Migrated to cheerio (serverless-compatible, no ES Module issues)
-// ✅ 10 HTML5UP templates - AI picks best for business type
-// ✅ Content injection into professional templates
-// ✅ Dynamic color customization per template
+// COMPLETE v6.0 - HTML5UP TEMPLATE SYSTEM INTEGRATED! 🎨
+// ✅ NEW: 10 HTML5UP templates - AI picks best for business type
+// ✅ NEW: Content injection into professional templates  
+// ✅ NEW: Dynamic color customization per template
 // Previous: Pexels images, Gallery, Testimonials, Menu, Logo fixes
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import OpenAI from 'openai';
-// RE-ENABLED with cheerio (v7.0) - serverless-compatible!
-import { selectTemplate, generateFromTemplate } from '../../../templates/template-system-cheerio';
-
-// Vercel serverless function configuration
-export const runtime = 'nodejs';
-export const maxDuration = 60; // Maximum allowed on Vercel Pro (60 seconds)
-export const dynamic = 'force-dynamic';
+import { selectTemplate, generateFromTemplate } from '../../../templates/template-system';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-
-// Handle CORS preflight
-export async function OPTIONS(request: NextRequest) {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
-  });
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -122,25 +103,95 @@ export async function POST(request: NextRequest) {
       console.log(`✅ Images fetched: ${images.length}/3`);
     }
 
-    // STEP 5: Build website
-    // v7.0: TEMPLATE SYSTEM RE-ENABLED with cheerio!
-    let finalHtml = '';
+    // STEP 5: Build website - Use template if selected, otherwise custom build
+    let finalHtml: string;
 
     if (templateId) {
-      // Use selected template
-      console.log(`🎨 Building with selected template: ${templateId}...`);
-      finalHtml = generateFromTemplate(templateId, content, images, logoUrl, colors);
-      console.log(`✅ Template-based website built: ${Math.round(finalHtml.length / 1024)}KB`);
-    } else {
-      // Auto-select template based on business type (default behavior)
-      console.log(`🎨 Auto-selecting template for ${websiteType}...`);
-      const selectedTemplate = selectTemplate(websiteType);
-      finalHtml = generateFromTemplate(selectedTemplate, content, images, logoUrl, colors);
-      console.log(`✅ Template-based website built: ${Math.round(finalHtml.length / 1024)}KB`);
-    }
+      // Use HTML5UP template system
+      console.log(`🎨 Using template: ${templateId}`);
+      console.log(`🔍 DEBUG - templateId raw: "${templateId}" (type: ${typeof templateId})`);
 
-    if (!finalHtml) {
-      throw new Error('Website generation failed');
+      // PHASE 1 FIX: Robust template ID normalization
+      // Handle spaces, hyphens, and mixed case
+      const normalizedId = templateId?.trim().toLowerCase().replace(/\s+/g, '-');
+      console.log(`🔍 DEBUG - normalized: "${normalizedId}"`);
+
+      // Map template IDs to actual folder names (must match file system exactly!)
+      const templateNameMap: { [key: string]: string } = {
+        'alpha': 'Alpha',
+        'dimension': 'Dimension',
+        'forty': 'Forty',
+        'hyperspace': 'Hyperspace',
+        'massively': 'Massively',
+        'phantom': 'Phantom',
+        'solid-state': 'Solid State', // CRITICAL: Has space in folder name!
+        'spectral': 'Spectral',
+        'stellar': 'Stellar',
+        'story': 'Story',
+      };
+
+      // Try direct lookup, then reverse lookup, then smart fallback
+      let templateName = templateNameMap[normalizedId];
+
+      if (!templateName) {
+        // Reverse lookup: find by comparing folder names
+        templateName = Object.values(templateNameMap).find(
+          name => name.toLowerCase().replace(/\s+/g, '-') === normalizedId
+        ) as string;
+      }
+
+      if (!templateName) {
+        // Smart fallback: convert kebab-case to Title Case with spaces
+        templateName = normalizedId
+          .split('-')
+          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+        console.warn(`⚠️ Template ID "${templateId}" normalized to "${normalizedId}" not found in map. Using fallback: "${templateName}"`);
+      }
+
+      console.log(`🔍 DEBUG - mapped to folder name: "${templateName}"`);
+      console.log(`🔍 DEBUG - direct match: ${!!templateNameMap[normalizedId]}`);
+
+      // Generate with error handling and fallback
+      try {
+        finalHtml = generateFromTemplate(templateName, content, images, logoUrl, colors);
+
+        // CRITICAL: Check if generation failed (blank page)
+        if (!finalHtml || finalHtml.length < 100) {
+          throw new Error(`Template generation failed - output too small (${finalHtml.length} bytes)`);
+        }
+
+        console.log(`✅ Template website built: ${Math.round(finalHtml.length / 1024)}KB`);
+      } catch (error) {
+        console.error(`❌ Template generation error for "${templateName}":`, error);
+
+        // Fallback to Alpha template as default
+        console.log(`🔄 Falling back to Alpha template...`);
+        finalHtml = generateFromTemplate('Alpha', content, images, logoUrl, colors);
+
+        // Add user-visible warning in HTML
+        if (finalHtml) {
+          finalHtml = finalHtml.replace(
+            '<body',
+            `<body><div style="background: #ff9800; color: white; padding: 10px; text-align: center; font-weight: bold;">Template "${templateName}" unavailable - using default template</div><body style="display:none"`
+          );
+        }
+      }
+    } else {
+      // Use custom AI-generated layout
+      console.log(`🏗️  Building custom website for ${websiteType}...`);
+      const { html, css, js } = buildWebsite(content, sections, colors, images, logoUrl, websiteType, vibe);
+
+      if (!html) {
+        throw new Error('Website generation failed');
+      }
+
+      // Combine HTML with inline CSS and JS
+      finalHtml = html
+        .replace('STYLES_PLACEHOLDER', css)
+        .replace('SCRIPTS_PLACEHOLDER', js);
+
+      console.log(`✅ Custom website built: ${Math.round(finalHtml.length / 1024)}KB`);
     }
 
     // STEP 6: Save
