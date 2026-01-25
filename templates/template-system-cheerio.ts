@@ -7,14 +7,14 @@ import path from 'path';
 import * as cheerio from 'cheerio';
 
 const TEMPLATE_MAPPING: { [key: string]: string[] } = {
-  restaurant: ['Alpha', 'Spectral', 'Stellar'],
-  real_estate: ['Phantom', 'Forty', 'Stellar'],
-  professional: ['Solid State', 'Alpha', 'Dimension'],
-  healthcare: ['Alpha', 'Solid State', 'Stellar'],
-  salon: ['Phantom', 'Spectral', 'Forty'],
-  business: ['Alpha', 'Solid State', 'Hyperspace'],
-  ecommerce: ['Forty', 'Phantom', 'Spectral'],
-  landing: ['Dimension', 'Spectral', 'Hyperspace'],
+  restaurant: ['Phantom'], // TEMP: Force Phantom for testing
+  real_estate: ['Phantom'], // TEMP: Force Phantom for testing
+  professional: ['Phantom'], // TEMP: Force Phantom for testing
+  healthcare: ['Phantom'], // TEMP: Force Phantom for testing
+  salon: ['Phantom'], // TEMP: Force Phantom for testing
+  business: ['Phantom'], // TEMP: Force Phantom for testing
+  ecommerce: ['Phantom'], // TEMP: Force Phantom for testing
+  landing: ['Phantom'], // TEMP: Force Phantom for testing
 };
 
 export function selectTemplate(businessType: string): string {
