@@ -464,6 +464,18 @@ export function applyColors(css: string, colors: any): string {
     result = result.replace(from, to);
   });
 
+  // CRITICAL FIX: Remove references to template assets (causes 404 errors)
+  // These image references won't work in the preview context
+  console.log(`🧹 Removing template asset references from CSS...`);
+
+  // Remove background-image declarations that reference local images
+  result = result.replace(/background-image:\s*url\(["']?images\/[^"')]+["']?\);?/gi, '');
+  result = result.replace(/background:\s*url\(["']?images\/[^"')]+["']?\);?/gi, 'background: none;');
+
+  // Remove any remaining images/ references
+  result = result.replace(/url\(["']?images\/[^"')]+["']?\)/gi, 'none');
+
+  console.log(`✅ Template asset references removed`);
   console.log(`✅ Colors applied`);
   return result;
 }
