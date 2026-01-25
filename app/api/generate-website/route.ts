@@ -1,14 +1,15 @@
 // app/api/generate-website/route.ts
-// COMPLETE v6.0 - HTML5UP TEMPLATE SYSTEM INTEGRATED! 🎨
-// ✅ NEW: 10 HTML5UP templates - AI picks best for business type
-// ✅ NEW: Content injection into professional templates
-// ✅ NEW: Dynamic color customization per template
+// COMPLETE v7.0 - HTML5UP TEMPLATE SYSTEM RE-ENABLED WITH CHEERIO! 🎨
+// ✅ NEW: Migrated to cheerio (serverless-compatible, no ES Module issues)
+// ✅ 10 HTML5UP templates - AI picks best for business type
+// ✅ Content injection into professional templates
+// ✅ Dynamic color customization per template
 // Previous: Pexels images, Gallery, Testimonials, Menu, Logo fixes
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import OpenAI from 'openai';
-// TEMPORARILY DISABLED - jsdom causes ES Module errors on Vercel
-// import { selectTemplate, generateFromTemplate } from '../../../templates/template-system';
+// RE-ENABLED with cheerio (v7.0) - serverless-compatible!
+import { selectTemplate, generateFromTemplate } from '../../../templates/template-system-cheerio';
 
 // Vercel serverless function configuration
 export const runtime = 'nodejs';
@@ -122,21 +123,25 @@ export async function POST(request: NextRequest) {
     }
 
     // STEP 5: Build website
-    // TEMPLATE SYSTEM TEMPORARILY DISABLED due to jsdom ES Module issues on Vercel
-    // Using custom AI-generated layout for all websites
-    console.log(`🏗️  Building custom website for ${websiteType}...`);
-    const { html, css, js } = buildWebsite(content, sections, colors, images, logoUrl, websiteType, vibe);
+    // v7.0: TEMPLATE SYSTEM RE-ENABLED with cheerio!
+    let finalHtml = '';
 
-    if (!html) {
-      throw new Error('Website generation failed');
+    if (templateId) {
+      // Use selected template
+      console.log(`🎨 Building with selected template: ${templateId}...`);
+      finalHtml = generateFromTemplate(templateId, content, images, logoUrl, colors);
+      console.log(`✅ Template-based website built: ${Math.round(finalHtml.length / 1024)}KB`);
+    } else {
+      // Auto-select template based on business type (default behavior)
+      console.log(`🎨 Auto-selecting template for ${websiteType}...`);
+      const selectedTemplate = selectTemplate(websiteType);
+      finalHtml = generateFromTemplate(selectedTemplate, content, images, logoUrl, colors);
+      console.log(`✅ Template-based website built: ${Math.round(finalHtml.length / 1024)}KB`);
     }
 
-    // Combine HTML with inline CSS and JS
-    const finalHtml = html
-      .replace('STYLES_PLACEHOLDER', css)
-      .replace('SCRIPTS_PLACEHOLDER', js);
-
-    console.log(`✅ Custom website built: ${Math.round(finalHtml.length / 1024)}KB`);
+    if (!finalHtml) {
+      throw new Error('Website generation failed');
+    }
 
     // STEP 6: Save
     const { data: preview, error: previewError } = await supabase
