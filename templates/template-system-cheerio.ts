@@ -78,6 +78,9 @@ export function injectContent(
   colors: any
 ): string {
   console.log(`📝 v7.0 CHEERIO-BASED INJECTION for: ${content.businessName}`);
+  console.log(`📋 Content object keys:`, Object.keys(content));
+  console.log(`🖼️  Images received:`, images.length);
+  console.log(`🎨 Colors:`, colors);
 
   // Parse HTML with cheerio
   const $ = cheerio.load(html);
@@ -89,6 +92,13 @@ export function injectContent(
   const aboutTitle = content.about?.title || 'About Us';
   const aboutText = content.about?.text || heroSubtitle;
   const ctaText = content.hero?.cta || 'Get Started';
+
+  console.log(`📌 Using values:`, {
+    businessName,
+    heroHeadline,
+    heroSubtitle: heroSubtitle.substring(0, 50) + '...',
+    imagesCount: images.length
+  });
 
   // Build feature/service titles and descriptions
   const featureTitles = content.features?.map((f: any) => f.title) || content.services?.map((s: any) => s.title) || ['Our Service', 'Quality', 'Expertise'];
@@ -105,19 +115,13 @@ export function injectContent(
     `Our team of professionals is dedicated to your success.`
   ].filter(Boolean);
 
-  // 1. REPLACE ALL H1 TAGS
+  // 1. REPLACE ALL H1 TAGS (COMPLETELY REPLACE CONTENT)
   $('h1').each((i, elem) => {
     const $h1 = $(elem);
-    const $links = $h1.find('a');
 
-    if ($links.length > 0) {
-      // Replace text in links while preserving link structure
-      $links.each((j, link) => {
-        $(link).text(businessName);
-      });
-    } else {
-      $h1.text(businessName);
-    }
+    // For ALL H1 tags, completely replace content with business name
+    // This handles templates with <br> tags, links, and other nested elements
+    $h1.html(businessName);
   });
   console.log(`✅ Replaced ${$('h1').length} H1 tags with business name`);
 

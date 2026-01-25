@@ -28,7 +28,10 @@
       "Bash(git reset:*)",
       "Bash(netstat:*)",
       "Bash(findstr:*)",
-      "Bash(vercel --version:*)"
+      "Bash(vercel --version:*)",
+      "Bash(npx tsx:*)",
+      "Bash(git restore:*)",
+      "Bash(vercel:*)"
     ]
   }
 }
