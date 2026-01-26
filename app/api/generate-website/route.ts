@@ -1396,12 +1396,63 @@ function generateHTML(content: any, sections: string[], images: any[], logoUrl: 
   </section>`;
   }
   
+  // Generate SEO metadata
+  const pageTitle = `${content.businessName || 'Business'} | ${content.tagline || content.hero?.headline || 'Welcome'}`;
+  const metaDescription = content.hero?.subtitle || content.about?.text?.substring(0, 160) || `${content.businessName} - ${content.tagline || 'Professional services'}`;
+  const ogImage = images[0]?.url || 'https://www.wevibecode.ai/og-default.jpg';
+  const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wevibecode.ai';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${content.businessName || 'Website'}</title>
+
+  <!-- Primary Meta Tags -->
+  <title>${pageTitle}</title>
+  <meta name="title" content="${pageTitle}">
+  <meta name="description" content="${metaDescription}">
+  <meta name="keywords" content="${content.businessName}, ${websiteType}, ${sections.join(', ')}">
+  <meta name="author" content="${content.businessName}">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph / Facebook / LinkedIn -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="${siteUrl}">
+  <meta property="og:title" content="${pageTitle}">
+  <meta property="og:description" content="${metaDescription}">
+  <meta property="og:image" content="${ogImage}">
+  <meta property="og:site_name" content="${content.businessName}">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="${siteUrl}">
+  <meta property="twitter:title" content="${pageTitle}">
+  <meta property="twitter:description" content="${metaDescription}">
+  <meta property="twitter:image" content="${ogImage}">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "${websiteType === 'restaurant' ? 'Restaurant' : websiteType === 'real_estate' ? 'RealEstateAgent' : websiteType === 'healthcare' ? 'MedicalBusiness' : websiteType === 'salon' ? 'BeautySalon' : 'LocalBusiness'}",
+    "name": "${content.businessName}",
+    "description": "${metaDescription}",
+    "image": "${ogImage}",
+    ${content.location ? `"address": {
+      "@type": "PostalAddress",
+      "streetAddress": "${content.location.address || ''}",
+      "addressLocality": "${content.location.city || ''}"
+    },` : ''}
+    ${content.location?.phone ? `"telephone": "${content.location.phone}",` : ''}
+    ${content.location?.email ? `"email": "${content.location.email}",` : ''}
+    "url": "${siteUrl}"
+  }
+  </script>
+
   <style>STYLES_PLACEHOLDER</style>
 </head>
 <body>
