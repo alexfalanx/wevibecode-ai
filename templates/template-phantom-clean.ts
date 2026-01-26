@@ -150,11 +150,30 @@ export function generatePhantomWebsite(
 
   console.log(`   Tiles after cleanup: ${$('section.tiles article').length}`);
 
-  // 5f. Footer
+  // 5f. Footer - Clean up completely
   console.log('🔧 Updating footer...');
   $('#footer h2').first().text('Get In Touch');
   $('#footer .icons').remove(); // Remove social icons
+  $('#footer section').has('.icons').remove(); // Remove "Follow" section entirely
+  $('section:contains("Follow")').remove(); // Remove any Follow section
+  $('#footer h2:contains("Follow")').parent().remove(); // Remove Follow heading and parent
   $('#footer .copyright').html(`&copy; ${businessName}. All rights reserved.`);
+
+  // 5g. Add hero background image
+  console.log('🔧 Adding hero background...');
+  if (images.length > 0) {
+    const heroImageUrl = images[0]?.url;
+    if (heroImageUrl) {
+      $('#main > .inner > header').attr('style', `
+        background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${heroImageUrl}');
+        background-size: cover;
+        background-position: center;
+      `);
+      // Update text colors for hero with image
+      $('#main > .inner > header h1').attr('style', 'color: #ffffff !important;');
+      $('#main > .inner > header p').attr('style', 'color: rgba(255,255,255,0.9) !important;');
+    }
+  }
 
   // Step 6: Add id attributes for navigation
   $('#main > .inner > header').attr('id', 'home');
@@ -272,34 +291,36 @@ body {
 
 /* Desktop Navigation */
 .desktop-nav {
-  display: flex;
-  gap: 2rem;
+  display: flex !important;
+  gap: 2rem !important;
+  align-items: center !important;
 }
 
 .desktop-nav a {
-  color: #64748b;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s;
-  padding: 0.5rem 0;
+  color: #64748b !important;
+  text-decoration: none !important;
+  font-weight: 500 !important;
+  transition: color 0.2s !important;
+  padding: 0.5rem 0 !important;
+  font-size: 1rem !important;
 }
 
 .desktop-nav a:hover {
-  color: ${primary};
+  color: ${primary} !important;
 }
 
 /* Hide original nav (mobile menu toggle) on desktop */
-#header nav {
-  display: none;
+#header > .inner > nav {
+  display: none !important;
 }
 
 @media (max-width: 768px) {
   .desktop-nav {
-    display: none;
+    display: none !important;
   }
 
-  #header nav {
-    display: block;
+  #header > .inner > nav {
+    display: block !important;
   }
 }
 
@@ -393,29 +414,45 @@ body {
 
 #main .inner > header,
 #home {
-  padding: 6rem 0 4rem;
-  text-align: center;
-  background: linear-gradient(135deg, ${primary}08, ${secondary}08);
-  margin: 0 -2rem 3rem;
-  padding-left: 2rem;
-  padding-right: 2rem;
+  padding: 8rem 2rem !important;
+  text-align: center !important;
+  background: linear-gradient(135deg, ${primary}15, ${secondary}15) !important;
+  margin: 0 -2rem 3rem -2rem !important;
+  min-height: 50vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  background-size: cover !important;
+  background-position: center !important;
 }
 
 #main .inner > header h1 {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 3rem;
-  font-weight: 800;
-  line-height: 1.2;
-  margin-bottom: 1.5rem;
-  color: #1a1a2e;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 3.5rem !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  margin-bottom: 1.5rem !important;
+  color: #1a1a2e !important;
 }
 
 #main .inner > header p {
-  font-size: 1.25rem;
-  color: #64748b;
-  max-width: 600px;
-  margin: 0 auto;
-  line-height: 1.7;
+  font-size: 1.25rem !important;
+  color: #64748b !important;
+  max-width: 600px !important;
+  margin: 0 auto !important;
+  line-height: 1.7 !important;
+}
+
+/* When hero has background image */
+#main .inner > header[style*="background-image"] h1 {
+  color: #ffffff !important;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5) !important;
+}
+
+#main .inner > header[style*="background-image"] p {
+  color: rgba(255,255,255,0.9) !important;
+  text-shadow: 0 1px 5px rgba(0,0,0,0.4) !important;
 }
 
 /* ============================================ */
@@ -424,10 +461,26 @@ body {
 
 section.tiles,
 #services {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-  padding-bottom: 4rem;
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important; /* Always 2 columns for symmetry */
+  gap: 1.5rem !important;
+  padding: 0 0 4rem 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+@media (min-width: 900px) {
+  section.tiles,
+  #services {
+    grid-template-columns: repeat(3, 1fr) !important; /* 3 columns on larger screens */
+  }
+}
+
+@media (max-width: 600px) {
+  section.tiles,
+  #services {
+    grid-template-columns: 1fr !important; /* 1 column on mobile */
+  }
 }
 
 /* Individual tile article */
@@ -522,29 +575,29 @@ section.tiles article .content p {
 
 #footer,
 #contact {
-  background: #1a1a2e;
-  color: #ffffff;
-  padding: 4rem 0;
+  background: #1a1a2e !important;
+  color: #ffffff !important;
+  padding: 4rem 2rem !important;
 }
 
 #footer .inner {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 0 2rem;
-  text-align: center;
+  max-width: 600px !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
 }
 
 #footer h2 {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 2rem;
-  text-align: center;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 2rem !important;
+  text-align: center !important;
+  color: #ffffff !important;
 }
 
 #footer section {
-  margin-bottom: 2rem;
-  width: 100%;
+  margin-bottom: 2rem !important;
+  width: 100% !important;
 }
 
 /* Contact form */
@@ -588,31 +641,32 @@ section.tiles article .content p {
 
 #footer input,
 #footer textarea {
-  width: 100%;
-  padding: 1rem;
-  border: none;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  font-family: 'Inter', sans-serif;
-  font-size: 1rem;
-  transition: background 0.2s;
+  width: 100% !important;
+  padding: 1rem !important;
+  border: none !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 1rem !important;
+  transition: background 0.2s !important;
+  box-sizing: border-box !important;
 }
 
 #footer input::placeholder,
 #footer textarea::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.5) !important;
 }
 
 #footer input:focus,
 #footer textarea:focus {
-  outline: none;
-  background: rgba(255, 255, 255, 0.15);
+  outline: none !important;
+  background: rgba(255, 255, 255, 0.15) !important;
 }
 
 #footer textarea {
-  min-height: 150px;
-  resize: vertical;
+  min-height: 120px !important;
+  resize: vertical !important;
 }
 
 /* Submit button */
