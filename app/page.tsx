@@ -1,176 +1,49 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Sparkles, Zap, Code2, Palette, Users, Rocket, ArrowRight, Check, Star, Globe, Menu, X, Clock, Store, Calculator, Calendar, BarChart3 } from 'lucide-react';
-
-const LANGUAGES = [
-  { code: 'en', name: 'English', flag: '🇬🇧' },
-  { code: 'es', name: 'Español', flag: '🇪🇸' },
-  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
-  { code: 'pl', name: 'Polski', flag: '🇵🇱' },
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-];
-
-function useTranslation(locale: string) {
-  const [translations, setTranslations] = useState<any>({});
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    console.log(`[Translation] Loading locale: ${locale}`);
-    setIsLoading(true);
-    
-    fetch(`/locales/${locale}/common.json`)
-      .then((res) => {
-        console.log(`[Translation] Fetch response for ${locale}:`, res.status);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        console.log(`[Translation] Successfully loaded ${locale}:`, Object.keys(data));
-        setTranslations(data);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        console.error(`[Translation] Failed to load ${locale}:`, error);
-        console.log('[Translation] Falling back to English');
-        fetch('/locales/en/common.json')
-          .then((res) => res.json())
-          .then((data) => {
-            console.log('[Translation] Fallback successful');
-            setTranslations(data);
-            setIsLoading(false);
-          })
-          .catch((fallbackError) => {
-            console.error('[Translation] Fallback also failed:', fallbackError);
-            setIsLoading(false);
-          });
-      });
-  }, [locale]);
-
-  const t = (key: string): string => {
-    if (isLoading) return '...';
-    
-    const keys = key.split('.');
-    let value: any = translations;
-    
-    for (const k of keys) {
-      if (value && typeof value === 'object') {
-        value = value[k];
-      } else {
-        return key;
-      }
-    }
-    
-    return typeof value === 'string' ? value : key;
-  };
-
-  return { t, isLoading };
-}
+import React, { useState } from 'react';
+import { Sparkles, Zap, Check, ArrowRight, Clock, DollarSign, Globe, Menu, X } from 'lucide-react';
 
 export default function LandingPage() {
-  const [locale, setLocale] = useState('en');
-  const [showLangMenu, setShowLangMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  
-  const { t, isLoading } = useTranslation(locale);
-
-  useEffect(() => {
-    setMounted(true);
-    const saved = localStorage.getItem('wevibecode-lang');
-    if (saved && LANGUAGES.find(l => l.code === saved)) {
-      console.log('[Language] Loading saved language:', saved);
-      setLocale(saved);
-    }
-  }, []);
-
-  const changeLanguage = (code: string) => {
-    console.log('[Language] Changing to:', code);
-    setLocale(code);
-    localStorage.setItem('wevibecode-lang', code);
-    setShowLangMenu(false);
-    setShowMobileMenu(false);
-    
-    // Force page to recognize change
-    window.dispatchEvent(new Event('languagechange'));
-  };
-
-  const currentLang = LANGUAGES.find(l => l.code === locale) || LANGUAGES[0];
-
-  // Don't render until mounted (prevents hydration mismatch)
-  if (!mounted) {
-    return null;
-  }
 
   return (
-    <div className="min-h-screen bg-white" key={locale}>
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="fixed top-0 w-full bg-white/80 backdrop-blur-md border-b border-gray-200 z-50">
+      <header className="fixed top-0 w-full bg-white/95 backdrop-blur-md border-b border-gray-200 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-700 to-pink-700 rounded-xl flex items-center justify-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
                 <Sparkles className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
-              <span className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-700 bg-clip-text text-transparent">
+              <span className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 WeVibeCode
               </span>
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-4">
-              <a href="#how-it-works" className="text-gray-700 hover:text-gray-900 transition font-medium">{t('header.features')}</a>
-              <a href="#pricing" className="text-gray-700 hover:text-gray-900 transition font-medium">{t('header.pricing')}</a>
-              
-              {/* Language Switcher Desktop */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowLangMenu(!showLangMenu)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition"
-                >
-                  <Globe className="w-4 h-4 text-gray-700" />
-                  <span className="text-sm font-medium text-gray-900">{currentLang.flag} {currentLang.code.toUpperCase()}</span>
-                </button>
-                
-                {showLangMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50">
-                    {LANGUAGES.map((lang) => (
-                      <button
-                        key={lang.code}
-                        onClick={() => changeLanguage(lang.code)}
-                        className={`w-full px-4 py-2 text-left hover:bg-gray-50 transition flex items-center gap-3 ${
-                          locale === lang.code ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-800'
-                        }`}
-                      >
-                        <span className="text-xl">{lang.flag}</span>
-                        <span className="font-medium">{lang.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              
-              {/* LOGIN BUTTON - ADDED */}
-              <button 
+            <nav className="hidden md:flex items-center gap-6">
+              <a href="#how-it-works" className="text-gray-700 hover:text-gray-900 transition font-medium">How It Works</a>
+              <a href="#pricing" className="text-gray-700 hover:text-gray-900 transition font-medium">Pricing</a>
+              <button
                 onClick={() => window.location.href = '/login'}
-                className="px-4 py-2 text-gray-700 hover:text-gray-900 transition font-medium"
+                className="text-gray-700 hover:text-gray-900 transition font-medium"
               >
-                {t('header.login') || 'Login'}
+                Log In
               </button>
-              
-              <button 
+              <button
                 onClick={() => window.location.href = '/signup'}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold"
+                className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold"
               >
-                {t('header.getStarted')}
+                Get Started Free
               </button>
             </nav>
 
             {/* Mobile Menu Button */}
             <button
               onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="md:hidden p-2 text-gray-700 hover:text-gray-900"
+              className="md:hidden p-2 text-gray-700"
             >
               {showMobileMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -180,50 +53,20 @@ export default function LandingPage() {
           {showMobileMenu && (
             <div className="md:hidden py-4 border-t border-gray-200">
               <div className="flex flex-col gap-4">
-                <a 
-                  href="#how-it-works" 
-                  onClick={() => setShowMobileMenu(false)}
-                  className="text-gray-700 hover:text-gray-900 transition py-2 font-medium"
-                >
-                  {t('header.features')}
+                <a href="#how-it-works" onClick={() => setShowMobileMenu(false)} className="text-gray-700 py-2 font-medium">
+                  How It Works
                 </a>
-                <a 
-                  href="#pricing" 
-                  onClick={() => setShowMobileMenu(false)}
-                  className="text-gray-700 hover:text-gray-900 transition py-2 font-medium"
-                >
-                  {t('header.pricing')}
+                <a href="#pricing" onClick={() => setShowMobileMenu(false)} className="text-gray-700 py-2 font-medium">
+                  Pricing
                 </a>
-                
-                {/* Language Switcher Mobile */}
-                <div className="flex flex-col gap-2 pt-2 border-t border-gray-200">
-                  {LANGUAGES.map((lang) => (
-                    <button
-                      key={lang.code}
-                      onClick={() => changeLanguage(lang.code)}
-                      className={`px-4 py-2 text-left rounded-lg hover:bg-gray-50 transition flex items-center gap-3 ${
-                        locale === lang.code ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-800'
-                      }`}
-                    >
-                      <span className="text-xl">{lang.flag}</span>
-                      <span className="font-medium">{lang.name}</span>
-                    </button>
-                  ))}
-                </div>
-                
-                {/* LOGIN BUTTON MOBILE - ADDED */}
-                <button 
-                  onClick={() => window.location.href = '/login'}
-                  className="w-full py-2 text-gray-700 hover:text-gray-900 transition font-medium text-left border-t border-gray-200 pt-3"
-                >
-                  {t('header.login') || 'Login'}
+                <button onClick={() => window.location.href = '/login'} className="text-left text-gray-700 py-2 font-medium">
+                  Log In
                 </button>
-                
-                <button 
+                <button
                   onClick={() => window.location.href = '/signup'}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold"
+                  className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold"
                 >
-                  {t('header.getStarted')}
+                  Get Started Free
                 </button>
               </div>
             </div>
@@ -231,156 +74,95 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Hero Section - TWO PATHS */}
+      {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-gray-900">
-              {(() => {
-                const title = t('hero.title');
-                // Find where "Apps" appears (works for "Apps", "Tus Apps", "Le Tue App", etc.)
-                const appsPatterns = ['Apps.', 'Apps,', 'Aplikacje.', 'App.'];
-                let splitIndex = -1;
-                
-                for (const pattern of appsPatterns) {
-                  const index = title.indexOf(pattern);
-                  if (index !== -1) {
-                    splitIndex = index + pattern.length;
-                    break;
-                  }
-                }
-                
-                if (splitIndex === -1) return title;
-                
-                const beforeApps = title.substring(0, splitIndex);
-                const afterApps = title.substring(splitIndex).trim();
-                
-                return (
-                  <>
-                    {beforeApps}
-                    <br />
-                    <span className="bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-700 bg-clip-text text-transparent">
-                      {afterApps}
-                    </span>
-                  </>
-                );
-              })()}
-            </h1>
-            <p className="text-xl sm:text-2xl text-gray-700 mb-12 max-w-3xl mx-auto font-medium">
-              {t('hero.subtitle')}
-            </p>
+        <div className="max-w-6xl mx-auto text-center">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 text-gray-900 leading-tight">
+            Your Website.<br />
+            <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              5 Minutes. £19.99.
+            </span>
+          </h1>
+          <p className="text-xl sm:text-2xl text-gray-700 mb-8 max-w-3xl mx-auto font-medium leading-relaxed">
+            No templates. No drag-and-drop. No monthly fees.<br />
+            Just tell our AI what you need. We build it. Done.
+          </p>
 
-            {/* Two Clear Paths */}
-            <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-              {/* Path 1: Websites */}
-              <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-indigo-200 hover:border-indigo-400 transition cursor-pointer group">
-                <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition">
-                  <Store className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold mb-3 text-gray-900">{t('hero.websitePath.title')}</h3>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  {t('hero.websitePath.subtitle')}
-                </p>
-                <ul className="text-left space-y-2 mb-6">
-                  <li className="flex items-start gap-2 text-gray-700">
-                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span>{t('hero.websitePath.feature1')}</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-gray-700">
-                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span>{t('hero.websitePath.feature2')}</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-gray-700">
-                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span>{t('hero.websitePath.feature3')}</span>
-                  </li>
-                </ul>
-                <button 
-                  onClick={() => window.location.href = '/signup?type=website'}
-                  className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold hover:shadow-lg transition flex items-center justify-center gap-2 group-hover:scale-105"
-                >
-                  {t('hero.websitePath.cta')}
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-                <p className="text-sm text-gray-500 mt-3">{t('hero.websitePath.price')}</p>
-              </div>
-
-              {/* Path 2: Simple Apps */}
-              <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-pink-200 hover:border-pink-400 transition cursor-pointer group">
-                <div className="w-16 h-16 bg-gradient-to-br from-pink-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition">
-                  <Zap className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold mb-3 text-gray-900">{t('hero.appPath.title')}</h3>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  {t('hero.appPath.subtitle')}
-                </p>
-                <ul className="text-left space-y-2 mb-6">
-                  <li className="flex items-start gap-2 text-gray-700">
-                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span>{t('hero.appPath.feature1')}</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-gray-700">
-                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span>{t('hero.appPath.feature2')}</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-gray-700">
-                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span>{t('hero.appPath.feature3')}</span>
-                  </li>
-                </ul>
-                <button 
-                  onClick={() => window.location.href = '/signup?type=app'}
-                  className="w-full py-4 bg-gradient-to-r from-pink-600 to-purple-600 text-white rounded-xl font-bold hover:shadow-lg transition flex items-center justify-center gap-2 group-hover:scale-105"
-                >
-                  {t('hero.appPath.cta')}
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-                <p className="text-sm text-gray-500 mt-3">{t('hero.appPath.price')}</p>
-              </div>
+          {/* Value Props */}
+          <div className="flex flex-wrap justify-center gap-6 mb-12">
+            <div className="flex items-center gap-2 text-gray-700">
+              <Clock className="w-5 h-5 text-indigo-600" />
+              <span className="font-semibold">Ready in 5 minutes</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-700">
+              <DollarSign className="w-5 h-5 text-indigo-600" />
+              <span className="font-semibold">£19.99 once, use forever</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-700">
+              <Zap className="w-5 h-5 text-indigo-600" />
+              <span className="font-semibold">AI-powered</span>
             </div>
           </div>
+
+          <button
+            onClick={() => window.location.href = '/signup'}
+            className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-lg hover:shadow-2xl transition-all transform hover:scale-105"
+          >
+            Try It Free
+            <ArrowRight className="w-5 h-5" />
+          </button>
+          <p className="text-sm text-gray-600 mt-4">No credit card required • Pay £19.99 only when you publish</p>
         </div>
       </section>
 
-      {/* Simple App Examples */}
+      {/* Comparison Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-900">{t('apps.title')}</h2>
-            <p className="text-xl text-gray-700">{t('apps.subtitle')}</p>
-          </div>
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12 text-gray-900">
+            Why Pay Monthly When You Can Own It?
+          </h2>
 
-          <div className="grid md:grid-cols-4 gap-6">
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 hover:shadow-lg transition">
-              <Calendar className="w-12 h-12 text-indigo-600 mb-4" />
-              <h3 className="text-xl font-bold mb-2 text-gray-900">{t('apps.booking.title')}</h3>
-              <p className="text-gray-600 text-sm">
-                {t('apps.booking.description')}
-              </p>
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Wix */}
+            <div className="bg-gray-50 rounded-2xl p-8 text-center">
+              <div className="text-xl font-bold mb-2 text-gray-900">Wix / Squarespace</div>
+              <div className="text-4xl font-bold mb-4 text-gray-700">£16-45</div>
+              <div className="text-gray-600 mb-6">per month, forever</div>
+              <div className="text-sm text-gray-600 space-y-2 mb-6">
+                <p>= £192-540 per year</p>
+                <p>Hours to learn</p>
+                <p>1000s of unused features</p>
+              </div>
+              <div className="text-xs text-gray-500">Cancel anytime*<br />*But your site disappears</div>
             </div>
 
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 hover:shadow-lg transition">
-              <Users className="w-12 h-12 text-purple-600 mb-4" />
-              <h3 className="text-xl font-bold mb-2 text-gray-900">{t('apps.directory.title')}</h3>
-              <p className="text-gray-600 text-sm">
-                {t('apps.directory.description')}
-              </p>
+            {/* Freelancer */}
+            <div className="bg-gray-50 rounded-2xl p-8 text-center">
+              <div className="text-xl font-bold mb-2 text-gray-900">Freelancer</div>
+              <div className="text-4xl font-bold mb-4 text-gray-700">£200-500</div>
+              <div className="text-gray-600 mb-6">one-time payment</div>
+              <div className="text-sm text-gray-600 space-y-2 mb-6">
+                <p>1-2 weeks wait</p>
+                <p>Revisions cost extra</p>
+                <p>Complicated handoff</p>
+              </div>
+              <div className="text-xs text-gray-500">Good quality<br />but slow & expensive</div>
             </div>
 
-            <div className="bg-gradient-to-br from-pink-50 to-rose-50 rounded-2xl p-6 hover:shadow-lg transition">
-              <Calculator className="w-12 h-12 text-pink-600 mb-4" />
-              <h3 className="text-xl font-bold mb-2 text-gray-900">{t('apps.calculator.title')}</h3>
-              <p className="text-gray-600 text-sm">
-                {t('apps.calculator.description')}
-              </p>
-            </div>
-
-            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl p-6 hover:shadow-lg transition">
-              <BarChart3 className="w-12 h-12 text-orange-600 mb-4" />
-              <h3 className="text-xl font-bold mb-2 text-gray-900">{t('apps.dashboard.title')}</h3>
-              <p className="text-gray-600 text-sm">
-                {t('apps.dashboard.description')}
-              </p>
+            {/* WeVibeCode */}
+            <div className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl p-8 text-center text-white transform md:scale-105 shadow-2xl">
+              <div className="bg-white/20 rounded-lg px-3 py-1 text-xs font-bold w-fit mx-auto mb-2">
+                BEST VALUE
+              </div>
+              <div className="text-xl font-bold mb-2">WeVibeCode.ai</div>
+              <div className="text-5xl font-bold mb-4">£19.99</div>
+              <div className="opacity-90 mb-6">one-time payment</div>
+              <div className="text-sm space-y-2 mb-6">
+                <p>✓ Ready in 5 minutes</p>
+                <p>✓ Edit unlimited forever</p>
+                <p>✓ No monthly fees</p>
+              </div>
+              <div className="text-xs opacity-90">Pay once<br />Use forever</div>
             </div>
           </div>
         </div>
@@ -388,20 +170,22 @@ export default function LandingPage() {
 
       {/* How It Works */}
       <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-900">{t('howItWorks.title')}</h2>
-            <p className="text-xl text-gray-700">{t('howItWorks.subtitle')}</p>
-          </div>
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4 text-gray-900">
+            How It Works
+          </h2>
+          <p className="text-xl text-gray-600 text-center mb-16">
+            Seriously, it's this simple.
+          </p>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
             <div className="text-center">
               <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <span className="text-3xl font-bold text-white">1</span>
               </div>
-              <h3 className="text-xl font-bold mb-3 text-gray-900">{t('howItWorks.step1.title')}</h3>
+              <h3 className="text-xl font-bold mb-3 text-gray-900">Describe Your Business</h3>
               <p className="text-gray-600 leading-relaxed">
-                {t('howItWorks.step1.description')}
+                Tell our AI what you do. Restaurant? Salon? Portfolio? We've got templates for 8 different business types.
               </p>
             </div>
 
@@ -409,9 +193,9 @@ export default function LandingPage() {
               <div className="w-16 h-16 bg-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <span className="text-3xl font-bold text-white">2</span>
               </div>
-              <h3 className="text-xl font-bold mb-3 text-gray-900">{t('howItWorks.step2.title')}</h3>
+              <h3 className="text-xl font-bold mb-3 text-gray-900">AI Builds Your Site</h3>
               <p className="text-gray-600 leading-relaxed">
-                {t('howItWorks.step2.description')}
+                5 minutes later, your complete website is ready. Professional design, mobile-friendly, SEO optimized.
               </p>
             </div>
 
@@ -419,175 +203,169 @@ export default function LandingPage() {
               <div className="w-16 h-16 bg-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <span className="text-3xl font-bold text-white">3</span>
               </div>
-              <h3 className="text-xl font-bold mb-3 text-gray-900">{t('howItWorks.step3.title')}</h3>
+              <h3 className="text-xl font-bold mb-3 text-gray-900">Edit & Publish</h3>
               <p className="text-gray-600 leading-relaxed">
-                {t('howItWorks.step3.description')}
+                Change colors, text, images. Generate new versions. When perfect, pay £19.99 and publish. That's it.
               </p>
             </div>
           </div>
         </div>
       </section>
 
+      {/* What You Get */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12 text-gray-900">
+            What You Get for £19.99
+          </h2>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <FeatureCard
+              icon="⚡"
+              title="Unlimited AI Generations"
+              description="Try different designs until perfect. No extra charges."
+            />
+            <FeatureCard
+              icon="✏️"
+              title="Unlimited Editing Forever"
+              description="Change text, colors, images anytime. No time limits."
+            />
+            <FeatureCard
+              icon="🌐"
+              title="Published & Hosted"
+              description="Your site lives on wevibecode.ai subdomain. Free forever."
+            />
+            <FeatureCard
+              icon="🔗"
+              title="Custom Domain Support"
+              description="Connect your own domain name (yourbusiness.com)."
+            />
+            <FeatureCard
+              icon="📱"
+              title="Mobile Responsive"
+              description="Looks perfect on phones, tablets, and desktops."
+            />
+            <FeatureCard
+              icon="🔍"
+              title="SEO Optimized"
+              description="Meta tags, Open Graph, structured data included."
+            />
+            <FeatureCard
+              icon="💾"
+              title="Download HTML/CSS"
+              description="Export your website anytime. It's yours."
+            />
+            <FeatureCard
+              icon="🎨"
+              title="No Branding"
+              description="Clean website. No 'Powered by' footer."
+            />
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
-      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-900">{t('pricing.title')}</h2>
-            <p className="text-xl text-gray-700">{t('pricing.subtitle')}</p>
+      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-900">
+            Simple, Honest Pricing
+          </h2>
+          <p className="text-xl text-gray-600 mb-12">
+            One price. One website. Built by AI in 5 minutes.
+          </p>
+
+          <div className="bg-white rounded-3xl p-10 shadow-2xl border-2 border-indigo-200">
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-center py-2 rounded-xl text-sm font-semibold mb-6">
+              NO SUBSCRIPTIONS • PAY ONCE
+            </div>
+
+            <div className="text-6xl font-bold text-gray-900 mb-3">
+              £19.99
+            </div>
+            <div className="text-xl text-gray-600 mb-8">
+              per website, one-time payment
+            </div>
+
+            <button
+              onClick={() => window.location.href = '/signup'}
+              className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-lg hover:shadow-2xl transition-all transform hover:scale-105 mb-4"
+            >
+              Try It Free
+            </button>
+
+            <p className="text-sm text-gray-500">
+              Generate free preview • Pay £19.99 only when you publish
+            </p>
           </div>
 
-          <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {/* Free Trial */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-gray-300">
-              <h3 className="text-xl font-bold mb-2 text-gray-900">{t('pricing.free.name')}</h3>
-              <div className="text-3xl font-bold mb-6 text-gray-900">
-                {t('pricing.free.price')}
-                <span className="text-base text-gray-600 font-normal">{t('pricing.free.perMonth')}</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-2 text-sm text-gray-800">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" /> 
-                  <span>{t('pricing.free.credits')}</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-gray-800">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" /> 
-                  <span>{t('pricing.free.vibes')}</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-gray-800">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" /> 
-                  <span>{t('pricing.free.gallery')}</span>
-                </li>
-              </ul>
-              <button 
-                onClick={() => window.location.href = '/signup'}
-                className="w-full py-3 border-2 border-indigo-600 text-indigo-600 rounded-xl font-semibold hover:bg-indigo-50 transition"
-              >
-                {t('pricing.free.cta')}
-              </button>
-            </div>
+          <p className="text-sm text-gray-600 mt-8 max-w-md mx-auto">
+            Perfect for restaurants, salons, portfolios, landing pages, small businesses, events, and more.
+          </p>
+        </div>
+      </section>
 
-            {/* Website */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-indigo-300">
-              <h3 className="text-xl font-bold mb-2 text-gray-900">{t('pricing.website.name')}</h3>
-              <div className="text-3xl font-bold mb-6 text-gray-900">
-                {t('pricing.website.price')}
-                <span className="text-base text-gray-600 font-normal">{t('pricing.website.perMonth')}</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-2 text-sm text-gray-800">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" /> 
-                  <span>{t('pricing.website.feature1')}</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-gray-800">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" /> 
-                  <span>{t('pricing.website.feature2')}</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-gray-800">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" /> 
-                  <span>{t('pricing.website.feature3')}</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-gray-800">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" /> 
-                  <span>{t('pricing.website.feature4')}</span>
-                </li>
-              </ul>
-              <button 
-                onClick={() => window.location.href = '/signup?plan=website'}
-                className="w-full py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition"
-              >
-                {t('pricing.website.cta')}
-              </button>
-              <p className="text-xs text-center text-gray-500 mt-3">{t('pricing.website.note')}</p>
-            </div>
+      {/* FAQ */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12 text-gray-900">
+            Quick Questions
+          </h2>
 
-            {/* Website + App Bundle - MOST POPULAR */}
-            <div className="bg-gradient-to-br from-indigo-600 to-pink-600 rounded-2xl p-6 text-white transform md:scale-105 shadow-2xl">
-              <div className="bg-white/25 rounded-lg px-3 py-1 text-xs font-bold w-fit mb-4">
-                {t('pricing.bundle.badge')}
-              </div>
-              <h3 className="text-xl font-bold mb-2">{t('pricing.bundle.name')}</h3>
-              <div className="text-3xl font-bold mb-6">
-                {t('pricing.bundle.price')}
-                <span className="text-base opacity-90 font-normal">{t('pricing.bundle.perMonth')}</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-2 text-sm">
-                  <Check className="w-5 h-5 flex-shrink-0 mt-0.5" /> 
-                  <span>{t('pricing.bundle.feature1')}</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <Check className="w-5 h-5 flex-shrink-0 mt-0.5" /> 
-                  <span>{t('pricing.bundle.feature2')}</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <Check className="w-5 h-5 flex-shrink-0 mt-0.5" /> 
-                  <span>{t('pricing.bundle.feature3')}</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <Check className="w-5 h-5 flex-shrink-0 mt-0.5" /> 
-                  <span>{t('pricing.bundle.feature4')}</span>
-                </li>
-              </ul>
-              <button 
-                onClick={() => window.location.href = '/signup?plan=bundle'}
-                className="w-full py-3 bg-white text-indigo-700 rounded-xl font-bold hover:bg-gray-50 transition"
-              >
-                {t('pricing.bundle.cta')}
-              </button>
-              <p className="text-xs text-center opacity-90 mt-3">{t('pricing.bundle.note')}</p>
-            </div>
-
-            {/* Unlimited */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-gray-300">
-              <h3 className="text-xl font-bold mb-2 text-gray-900">{t('pricing.unlimited.name')}</h3>
-              <div className="text-3xl font-bold mb-6 text-gray-900">
-                {t('pricing.unlimited.price')}
-                <span className="text-base text-gray-600 font-normal">{t('pricing.unlimited.perMonth')}</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-2 text-sm text-gray-800">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" /> 
-                  <span>{t('pricing.unlimited.feature1')}</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-gray-800">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" /> 
-                  <span>{t('pricing.unlimited.feature2')}</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-gray-800">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" /> 
-                  <span>{t('pricing.unlimited.feature3')}</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-gray-800">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" /> 
-                  <span>{t('pricing.unlimited.feature4')}</span>
-                </li>
-              </ul>
-              <button 
-                onClick={() => window.location.href = '/signup?plan=unlimited'}
-                className="w-full py-3 border-2 border-indigo-600 text-indigo-600 rounded-xl font-semibold hover:bg-indigo-50 transition"
-              >
-                {t('pricing.unlimited.cta')}
-              </button>
-              <p className="text-xs text-center text-gray-500 mt-3">{t('pricing.unlimited.note')}</p>
-            </div>
+          <div className="space-y-6">
+            <FAQItem
+              q="Can I try it first?"
+              a="Yes! Generate a free preview. Pay £19.99 only when you're ready to publish."
+            />
+            <FAQItem
+              q="What if I need changes later?"
+              a="Edit unlimited times, forever. Change text, colors, images anytime. No time limits, no extra fees."
+            />
+            <FAQItem
+              q="Do I need to pay monthly?"
+              a="No. Pay £19.99 once per website. That's it. No subscriptions, no recurring charges."
+            />
+            <FAQItem
+              q="How many times can I regenerate?"
+              a="Unlimited. Try different designs until it's perfect. We won't charge extra."
+            />
+            <FAQItem
+              q="Can I use my own domain?"
+              a="Yes. Connect yourbusiness.com to your website. Instructions provided."
+            />
+            <FAQItem
+              q="What if I need multiple websites?"
+              a="Each website is £19.99. Buy as many as you need."
+            />
+            <FAQItem
+              q="Is it really ready in 5 minutes?"
+              a="Yes. Our AI generates your complete website in about 5 minutes. You can edit after that."
+            />
+            <FAQItem
+              q="What business types do you support?"
+              a="Restaurants, salons, real estate, healthcare, professional services, landing pages, portfolios, and more."
+            />
           </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-indigo-600 to-pink-600">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-indigo-600 to-purple-600">
         <div className="max-w-3xl mx-auto text-center text-white">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">{t('cta.title')}</h2>
-          <p className="text-xl mb-8 opacity-95">{t('cta.subtitle')}</p>
-          
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+            Ready in 5 Minutes
+          </h2>
+          <p className="text-xl mb-8 opacity-95">
+            Your website. AI-built. £19.99. Forever yours.
+          </p>
+
           <button
             onClick={() => window.location.href = '/signup'}
-            className="px-8 py-4 bg-white text-indigo-700 rounded-xl font-bold hover:bg-gray-50 transition flex items-center justify-center gap-2 mx-auto text-lg"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-indigo-700 rounded-xl font-bold text-lg hover:bg-gray-50 transition-all transform hover:scale-105"
           >
-            {t('cta.button')}
+            Get Started Free
             <ArrowRight className="w-5 h-5" />
           </button>
-          <p className="text-sm mt-4 opacity-90">{t('cta.note')}</p>
+          <p className="text-sm mt-4 opacity-90">No credit card required</p>
         </div>
       </section>
 
@@ -598,16 +376,31 @@ export default function LandingPage() {
             <Sparkles className="w-6 h-6 text-indigo-400" />
             <span className="text-xl font-bold text-white">WeVibeCode.ai</span>
           </div>
-          <p className="mb-4">{t('footer.tagline')}</p>
-          <div className="flex justify-center gap-6 text-sm flex-wrap">
-            <a href="#" className="hover:text-white transition">{t('footer.twitter')}</a>
-            <a href="#" className="hover:text-white transition">{t('footer.github')}</a>
-            <a href="#" className="hover:text-white transition">{t('footer.discord')}</a>
-            <a href="#" className="hover:text-white transition">{t('footer.docs')}</a>
-          </div>
-          <p className="text-xs mt-8 text-gray-500">{t('footer.copyright')}</p>
+          <p className="mb-4">AI Website Builder • £19.99 • Forever Yours</p>
+          <p className="text-xs mt-8 text-gray-500">&copy; 2026 WeVibeCode.ai • All rights reserved</p>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function FeatureCard({ icon, title, description }: { icon: string; title: string; description: string }) {
+  return (
+    <div className="flex gap-4 p-6 bg-gray-50 rounded-xl hover:shadow-lg transition">
+      <div className="text-3xl flex-shrink-0">{icon}</div>
+      <div>
+        <h3 className="font-bold text-gray-900 mb-1">{title}</h3>
+        <p className="text-sm text-gray-600">{description}</p>
+      </div>
+    </div>
+  );
+}
+
+function FAQItem({ q, a }: { q: string; a: string }) {
+  return (
+    <div className="bg-gray-50 p-6 rounded-xl">
+      <div className="font-bold text-gray-900 mb-2">{q}</div>
+      <div className="text-gray-600">{a}</div>
     </div>
   );
 }

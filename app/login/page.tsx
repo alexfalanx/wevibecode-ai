@@ -49,7 +49,7 @@ export default function LoginPage() {
             WeVibeCode
           </h1>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h2>
-          <p className="text-gray-600">Log in to continue building</p>
+          <p className="text-gray-600">Log in to build your website</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">

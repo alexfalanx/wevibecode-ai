@@ -47,7 +47,7 @@ export default function SignupPage() {
             WeVibeCode
           </h1>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Create Your Account</h2>
-          <p className="text-gray-600">Get 10 free credits to start building</p>
+          <p className="text-gray-600">Try it free • Pay £19.99 only when you publish</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
