@@ -57,10 +57,17 @@ export function generatePhantomWebsite(
   const heroSubtitle = content.hero?.subtitle || content.tagline || 'Professional services you can trust';
   const ctaText = content.hero?.cta || 'Get Started';
 
-  // Build feature data
+  // Build feature data - ensure we have content
   const features = content.features || content.services || [];
-  const featureTitles = features.map((f: any) => f.title) || ['Our Service'];
-  const featureDescriptions = features.map((f: any) => f.description) || [heroSubtitle];
+  const featureTitles = features.length > 0
+    ? features.map((f: any) => f.title)
+    : ['Quality Service', 'Expert Team', 'Customer Focus', 'Innovation'];
+  const featureDescriptions = features.length > 0
+    ? features.map((f: any) => f.description)
+    : [heroSubtitle, 'We deliver exceptional results.', 'Our team is dedicated to your success.', 'Always improving to serve you better.'];
+
+  console.log(`📋 Features found: ${features.length}`);
+  console.log(`📋 Feature titles: ${featureTitles.join(', ')}`);
 
   // Step 5: REPLACE CONTENT (Cheerio only - no regex mixing)
 
@@ -80,32 +87,50 @@ export function generatePhantomWebsite(
   $('#main > .inner > header h1').text(heroHeadline);
   $('#main > .inner > header p').text(heroSubtitle);
 
-  // 5d. Menu navigation
+  // 5d. Menu navigation - Update both mobile menu AND add desktop nav
   console.log('🔧 Updating menu...');
   $('#menu h2').text('Menu');
   const menuItems = [
     { text: 'Home', href: '#home' },
-    { text: 'About', href: '#about' },
     { text: 'Services', href: '#services' },
     { text: 'Contact', href: '#contact' }
   ];
+
+  // Update mobile menu
   $('#menu ul').empty();
   menuItems.forEach(item => {
     $('#menu ul').append(`<li><a href="${item.href}">${item.text}</a></li>`);
   });
 
+  // Add desktop navigation to header
+  const desktopNav = `
+    <nav class="desktop-nav">
+      ${menuItems.map(item => `<a href="${item.href}">${item.text}</a>`).join('')}
+    </nav>
+  `;
+  $('#header .inner').append(desktopNav);
+
   // 5e. Tiles - Replace content in each article
+  // IMPORTANT: Only keep as many tiles as we have features (max 6 for clean layout)
   console.log('🔧 Replacing tile content...');
   const tileArticles = $('section.tiles article');
   console.log(`   Found ${tileArticles.length} tile articles`);
 
+  const maxTiles = Math.min(featureTitles.length, 6); // Limit to 6 tiles max
+  console.log(`   Using ${maxTiles} tiles (features: ${featureTitles.length})`);
+
   tileArticles.each((index, article) => {
     const $article = $(article);
 
-    // Get feature data (cycle through available features)
-    const featureIndex = index % Math.max(featureTitles.length, 1);
-    const title = featureTitles[featureIndex] || `Service ${index + 1}`;
-    const description = featureDescriptions[featureIndex] || heroSubtitle;
+    // Remove extra tiles beyond our feature count
+    if (index >= maxTiles) {
+      $article.remove();
+      return;
+    }
+
+    // Get feature data for this tile
+    const title = featureTitles[index] || `Service ${index + 1}`;
+    const description = featureDescriptions[index] || heroSubtitle;
 
     // Get image (cycle through available images)
     const imageIndex = index % Math.max(images.length, 1);
@@ -122,6 +147,8 @@ export function generatePhantomWebsite(
     // Update link to prevent navigation to generic.html
     $article.find('a').attr('href', '#services');
   });
+
+  console.log(`   Tiles after cleanup: ${$('section.tiles article').length}`);
 
   // 5f. Footer
   console.log('🔧 Updating footer...');
@@ -243,9 +270,37 @@ body {
   background-clip: text;
 }
 
-/* Nav */
+/* Desktop Navigation */
+.desktop-nav {
+  display: flex;
+  gap: 2rem;
+}
+
+.desktop-nav a {
+  color: #64748b;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+  padding: 0.5rem 0;
+}
+
+.desktop-nav a:hover {
+  color: ${primary};
+}
+
+/* Hide original nav (mobile menu toggle) on desktop */
 #header nav {
-  display: block;
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-nav {
+    display: none;
+  }
+
+  #header nav {
+    display: block;
+  }
 }
 
 #header nav ul {
@@ -473,9 +528,10 @@ section.tiles article .content p {
 }
 
 #footer .inner {
-  max-width: 1200px;
+  max-width: 800px;
   margin: 0 auto;
   padding: 0 2rem;
+  text-align: center;
 }
 
 #footer h2 {
@@ -488,31 +544,46 @@ section.tiles article .content p {
 
 #footer section {
   margin-bottom: 2rem;
+  width: 100%;
 }
 
 /* Contact form */
 #footer form {
-  max-width: 600px;
+  max-width: 100%;
   margin: 0 auto;
+  text-align: left;
 }
 
 #footer .fields {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
   margin-bottom: 1rem;
 }
 
 #footer .field {
-  margin-bottom: 1rem;
+  margin-bottom: 0;
+  width: 100%;
 }
 
 #footer .field.half {
-  grid-column: span 1;
+  width: 100%;
 }
 
-#footer .field:not(.half) {
-  grid-column: span 2;
+@media (min-width: 600px) {
+  #footer .fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  #footer .field.half {
+    grid-column: span 1;
+  }
+
+  #footer .field:not(.half) {
+    grid-column: span 2;
+  }
 }
 
 #footer input,
