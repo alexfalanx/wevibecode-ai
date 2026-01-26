@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { ChromePicker } from 'react-color';
 import { extractColorPalette, extractEditableElements, extractEditableElementsWithHtml, applyTextEdit, applyColorEdit, extractImages, extractImagesWithHtml, replaceImage, type SiteImage } from '@/lib/publish';
 import type { ColorPalette, EditableElement } from '@/types/publish';
-import { X, Type, Palette, Save, RotateCcw, Image as ImageIcon } from 'lucide-react';
+import { X, Type, Palette, Save, RotateCcw, Image as ImageIcon, Loader2 } from 'lucide-react';
 import ImageUploader from './ImageUploader';
 import ImageGallery from './ImageGallery';
 
@@ -38,6 +38,12 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
   const [showImageSelector, setShowImageSelector] = useState(false);
   const [refreshGallery, setRefreshGallery] = useState(0);
   const [imageReplaceSuccess, setImageReplaceSuccess] = useState(false);
+
+  // AI Image Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
   useEffect(() => {
     // Extract editable elements and color palette on mount
@@ -150,6 +156,46 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
 
   const handleUploadComplete = () => {
     setRefreshGallery(prev => prev + 1);
+  };
+
+  const handleSearchImages = async () => {
+    if (!searchQuery.trim()) return;
+
+    setIsSearching(true);
+    setSearchError(null);
+
+    try {
+      const response = await fetch('/api/search-images', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: searchQuery, perPage: 9 }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to search images');
+      }
+
+      setSearchResults(data.images || []);
+
+      if (data.images.length === 0) {
+        setSearchError('No images found. Try a different search term.');
+      }
+    } catch (error: any) {
+      console.error('Search error:', error);
+      setSearchError(error.message);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleSelectSearchResult = (imageUrl: string) => {
+    handleSelectReplacement(imageUrl);
+    // Clear search results after selection
+    setSearchResults([]);
+    setSearchQuery('');
   };
 
   const handleSave = async () => {
@@ -512,14 +558,103 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
                   <div className="w-full border-t border-gray-300"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">{t('images.orChooseFromLibrary')}</span>
+                  <span className="px-2 bg-white text-gray-500">OR</span>
+                </div>
+              </div>
+
+              {/* AI Image Search Section */}
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">
+                  Search Stock Images
+                </h4>
+                <p className="text-xs text-gray-600 mb-3">
+                  Describe the image you want (e.g., "modern office", "happy team", "luxury restaurant")
+                </p>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSearchImages()}
+                    placeholder="e.g., modern office space"
+                    className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                  />
+                  <button
+                    onClick={handleSearchImages}
+                    disabled={isSearching || !searchQuery.trim()}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium flex items-center gap-2"
+                  >
+                    {isSearching ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Searching...
+                      </>
+                    ) : (
+                      'Search'
+                    )}
+                  </button>
+                </div>
+
+                {/* Search Error */}
+                {searchError && (
+                  <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+                    {searchError}
+                  </div>
+                )}
+
+                {/* Search Results */}
+                {searchResults.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-sm text-gray-600 mb-3">
+                      Found {searchResults.length} images. Click to select:
+                    </p>
+                    <div className="grid grid-cols-3 gap-3 max-h-[300px] overflow-y-auto">
+                      {searchResults.map((image) => (
+                        <div
+                          key={image.id}
+                          onClick={() => handleSelectSearchResult(image.url)}
+                          className="relative group cursor-pointer rounded-lg overflow-hidden border-2 border-gray-200 hover:border-indigo-500 transition"
+                        >
+                          <div className="aspect-video bg-gray-100">
+                            <img
+                              src={image.thumbnail}
+                              alt={image.alt}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
+                            <span className="opacity-0 group-hover:opacity-100 bg-white text-indigo-600 px-3 py-1 rounded-full text-xs font-semibold">
+                              Select
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Photos by Pexels photographers
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">OR</span>
                 </div>
               </div>
 
               {/* Gallery Section */}
               <div>
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">
+                  Your Uploaded Images
+                </h4>
                 <p className="text-sm text-gray-600 mb-4">
-                  {t('images.clickToSelectReplacement')}
+                  Click an image to select it as replacement:
                 </p>
                 <ImageGallery
                   selectable={true}
