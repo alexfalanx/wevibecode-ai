@@ -550,13 +550,22 @@ section.tiles article .content p {
 .contact-form textarea {
   width: 100% !important;
   padding: 1rem !important;
-  border: none !important;
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
   border-radius: 8px !important;
   background: rgba(255, 255, 255, 0.1) !important;
   color: #ffffff !important;
   font-family: 'Inter', sans-serif !important;
   font-size: 1rem !important;
   box-sizing: border-box !important;
+}
+
+#footer .contact-form input:focus,
+#footer .contact-form textarea:focus,
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none !important;
+  border-color: ${primary} !important;
+  background: rgba(255, 255, 255, 0.15) !important;
 }
 
 #footer .contact-form input::placeholder,
