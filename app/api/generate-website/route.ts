@@ -112,8 +112,21 @@ export async function POST(request: NextRequest) {
 
     if (usePhantom) {
       console.log(`🎨 [TEST MODE] Using CLEAN Phantom template for ${websiteType}...`);
+      console.log(`🔍 Current working directory: ${process.cwd()}`);
 
       try {
+        // Check if template file exists
+        const fs = await import('fs');
+        const path = await import('path');
+        const templatePath = path.join(process.cwd(), 'templates', 'html5up', 'Phantom', 'index.html');
+        const templateExists = fs.existsSync(templatePath);
+        console.log(`📁 Template path: ${templatePath}`);
+        console.log(`📁 Template exists: ${templateExists}`);
+
+        if (!templateExists) {
+          throw new Error(`Template file not found at: ${templatePath}`);
+        }
+
         finalHtml = generatePhantomWebsite(content, images, logoUrl, colors);
 
         if (!finalHtml) {
@@ -123,6 +136,7 @@ export async function POST(request: NextRequest) {
         console.log(`✅ Phantom template generated: ${Math.round(finalHtml.length / 1024)}KB`);
       } catch (templateError: any) {
         console.error('❌ Phantom template failed, falling back to simple:', templateError.message);
+        console.error('❌ Full error:', templateError.stack);
         // Fallback to simple builder
         const { html, css, js } = buildWebsite(content, sections, colors, images, logoUrl, websiteType, vibe);
         finalHtml = html.replace('STYLES_PLACEHOLDER', css).replace('SCRIPTS_PLACEHOLDER', js);
