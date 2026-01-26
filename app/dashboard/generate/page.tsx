@@ -5,7 +5,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
-import { Sparkles, Loader2, CreditCard, Check, Layout } from 'lucide-react';
+import { Sparkles, Loader2, Check, Layout } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 import { trackGeneration, trackPageView, logError } from '@/lib/analytics';
 import TemplateGallery from '@/components/TemplateGallery';
@@ -277,7 +277,6 @@ export default function GeneratePage() {
   const [includeImages, setIncludeImages] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [credits, setCredits] = useState<number | null>(null);
   const [user, setUser] = useState<any>(null);
   const [generationStep, setGenerationStep] = useState<string>('');
   const [showTemplateGallery, setShowTemplateGallery] = useState(false);
@@ -310,16 +309,6 @@ export default function GeneratePage() {
     }
 
     setUser(user);
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('credits_remaining')
-      .eq('id', user.id)
-      .single();
-
-    if (profile) {
-      setCredits(profile.credits_remaining);
-    }
   };
 
   const toggleSection = (sectionId: string) => {
@@ -332,13 +321,6 @@ export default function GeneratePage() {
     } else {
       setSelectedSections([...selectedSections, sectionId]);
     }
-  };
-
-  const calculateTotalCredits = () => {
-    const baseCredits = 1;
-    const imageCredits = includeImages ? 3 : 0;
-    const logoCredits = customLogo ? 3 : 0;
-    return baseCredits + imageCredits + logoCredits;
   };
 
   const handleTemplateSelect = async (templateId: string) => {
@@ -363,14 +345,6 @@ export default function GeneratePage() {
     if (!useAIName && !businessName.trim()) {
       toast.error('Please enter a business name or let AI create one');
       setError('Please enter a business name or let AI create one');
-      return;
-    }
-
-    const totalCredits = calculateTotalCredits();
-
-    if (credits !== null && credits < totalCredits) {
-      toast.error(`Insufficient credits. You need ${totalCredits} credits but only have ${credits}.`);
-      setError(`Insufficient credits. Need ${totalCredits} credits.`);
       return;
     }
 
@@ -419,10 +393,10 @@ export default function GeneratePage() {
       }
 
       setGenerationStep('Website created successfully!');
-      toast.success(`Website generated! ${totalCredits} ${totalCredits === 1 ? 'credit' : 'credits'} used.`);
+      toast.success('Website generated successfully! Preview is ready.');
 
       // Track successful generation
-      trackGeneration(websiteType, totalCredits);
+      trackGeneration(websiteType, 0); // No credits used
 
       // Redirect to preview
       router.push(`/dashboard/preview/${data.previewId}`);
@@ -453,7 +427,6 @@ export default function GeneratePage() {
     );
   }
 
-  const totalCredits = calculateTotalCredits();
   const availableSections = AVAILABLE_SECTIONS[websiteType as keyof typeof AVAILABLE_SECTIONS];
   const examplePrompts = EXAMPLE_PROMPTS[websiteType as keyof typeof EXAMPLE_PROMPTS];
 
@@ -468,18 +441,14 @@ export default function GeneratePage() {
 
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-white px-6 py-3 rounded-full shadow-lg mb-6">
-            <CreditCard className="w-5 h-5 text-indigo-600" />
-            <span className="font-semibold text-gray-900">
-              {credits !== null ? credits : '...'} {t('common.credits', 'Credits')}
-            </span>
-          </div>
-
           <h1 className="text-4xl sm:text-5xl font-bold mb-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
             {t('generate.title')}
           </h1>
-          <p className="text-xl text-gray-700 mb-6">
+          <p className="text-xl text-gray-700 mb-4">
             {t('generate.describe')}
+          </p>
+          <p className="text-base text-indigo-600 font-semibold">
+            Generate unlimited for free • Pay £19.99 only when you publish
           </p>
 
           {/* Template Selection Button - TEMPORARILY DISABLED */}
@@ -791,23 +760,6 @@ export default function GeneratePage() {
             </p>
           </div>
 
-          {/* Cost Summary */}
-          <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-6 rounded-xl shadow-lg border-2 border-amber-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-bold text-gray-900 text-lg mb-2">{t('generate.totalCredits')}</div>
-                <div className="text-sm text-gray-600 space-y-1">
-                  <div>• 1 {t('common.credit')} ({t('generate.websiteGeneration')})</div>
-                  {includeImages && <div>• 3 {t('common.credits')} ({t('generate.professionalPhotos')})</div>}
-                  {customLogo && <div>• 3 {t('common.credits')} ({t('generate.aiCustomLogo')})</div>}
-                </div>
-              </div>
-              <div className="text-4xl font-bold text-indigo-600">
-                {totalCredits}
-              </div>
-            </div>
-          </div>
-
           {/* Error */}
           {error && (
             <div className="p-4 bg-red-50 border-2 border-red-200 rounded-xl text-red-700">
@@ -831,7 +783,7 @@ export default function GeneratePage() {
           {/* Generate Button */}
           <button
             onClick={handleGenerate}
-            disabled={loading || !prompt.trim() || (credits !== null && credits < totalCredits)}
+            disabled={loading || !prompt.trim()}
             className="w-full py-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white rounded-xl font-bold text-xl hover:shadow-2xl transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
           >
             {loading ? (
@@ -842,7 +794,7 @@ export default function GeneratePage() {
             ) : (
               <>
                 <Sparkles className="w-6 h-6" />
-                {t('generate.generate')} ({totalCredits} {totalCredits === 1 ? t('common.credit', 'Credit') : t('common.credits', 'Credits')})
+                Generate Website (Free)
               </>
             )}
           </button>
