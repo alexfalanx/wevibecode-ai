@@ -1,14 +1,14 @@
 // app/api/generate-website/route.ts
-// COMPLETE v6.0 - HTML5UP TEMPLATE SYSTEM INTEGRATED! 🎨
-// ✅ NEW: 10 HTML5UP templates - AI picks best for business type
-// ✅ NEW: Content injection into professional templates  
-// ✅ NEW: Dynamic color customization per template
+// COMPLETE v7.0 - CLEAN PHANTOM TEMPLATE SYSTEM 🎨
+// ✅ NEW: Clean Phantom template with completely fresh CSS
+// ✅ Templates: No CSS specificity conflicts - we replace CSS entirely
+// ✅ Fallback: Simple buildWebsite() for non-template generation
 // Previous: Pexels images, Gallery, Testimonials, Menu, Logo fixes
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import OpenAI from 'openai';
-// TEMPLATES DISABLED - Using simple buildWebsite() function instead
-// import { selectTemplate, generateFromTemplate } from '../../../templates/template-system';
+// NEW: Clean Phantom template system (replaces CSS entirely, no conflicts)
+import { generatePhantomWebsite } from '../../../templates/template-phantom-clean';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -104,19 +104,29 @@ export async function POST(request: NextRequest) {
       console.log(`✅ Images fetched: ${images.length}/3`);
     }
 
-    // STEP 5: Build website - Use simple buildWebsite() function
+    // STEP 5: Build website - Use template or simple buildWebsite()
     let finalHtml: string;
 
-    // TEMPLATES DISABLED - Template code commented out
-    /* TEMPLATE CODE DISABLED
-    if (templateId) {
-      ... all template code ...
-    } else {
-    */
+    // NEW: Use clean Phantom template if requested
+    if (templateId === 'phantom' || templateId === 'Phantom') {
+      console.log(`🎨 Using CLEAN Phantom template for ${websiteType}...`);
 
-    // Always use simple buildWebsite
-    {
-      // Use custom AI-generated layout
+      try {
+        finalHtml = generatePhantomWebsite(content, images, logoUrl, colors);
+
+        if (!finalHtml) {
+          throw new Error('Phantom template generation returned empty');
+        }
+
+        console.log(`✅ Phantom template generated: ${Math.round(finalHtml.length / 1024)}KB`);
+      } catch (templateError: any) {
+        console.error('❌ Phantom template failed, falling back to simple:', templateError.message);
+        // Fallback to simple builder
+        const { html, css, js } = buildWebsite(content, sections, colors, images, logoUrl, websiteType, vibe);
+        finalHtml = html.replace('STYLES_PLACEHOLDER', css).replace('SCRIPTS_PLACEHOLDER', js);
+      }
+    } else {
+      // Use custom AI-generated layout (default)
       console.log(`🏗️  Building custom website for ${websiteType}...`);
       const { html, css, js } = buildWebsite(content, sections, colors, images, logoUrl, websiteType, vibe);
 
