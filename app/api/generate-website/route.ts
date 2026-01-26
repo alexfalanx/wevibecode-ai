@@ -107,9 +107,11 @@ export async function POST(request: NextRequest) {
     // STEP 5: Build website - Use template or simple buildWebsite()
     let finalHtml: string;
 
-    // NEW: Use clean Phantom template if requested
-    if (templateId === 'phantom' || templateId === 'Phantom') {
-      console.log(`🎨 Using CLEAN Phantom template for ${websiteType}...`);
+    // TEMPORARY: Force Phantom template for ALL generations during testing
+    const usePhantom = true; // Set to false to disable template and use simple builder
+
+    if (usePhantom) {
+      console.log(`🎨 [TEST MODE] Using CLEAN Phantom template for ${websiteType}...`);
 
       try {
         finalHtml = generatePhantomWebsite(content, images, logoUrl, colors);
