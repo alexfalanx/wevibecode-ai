@@ -351,6 +351,28 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
 
           {editMode === 'images' && (
             <div className="space-y-6">
+              {/* Logo Upload Section */}
+              <div className="border-2 border-indigo-200 rounded-lg p-4 bg-indigo-50">
+                <h3 className="text-sm font-bold text-indigo-900 mb-2 flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4" />
+                  Upload Business Logo
+                </h3>
+                <p className="text-xs text-indigo-700 mb-3">
+                  Upload a logo to replace or enhance your business name in the header. This logo will appear in the top-left corner of your site.
+                </p>
+                <ImageUploader onUploadComplete={() => {
+                  handleUploadComplete();
+                  // Show success message
+                  setImageReplaceSuccess(true);
+                  setTimeout(() => setImageReplaceSuccess(false), 2000);
+                  // Note: To actually apply logo, user needs to select it from gallery and replace the header logo
+                  alert('Logo uploaded! Now click on the current logo/business name in "Current Images" below and select your new logo to replace it.');
+                }} />
+                <p className="text-xs text-gray-600 mt-2 bg-yellow-50 border border-yellow-200 p-2 rounded">
+                  <strong>Tip:</strong> After uploading, scroll down to "Current Images", click on the logo/header image, and select your new uploaded logo to replace it.
+                </p>
+              </div>
+
               {/* Debug Info */}
               <details className="text-xs bg-gray-50 p-2 rounded">
                 <summary className="cursor-pointer font-mono text-gray-600">Debug Info (click to expand)</summary>

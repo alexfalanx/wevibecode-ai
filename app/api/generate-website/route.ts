@@ -1349,45 +1349,51 @@ body {
   position: absolute;
   inset: 0;
   z-index: 1;
+  /* Professional gradient overlay - like Squarespace/Wix */
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 0.4) 50%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
 }
 
-/* FIXED: 70% lighter overlay */
-.hero-on-dark .hero-overlay {
-  background: linear-gradient(135deg, rgba(0,0,0,0.2), rgba(0,0,0,0.1));
+/* Always use white text with strong shadow - most readable */
+.hero-content h1 {
+  font-family: '${fonts.heading}', sans-serif;
+  font-size: 68px;
+  font-weight: 900;
+  margin-bottom: 28px;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: #ffffff !important;
+  text-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.9),
+    0 4px 12px rgba(0, 0, 0, 0.7),
+    0 8px 24px rgba(0, 0, 0, 0.5);
+  /* Optional: Add subtle background for extra contrast */
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  display: inline-block;
 }
 
-.hero-on-dark .hero-content h1 {
-  background: linear-gradient(135deg, #ffffff 0%, ${primary} 50%, ${secondary} 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3)) drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
-}
-
-.hero-on-dark .hero-content p {
-  color: #ffffff;
-  text-shadow: 
-    0 1px 4px rgba(0, 0, 0, 0.4),
-    0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.hero-on-light .hero-overlay {
-  background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
-}
-
-.hero-on-light .hero-content h1 {
-  background: linear-gradient(135deg, ${primary} 0%, ${secondary} 50%, #0f172a 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 2px 6px rgba(255, 255, 255, 0.6)) drop-shadow(0 1px 3px rgba(255, 255, 255, 0.4));
-}
-
-.hero-on-light .hero-content p {
-  color: #0f172a;
-  text-shadow: 
-    0 1px 3px rgba(255, 255, 255, 0.6),
-    0 2px 6px rgba(255, 255, 255, 0.3);
+.hero-content p {
+  font-family: '${fonts.body}', sans-serif;
+  font-size: 24px;
+  margin-bottom: 36px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #ffffff !important;
+  text-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.9),
+    0 4px 8px rgba(0, 0, 0, 0.6);
+  /* Optional: Add subtle background */
+  background: rgba(0, 0, 0, 0.15);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  display: inline-block;
+  max-width: 800px;
 }
 
 .hero-gradient { 
@@ -1405,39 +1411,7 @@ body {
   max-width: 900px; 
 }
 
-.hero-content h1 {
-  font-family: '${fonts.heading}', sans-serif;
-  font-size: 68px;
-  font-weight: 900;
-  margin-bottom: 28px;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
-}
-
-@supports not (background-clip: text) {
-  .hero-on-dark .hero-content h1 {
-    color: #ffffff;
-    text-shadow: 
-      0 2px 4px rgba(0, 0, 0, 0.3),
-      0 4px 12px rgba(0, 0, 0, 0.2);
-  }
-  
-  .hero-on-light .hero-content h1 {
-    color: #0f172a;
-    text-shadow: 
-      0 2px 4px rgba(255, 255, 255, 0.6),
-      0 4px 10px rgba(255, 255, 255, 0.3);
-  }
-}
-
-.hero-content p { 
-  font-family: '${fonts.body}', sans-serif;
-  font-size: 24px; 
-  margin-bottom: 36px; 
-  font-weight: 500;
-  opacity: 0.98;
-  line-height: 1.5;
-}
+/* Hero text styling - now in .hero-overlay section above */
 
 .cta-button {
   padding: 18px 48px;
