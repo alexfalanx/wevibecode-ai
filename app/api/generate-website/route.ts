@@ -285,7 +285,6 @@ async function generateContent(prompt: string, websiteType: string, sections: st
   "features": [
     {"icon": "relevant emoji", "title": "Feature/Service name", "description": "2-3 detailed sentences explaining the benefit and value"},
     {"icon": "relevant emoji", "title": "Feature/Service name", "description": "2-3 detailed sentences explaining the benefit and value"},
-    {"icon": "relevant emoji", "title": "Feature/Service name", "description": "2-3 detailed sentences explaining the benefit and value"},
     {"icon": "relevant emoji", "title": "Feature/Service name", "description": "2-3 detailed sentences explaining the benefit and value"}
   ],`;
   }
@@ -338,7 +337,7 @@ async function generateContent(prompt: string, websiteType: string, sections: st
     jsonSchema += `
   "gallery": {
     "title": "Gallery section title (2-4 words)",
-    "items": ["Description for image 1", "Description for image 2", "Description for image 3", "Description for image 4", "Description for image 5", "Description for image 6"]
+    "items": ["Description for image 1", "Description for image 2", "Description for image 3"]
   },`;
   }
 
@@ -361,8 +360,6 @@ async function generateContent(prompt: string, websiteType: string, sections: st
     "items": [
       {"question": "Specific question customers ask?", "answer": "Detailed, helpful answer (2-3 sentences)"},
       {"question": "Specific question customers ask?", "answer": "Detailed, helpful answer (2-3 sentences)"},
-      {"question": "Specific question customers ask?", "answer": "Detailed, helpful answer (2-3 sentences)"},
-      {"question": "Specific question customers ask?", "answer": "Detailed, helpful answer (2-3 sentences)"},
       {"question": "Specific question customers ask?", "answer": "Detailed, helpful answer (2-3 sentences)"}
     ]
   },`;
@@ -373,7 +370,6 @@ async function generateContent(prompt: string, websiteType: string, sections: st
   "team": {
     "title": "Team section title",
     "members": [
-      {"name": "Full Name", "role": "Job Title", "bio": "Brief bio describing their expertise and role (2-3 sentences)"},
       {"name": "Full Name", "role": "Job Title", "bio": "Brief bio describing their expertise and role (2-3 sentences)"},
       {"name": "Full Name", "role": "Job Title", "bio": "Brief bio describing their expertise and role (2-3 sentences)"},
       {"name": "Full Name", "role": "Job Title", "bio": "Brief bio describing their expertise and role (2-3 sentences)"}
@@ -388,7 +384,6 @@ async function generateContent(prompt: string, websiteType: string, sections: st
     "items": [
       {"number": "500+", "label": "Metric Label"},
       {"number": "10K+", "label": "Metric Label"},
-      {"number": "15", "label": "Metric Label"},
       {"number": "99%", "label": "Metric Label"}
     ]
   },`;
@@ -401,8 +396,7 @@ async function generateContent(prompt: string, websiteType: string, sections: st
     "steps": [
       {"title": "Step 1 Title", "description": "Detailed description of what happens in this step (2-3 sentences)"},
       {"title": "Step 2 Title", "description": "Detailed description of what happens in this step (2-3 sentences)"},
-      {"title": "Step 3 Title", "description": "Detailed description of what happens in this step (2-3 sentences)"},
-      {"title": "Step 4 Title", "description": "Detailed description of what happens in this step (2-3 sentences)"}
+      {"title": "Step 3 Title", "description": "Detailed description of what happens in this step (2-3 sentences)"}
     ]
   },`;
   }
