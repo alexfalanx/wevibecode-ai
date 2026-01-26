@@ -232,6 +232,55 @@ export function extractEditableElementsWithHtml(html: string): { elements: Edita
   const doc = parser.parseFromString(html, 'text/html');
   const elements: EditableElement[] = [];
 
+  // Section label mapping
+  const sectionLabels: Record<string, string> = {
+    'hero': 'Hero',
+    'home': 'Hero',
+    'about': 'About',
+    'services': 'Services',
+    'features': 'Features',
+    'menu': 'Menu',
+    'gallery': 'Gallery',
+    'team': 'Team',
+    'pricing': 'Pricing',
+    'testimonials': 'Testimonials',
+    'faq': 'FAQ',
+    'stats': 'Stats',
+    'how-it-works': 'How It Works',
+    'contact': 'Contact',
+    'footer': 'Footer',
+    'header': 'Header/Navigation'
+  };
+
+  // Helper function to find the section an element belongs to
+  function findSection(element: Element): { id: string; label: string } | null {
+    let current: Element | null = element;
+
+    while (current && current !== doc.body) {
+      if (current.id) {
+        const sectionId = current.id.toLowerCase();
+        if (sectionLabels[sectionId]) {
+          return { id: sectionId, label: sectionLabels[sectionId] };
+        }
+      }
+
+      // Also check for section elements with classes
+      if (current.tagName === 'SECTION') {
+        const classList = Array.from(current.classList);
+        for (const cls of classList) {
+          const cleanClass = cls.toLowerCase();
+          if (sectionLabels[cleanClass]) {
+            return { id: cleanClass, label: sectionLabels[cleanClass] };
+          }
+        }
+      }
+
+      current = current.parentElement;
+    }
+
+    return null;
+  }
+
   // Select common editable elements
   const selectors = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'button', 'a', 'span', 'li'];
   let globalIndex = 0;
@@ -257,6 +306,9 @@ export function extractEditableElementsWithHtml(html: string): { elements: Edita
       (node as HTMLElement).setAttribute('data-editable-id', uniqueId);
       globalIndex++;
 
+      // Find which section this element belongs to
+      const section = findSection(node);
+
       // Create a more specific selector path using data attribute as primary
       const specificSelector = `[data-editable-id="${uniqueId}"]`;
 
@@ -266,6 +318,8 @@ export function extractEditableElementsWithHtml(html: string): { elements: Edita
         content: textContent,
         selector: specificSelector,
         tag: selector,
+        section: section?.id,
+        sectionLabel: section?.label || 'Other',
       };
       elements.push(element);
     });

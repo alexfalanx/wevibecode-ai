@@ -1157,6 +1157,12 @@ function generateHTML(content: any, sections: string[], images: any[], logoUrl: 
           <a href="#home">Home</a>
           ${sections.includes('about') ? '<a href="#about">About</a>' : ''}
           ${sections.includes('services') || sections.includes('features') ? '<a href="#services">Services</a>' : ''}
+          ${sections.includes('menu') ? '<a href="#menu">Menu</a>' : ''}
+          ${sections.includes('gallery') ? '<a href="#gallery">Gallery</a>' : ''}
+          ${sections.includes('team') ? '<a href="#team">Team</a>' : ''}
+          ${sections.includes('pricing') ? '<a href="#pricing">Pricing</a>' : ''}
+          ${sections.includes('testimonials') ? '<a href="#testimonials">Testimonials</a>' : ''}
+          ${sections.includes('faq') ? '<a href="#faq">FAQ</a>' : ''}
           ${sections.includes('contact') ? '<a href="#contact">Contact</a>' : ''}
         </nav>
         <button class="mobile-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">
@@ -1170,6 +1176,12 @@ function generateHTML(content: any, sections: string[], images: any[], logoUrl: 
       <a href="#home" onclick="closeMobileMenu()">Home</a>
       ${sections.includes('about') ? '<a href="#about" onclick="closeMobileMenu()">About</a>' : ''}
       ${sections.includes('services') || sections.includes('features') ? '<a href="#services" onclick="closeMobileMenu()">Services</a>' : ''}
+      ${sections.includes('menu') ? '<a href="#menu" onclick="closeMobileMenu()">Menu</a>' : ''}
+      ${sections.includes('gallery') ? '<a href="#gallery" onclick="closeMobileMenu()">Gallery</a>' : ''}
+      ${sections.includes('team') ? '<a href="#team" onclick="closeMobileMenu()">Team</a>' : ''}
+      ${sections.includes('pricing') ? '<a href="#pricing" onclick="closeMobileMenu()">Pricing</a>' : ''}
+      ${sections.includes('testimonials') ? '<a href="#testimonials" onclick="closeMobileMenu()">Testimonials</a>' : ''}
+      ${sections.includes('faq') ? '<a href="#faq" onclick="closeMobileMenu()">FAQ</a>' : ''}
       ${sections.includes('contact') ? '<a href="#contact" onclick="closeMobileMenu()">Contact</a>' : ''}
     </div>
   </header>

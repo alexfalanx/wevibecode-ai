@@ -80,9 +80,9 @@ const AVAILABLE_SECTIONS = {
     { id: 'services', label: 'Services/Specialties' },
     { id: 'about', label: 'About Practice' },
     { id: 'team', label: 'Our Doctors/Staff' },
-    { id: 'insurance', label: 'Insurance & Billing' },
-    { id: 'patient_portal', label: 'Patient Portal Link' },
+    { id: 'opening_hours', label: 'Opening Hours' },
     { id: 'testimonials', label: 'Patient Reviews' },
+    { id: 'faq', label: 'FAQ' },
     { id: 'contact', label: 'Contact & Directions' },
   ],
   salon: [

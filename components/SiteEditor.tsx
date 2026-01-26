@@ -272,28 +272,50 @@ export default function SiteEditor({ previewId, htmlContent, onSave, onClose }: 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4">
           {editMode === 'text' && (
-            <div className="space-y-3">
+            <div className="space-y-6">
               <p className="text-sm text-gray-600 mb-4">
-                {t('editor.clickToEdit')}
+                Click any text to edit it. Elements are organized by section.
               </p>
 
-              {editableElements.map(element => (
-                <div
-                  key={element.id}
-                  className="p-3 border rounded-lg hover:border-indigo-300 hover:bg-indigo-50/50 transition cursor-pointer"
-                  onClick={() => handleTextEdit(element)}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1">
-                      <span className="text-xs text-gray-500 uppercase font-medium">
-                        {element.type}
-                      </span>
-                      <p className="text-gray-900 mt-1">{element.content}</p>
+              {(() => {
+                // Group elements by section
+                const groupedElements = editableElements.reduce((acc, element) => {
+                  const section = element.sectionLabel || 'Other';
+                  if (!acc[section]) {
+                    acc[section] = [];
+                  }
+                  acc[section].push(element);
+                  return acc;
+                }, {} as Record<string, typeof editableElements>);
+
+                // Render each section
+                return Object.entries(groupedElements).map(([sectionLabel, elements]) => (
+                  <div key={sectionLabel} className="border rounded-lg p-4 bg-gray-50">
+                    <h3 className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">
+                      {sectionLabel}
+                    </h3>
+                    <div className="space-y-2">
+                      {elements.map(element => (
+                        <div
+                          key={element.id}
+                          className="p-3 border bg-white rounded-lg hover:border-indigo-300 hover:bg-indigo-50/50 transition cursor-pointer"
+                          onClick={() => handleTextEdit(element)}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1">
+                              <span className="text-xs text-gray-500 uppercase font-medium">
+                                {element.type}
+                              </span>
+                              <p className="text-gray-900 mt-1 line-clamp-2">{element.content}</p>
+                            </div>
+                            <Type className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <Type className="w-4 h-4 text-gray-400" />
                   </div>
-                </div>
-              ))}
+                ));
+              })()}
             </div>
           )}
 

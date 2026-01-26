@@ -75,4 +75,6 @@ export interface EditableElement {
   content: string;
   selector: string;
   tag: string;
+  section?: string; // Which section this element belongs to (hero, about, services, etc.)
+  sectionLabel?: string; // Human-readable section name
 }
