@@ -161,17 +161,18 @@ export function generatePhantomWebsite(
 
   // 5g. Add hero background image
   console.log('🔧 Adding hero background...');
+  console.log(`   Images available: ${images.length}`);
   if (images.length > 0) {
     const heroImageUrl = images[0]?.url;
+    console.log(`   Hero image URL: ${heroImageUrl}`);
     if (heroImageUrl) {
-      $('#main > .inner > header').attr('style', `
-        background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${heroImageUrl}');
-        background-size: cover;
-        background-position: center;
-      `);
+      const heroStyle = `background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${heroImageUrl}') !important; background-size: cover !important; background-position: center !important; min-height: 50vh !important;`;
+      $('#main > .inner > header').attr('style', heroStyle);
+      console.log(`   Applied hero style to ${$('#main > .inner > header').length} elements`);
+
       // Update text colors for hero with image
-      $('#main > .inner > header h1').attr('style', 'color: #ffffff !important;');
-      $('#main > .inner > header p').attr('style', 'color: rgba(255,255,255,0.9) !important;');
+      $('#main > .inner > header h1').attr('style', 'color: #ffffff !important; text-shadow: 0 2px 10px rgba(0,0,0,0.5) !important;');
+      $('#main > .inner > header p').attr('style', 'color: rgba(255,255,255,0.9) !important; text-shadow: 0 1px 5px rgba(0,0,0,0.4) !important;');
     }
   }
 
@@ -193,7 +194,12 @@ export function generatePhantomWebsite(
   // Insert JS before </body>
   finalHtml = finalHtml.replace('</body>', `<script>${cleanJS}</script>\n</body>`);
 
-  console.log('✅ === PHANTOM CLEAN GENERATION COMPLETE ===');
+  // Add version marker to HTML for debugging
+  finalHtml = finalHtml.replace('</body>', `
+<!-- PHANTOM CLEAN TEMPLATE v2.0 - ${new Date().toISOString()} -->
+</body>`);
+
+  console.log('✅ === PHANTOM CLEAN GENERATION COMPLETE v2.0 ===');
   console.log(`📦 Final size: ${Math.round(finalHtml.length / 1024)}KB`);
 
   return finalHtml;
