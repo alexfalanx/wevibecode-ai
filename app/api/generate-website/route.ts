@@ -107,8 +107,8 @@ export async function POST(request: NextRequest) {
     // STEP 5: Build website - Use template or simple buildWebsite()
     let finalHtml: string;
 
-    // TEMPORARY: Force Phantom template for ALL generations during testing
-    const usePhantom = true; // Set to false to disable template and use simple builder
+    // TEMPLATES DISABLED - Using simple builder (more flexible, supports all sections)
+    const usePhantom = false; // Phantom template available but disabled
 
     if (usePhantom) {
       console.log(`🎨 [TEST MODE] Using CLEAN Phantom template for ${websiteType}...`);
