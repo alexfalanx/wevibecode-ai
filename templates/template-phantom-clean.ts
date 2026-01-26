@@ -71,15 +71,7 @@ export function generatePhantomWebsite(
 
   // Step 5: REPLACE CONTENT (Cheerio only - no regex mixing)
 
-  // 5a. Logo/Brand
-  console.log('🔧 Replacing logo...');
-  $('.logo .symbol').remove();
-  $('.logo .title').text(businessName);
-  if (logoUrl) {
-    $('.logo').prepend(`<img src="${logoUrl}" alt="${businessName}" style="height: 40px; margin-right: 10px; vertical-align: middle;">`);
-  }
-
-  // 5b. Title tag
+  // 5a. Title tag
   $('title').text(`${businessName} - ${heroSubtitle.substring(0, 50)}`);
 
   // 5c. Hero section (header inside #main > .inner)
@@ -87,28 +79,32 @@ export function generatePhantomWebsite(
   $('#main > .inner > header h1').text(heroHeadline);
   $('#main > .inner > header p').text(heroSubtitle);
 
-  // 5d. Menu navigation - Update both mobile menu AND add desktop nav
-  console.log('🔧 Updating menu...');
-  $('#menu h2').text('Menu');
+  // 5d. Navigation - REBUILD header completely
+  console.log('🔧 Rebuilding header with navigation...');
   const menuItems = [
     { text: 'Home', href: '#home' },
     { text: 'Services', href: '#services' },
-    { text: 'Contact', href: '#contact' }
+    { text: 'Contact', href: '#footer' }
   ];
 
-  // Update mobile menu
-  $('#menu ul').empty();
-  menuItems.forEach(item => {
-    $('#menu ul').append(`<li><a href="${item.href}">${item.text}</a></li>`);
-  });
+  // Remove old menu
+  $('#menu').remove();
 
-  // Add desktop navigation to header
-  const desktopNav = `
-    <nav class="desktop-nav">
-      ${menuItems.map(item => `<a href="${item.href}">${item.text}</a>`).join('')}
-    </nav>
+  // Replace header with clean version
+  const newHeaderHtml = `
+    <header id="header">
+      <div class="header-inner">
+        <a href="#home" class="logo">
+          ${logoUrl ? `<img src="${logoUrl}" alt="${businessName}" class="logo-img" />` : ''}
+          <span class="logo-text">${businessName}</span>
+        </a>
+        <nav class="main-nav">
+          ${menuItems.map(item => `<a href="${item.href}">${item.text}</a>`).join('')}
+        </nav>
+      </div>
+    </header>
   `;
-  $('#header .inner').append(desktopNav);
+  $('#header').replaceWith(newHeaderHtml);
 
   // 5e. Tiles - Replace content in each article
   // IMPORTANT: Only keep as many tiles as we have features (max 6 for clean layout)
@@ -116,7 +112,7 @@ export function generatePhantomWebsite(
   const tileArticles = $('section.tiles article');
   console.log(`   Found ${tileArticles.length} tile articles`);
 
-  const maxTiles = Math.min(featureTitles.length, 6); // Limit to 6 tiles max
+  const maxTiles = Math.min(featureTitles.length, 3); // Limit to 3 tiles for clean row
   console.log(`   Using ${maxTiles} tiles (features: ${featureTitles.length})`);
 
   tileArticles.each((index, article) => {
@@ -150,14 +146,23 @@ export function generatePhantomWebsite(
 
   console.log(`   Tiles after cleanup: ${$('section.tiles article').length}`);
 
-  // 5f. Footer - Clean up completely
-  console.log('🔧 Updating footer...');
-  $('#footer h2').first().text('Get In Touch');
-  $('#footer .icons').remove(); // Remove social icons
-  $('#footer section').has('.icons').remove(); // Remove "Follow" section entirely
-  $('section:contains("Follow")').remove(); // Remove any Follow section
-  $('#footer h2:contains("Follow")').parent().remove(); // Remove Follow heading and parent
-  $('#footer .copyright').html(`&copy; ${businessName}. All rights reserved.`);
+  // 5f. Footer - COMPLETELY REPLACE with our own HTML
+  console.log('🔧 Rebuilding footer...');
+  const newFooterHtml = `
+    <footer id="footer">
+      <div class="footer-inner">
+        <h2>Get In Touch</h2>
+        <form class="contact-form">
+          <input type="text" name="name" placeholder="Your Name" required />
+          <input type="email" name="email" placeholder="Your Email" required />
+          <textarea name="message" placeholder="Your Message" rows="4" required></textarea>
+          <button type="submit">Send Message</button>
+        </form>
+        <p class="copyright">&copy; ${businessName}. All rights reserved.</p>
+      </div>
+    </footer>
+  `;
+  $('#footer').replaceWith(newFooterHtml);
 
   // 5g. Add hero background image
   console.log('🔧 Adding hero background...');
@@ -250,155 +255,85 @@ body {
 }
 
 /* ============================================ */
-/* HEADER                                      */
+/* HEADER (completely custom)                  */
 /* ============================================ */
 
 #header {
-  position: sticky;
-  top: 0;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  z-index: 1000;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  position: sticky !important;
+  top: 0 !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(10px) !important;
+  z-index: 1000 !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+  padding: 0 !important;
 }
 
-#header .inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+#header .header-inner,
+.header-inner {
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 1rem 2rem !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
 }
 
 /* Logo */
-#header .logo {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  color: #1a1a2e;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.5rem;
-  font-weight: 700;
+#header .logo,
+.header-inner .logo {
+  display: flex !important;
+  align-items: center !important;
+  text-decoration: none !important;
+  gap: 12px !important;
 }
 
-#header .logo img {
-  height: 40px;
-  margin-right: 12px;
-  border-radius: 8px;
+#header .logo-img,
+.logo-img {
+  height: 40px !important;
+  border-radius: 8px !important;
 }
 
-#header .logo .title {
-  background: linear-gradient(135deg, ${primary}, ${secondary});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+#header .logo-text,
+.logo-text {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  background: linear-gradient(135deg, ${primary}, ${secondary}) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
 }
 
-/* Desktop Navigation */
-.desktop-nav {
+/* Main Navigation */
+#header .main-nav,
+.main-nav {
   display: flex !important;
   gap: 2rem !important;
   align-items: center !important;
 }
 
-.desktop-nav a {
+#header .main-nav a,
+.main-nav a {
   color: #64748b !important;
   text-decoration: none !important;
   font-weight: 500 !important;
-  transition: color 0.2s !important;
-  padding: 0.5rem 0 !important;
   font-size: 1rem !important;
+  transition: color 0.2s !important;
 }
 
-.desktop-nav a:hover {
+#header .main-nav a:hover,
+.main-nav a:hover {
   color: ${primary} !important;
 }
 
-/* Hide original nav (mobile menu toggle) on desktop */
-#header > .inner > nav {
-  display: none !important;
-}
-
 @media (max-width: 768px) {
-  .desktop-nav {
+  #header .main-nav,
+  .main-nav {
     display: none !important;
   }
-
-  #header > .inner > nav {
-    display: block !important;
-  }
 }
 
-#header nav ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-#header nav ul li a {
-  padding: 0.5rem 1rem;
-  color: #64748b;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-
-#header nav ul li a:hover {
-  color: ${primary};
-}
-
-/* ============================================ */
-/* MOBILE MENU                                 */
-/* ============================================ */
-
-#menu {
-  position: fixed;
-  top: 0;
-  right: -100%;
-  width: 280px;
-  height: 100vh;
-  background: #1a1a2e;
-  z-index: 2000;
-  padding: 2rem;
-  transition: right 0.3s ease;
-}
-
-#menu.active {
-  right: 0;
-}
-
-#menu h2 {
-  color: #ffffff;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.5rem;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-#menu ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-#menu ul li {
-  margin-bottom: 0.5rem;
-}
-
-#menu ul li a {
-  display: block;
-  color: #ffffff;
-  text-decoration: none;
-  padding: 1rem;
-  border-radius: 8px;
-  transition: background 0.2s;
-}
-
-#menu ul li a:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
+/* Mobile menu removed - using simplified navigation */
 
 /* ============================================ */
 /* MAIN CONTENT                                */
@@ -576,20 +511,20 @@ section.tiles article .content p {
 }
 
 /* ============================================ */
-/* FOOTER                                      */
+/* FOOTER (completely custom)                  */
 /* ============================================ */
 
-#footer,
-#contact {
+#footer {
   background: #1a1a2e !important;
   color: #ffffff !important;
   padding: 4rem 2rem !important;
 }
 
-#footer .inner {
-  max-width: 600px !important;
+#footer .footer-inner,
+.footer-inner {
+  max-width: 500px !important;
   margin: 0 auto !important;
-  padding: 0 !important;
+  text-align: center !important;
 }
 
 #footer h2 {
@@ -601,52 +536,18 @@ section.tiles article .content p {
   color: #ffffff !important;
 }
 
-#footer section {
-  margin-bottom: 2rem !important;
+#footer .contact-form,
+.contact-form {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1rem !important;
   width: 100% !important;
 }
 
-/* Contact form */
-#footer form {
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: left;
-}
-
-#footer .fields {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-#footer .field {
-  margin-bottom: 0;
-  width: 100%;
-}
-
-#footer .field.half {
-  width: 100%;
-}
-
-@media (min-width: 600px) {
-  #footer .fields {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-
-  #footer .field.half {
-    grid-column: span 1;
-  }
-
-  #footer .field:not(.half) {
-    grid-column: span 2;
-  }
-}
-
-#footer input,
-#footer textarea {
+#footer .contact-form input,
+#footer .contact-form textarea,
+.contact-form input,
+.contact-form textarea {
   width: 100% !important;
   padding: 1rem !important;
   border: none !important;
@@ -655,67 +556,45 @@ section.tiles article .content p {
   color: #ffffff !important;
   font-family: 'Inter', sans-serif !important;
   font-size: 1rem !important;
-  transition: background 0.2s !important;
   box-sizing: border-box !important;
 }
 
-#footer input::placeholder,
-#footer textarea::placeholder {
+#footer .contact-form input::placeholder,
+#footer .contact-form textarea::placeholder,
+.contact-form input::placeholder,
+.contact-form textarea::placeholder {
   color: rgba(255, 255, 255, 0.5) !important;
 }
 
-#footer input:focus,
-#footer textarea:focus {
-  outline: none !important;
-  background: rgba(255, 255, 255, 0.15) !important;
+#footer .contact-form button,
+.contact-form button {
+  background: linear-gradient(135deg, ${primary}, ${secondary}) !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 1rem 2rem !important;
+  border-radius: 8px !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: transform 0.2s, box-shadow 0.2s !important;
 }
 
-#footer textarea {
-  min-height: 120px !important;
-  resize: vertical !important;
+#footer .contact-form button:hover,
+.contact-form button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3) !important;
 }
 
-/* Submit button */
-#footer .actions {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  text-align: center;
+#footer .copyright,
+.copyright {
+  margin-top: 2rem !important;
+  padding-top: 2rem !important;
+  border-top: 1px solid rgba(255,255,255,0.1) !important;
+  color: rgba(255,255,255,0.6) !important;
+  font-size: 0.9rem !important;
 }
 
-#footer .actions li {
-  display: inline-block;
-}
-
-#footer input[type="submit"] {
-  background: linear-gradient(135deg, ${primary}, ${secondary});
-  color: #ffffff;
-  font-weight: 600;
-  padding: 1rem 2.5rem;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-#footer input[type="submit"]:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-}
-
-/* Copyright */
-#footer .copyright {
-  list-style: none;
-  padding: 2rem 0 0;
-  margin: 0;
-  text-align: center;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  margin-top: 2rem;
-}
-
-#footer .copyright li {
-  display: inline-block;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.9rem;
-}
+/* Old footer form CSS removed - using new contact-form class */
 
 /* ============================================ */
 /* RESPONSIVE                                  */
