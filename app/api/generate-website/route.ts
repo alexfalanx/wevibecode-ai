@@ -409,6 +409,112 @@ async function generateContent(prompt: string, websiteType: string, sections: st
   },`;
   }
 
+  if (sections.includes('location')) {
+    jsonSchema += `
+  "location": {
+    "title": "Location section title",
+    "address": "Full street address",
+    "city": "City, State/Country",
+    "hours": [
+      "Monday-Friday: 9am-5pm",
+      "Saturday: 10am-4pm",
+      "Sunday: Closed"
+    ],
+    "phone": "Phone number",
+    "email": "Email address"
+  },`;
+  }
+
+  if (sections.includes('reservations')) {
+    jsonSchema += `
+  "reservations": {
+    "title": "Reservations section title",
+    "description": "Compelling reason to book (2-3 sentences)",
+    "bookingLink": "#book",
+    "callToAction": "Book Now"
+  },`;
+  }
+
+  if (sections.includes('social_proof')) {
+    jsonSchema += `
+  "socialProof": {
+    "title": "Social proof section title",
+    "logos": [
+      {"name": "Company 1", "description": "Well-known brand"},
+      {"name": "Company 2", "description": "Industry leader"},
+      {"name": "Company 3", "description": "Trusted partner"}
+    ]
+  },`;
+  }
+
+  if (sections.includes('cta')) {
+    jsonSchema += `
+  "cta": {
+    "headline": "Compelling call to action headline",
+    "description": "Urgent value proposition (1-2 sentences)",
+    "buttonText": "Take Action Now"
+  },`;
+  }
+
+  if (sections.includes('featured_listings')) {
+    jsonSchema += `
+  "featuredListings": {
+    "title": "Featured listings section title",
+    "properties": [
+      {"address": "Property address", "price": "$XXX,XXX", "beds": "X", "baths": "X", "sqft": "X,XXX", "description": "Brief description"},
+      {"address": "Property address", "price": "$XXX,XXX", "beds": "X", "baths": "X", "sqft": "X,XXX", "description": "Brief description"},
+      {"address": "Property address", "price": "$XXX,XXX", "beds": "X", "baths": "X", "sqft": "X,XXX", "description": "Brief description"}
+    ]
+  },`;
+  }
+
+  if (sections.includes('neighborhoods')) {
+    jsonSchema += `
+  "neighborhoods": {
+    "title": "Neighborhoods section title",
+    "areas": [
+      {"name": "Area name", "description": "Why this neighborhood is great (2-3 sentences)"},
+      {"name": "Area name", "description": "Why this neighborhood is great (2-3 sentences)"},
+      {"name": "Area name", "description": "Why this neighborhood is great (2-3 sentences)"}
+    ]
+  },`;
+  }
+
+  if (sections.includes('case_studies')) {
+    jsonSchema += `
+  "caseStudies": {
+    "title": "Case studies section title",
+    "cases": [
+      {"client": "Client name", "challenge": "What problem they had", "solution": "How you solved it", "result": "Measurable outcome"},
+      {"client": "Client name", "challenge": "What problem they had", "solution": "How you solved it", "result": "Measurable outcome"},
+      {"client": "Client name", "challenge": "What problem they had", "solution": "How you solved it", "result": "Measurable outcome"}
+    ]
+  },`;
+  }
+
+  if (sections.includes('opening_hours')) {
+    jsonSchema += `
+  "openingHours": {
+    "title": "Opening hours section title",
+    "schedule": [
+      "Monday-Friday: 9am-5pm",
+      "Saturday: 10am-2pm",
+      "Sunday: Closed"
+    ],
+    "note": "Additional information (e.g., 'Emergency services available 24/7')"
+  },`;
+  }
+
+  if (sections.includes('booking')) {
+    jsonSchema += `
+  "booking": {
+    "title": "Booking section title",
+    "description": "Why book with us (2-3 sentences)",
+    "bookingLink": "#book",
+    "callToAction": "Book Appointment"
+  },`;
+  }
+
   // FIXED: SHORT image search terms (5-6 words max)
   jsonSchema += `
   "imageSearchTerms": {
@@ -1113,6 +1219,159 @@ function generateHTML(content: any, sections: string[], images: any[], logoUrl: 
   </section>`;
   }
   
+  // Location & Hours
+  if (sections.includes('location') && content.location) {
+    sectionsHTML += `
+  <section class="section fade-in-section" id="location">
+    <div class="container">
+      <h2 class="section-title">${content.location.title || 'Location & Hours'}</h2>
+      <div class="location-grid">
+        <div class="location-info">
+          <h3>📍 Address</h3>
+          <p>${content.location.address}</p>
+          <p>${content.location.city}</p>
+        </div>
+        <div class="location-info">
+          <h3>🕐 Hours</h3>
+          ${content.location.hours ? content.location.hours.map((h: string) => `<p>${h}</p>`).join('') : ''}
+        </div>
+        <div class="location-info">
+          <h3>📞 Contact</h3>
+          <p>Phone: ${content.location.phone || ''}</p>
+          <p>Email: ${content.location.email || ''}</p>
+        </div>
+      </div>
+    </div>
+  </section>`;
+  }
+
+  // Reservations/Booking (Restaurant)
+  if (sections.includes('reservations') && content.reservations) {
+    sectionsHTML += `
+  <section class="section fade-in-section cta-section" id="reservations">
+    <div class="container text-center">
+      <h2 class="section-title">${content.reservations.title || 'Make a Reservation'}</h2>
+      <p class="section-subtitle">${content.reservations.description}</p>
+      <button class="cta-button">${content.reservations.callToAction || 'Book Now'}</button>
+    </div>
+  </section>`;
+  }
+
+  // Social Proof (Landing)
+  if (sections.includes('social_proof') && content.socialProof) {
+    sectionsHTML += `
+  <section class="section fade-in-section" id="social-proof">
+    <div class="container">
+      <h2 class="section-title text-center">${content.socialProof.title || 'Trusted By'}</h2>
+      <div class="logo-grid">
+        ${content.socialProof.logos ? content.socialProof.logos.map((logo: any) => `
+        <div class="partner-logo">
+          <h4>${logo.name}</h4>
+          <p class="text-sm">${logo.description}</p>
+        </div>
+        `).join('') : ''}
+      </div>
+    </div>
+  </section>`;
+  }
+
+  // CTA Section (Landing)
+  if (sections.includes('cta') && content.cta) {
+    sectionsHTML += `
+  <section class="section fade-in-section cta-section" id="cta">
+    <div class="container text-center">
+      <h2 class="section-title">${content.cta.headline}</h2>
+      <p class="section-subtitle">${content.cta.description}</p>
+      <button class="cta-button">${content.cta.buttonText}</button>
+    </div>
+  </section>`;
+  }
+
+  // Featured Listings (Real Estate)
+  if (sections.includes('featured_listings') && content.featuredListings) {
+    sectionsHTML += `
+  <section class="section fade-in-section" id="featured-listings">
+    <div class="container">
+      <h2 class="section-title">${content.featuredListings.title || 'Featured Properties'}</h2>
+      <div class="services-grid">
+        ${content.featuredListings.properties ? content.featuredListings.properties.map((prop: any) => `
+        <div class="service-card">
+          <h3>${prop.address}</h3>
+          <div class="property-price">${prop.price}</div>
+          <div class="property-details">${prop.beds} beds • ${prop.baths} baths • ${prop.sqft} sqft</div>
+          <p>${prop.description}</p>
+          <button class="cta-button secondary">View Details</button>
+        </div>
+        `).join('') : ''}
+      </div>
+    </div>
+  </section>`;
+  }
+
+  // Neighborhoods (Real Estate)
+  if (sections.includes('neighborhoods') && content.neighborhoods) {
+    sectionsHTML += `
+  <section class="section fade-in-section" id="neighborhoods">
+    <div class="container">
+      <h2 class="section-title">${content.neighborhoods.title || 'Explore Neighborhoods'}</h2>
+      <div class="services-grid">
+        ${content.neighborhoods.areas ? content.neighborhoods.areas.map((area: any) => `
+        <div class="service-card">
+          <h3>${area.name}</h3>
+          <p>${area.description}</p>
+        </div>
+        `).join('') : ''}
+      </div>
+    </div>
+  </section>`;
+  }
+
+  // Case Studies (Professional)
+  if (sections.includes('case_studies') && content.caseStudies) {
+    sectionsHTML += `
+  <section class="section fade-in-section" id="case-studies">
+    <div class="container">
+      <h2 class="section-title">${content.caseStudies.title || 'Case Studies'}</h2>
+      <div class="services-grid">
+        ${content.caseStudies.cases ? content.caseStudies.cases.map((cs: any) => `
+        <div class="service-card">
+          <h3>${cs.client}</h3>
+          <p><strong>Challenge:</strong> ${cs.challenge}</p>
+          <p><strong>Solution:</strong> ${cs.solution}</p>
+          <p><strong>Result:</strong> ${cs.result}</p>
+        </div>
+        `).join('') : ''}
+      </div>
+    </div>
+  </section>`;
+  }
+
+  // Opening Hours (Healthcare)
+  if (sections.includes('opening_hours') && content.openingHours) {
+    sectionsHTML += `
+  <section class="section fade-in-section" id="opening-hours">
+    <div class="container">
+      <h2 class="section-title">${content.openingHours.title || 'Opening Hours'}</h2>
+      <div class="hours-list">
+        ${content.openingHours.schedule ? content.openingHours.schedule.map((h: string) => `<p>${h}</p>`).join('') : ''}
+        ${content.openingHours.note ? `<p class="note">${content.openingHours.note}</p>` : ''}
+      </div>
+    </div>
+  </section>`;
+  }
+
+  // Booking (Salon)
+  if (sections.includes('booking') && content.booking) {
+    sectionsHTML += `
+  <section class="section fade-in-section cta-section" id="booking">
+    <div class="container text-center">
+      <h2 class="section-title">${content.booking.title || 'Book Appointment'}</h2>
+      <p class="section-subtitle">${content.booking.description}</p>
+      <button class="cta-button">${content.booking.callToAction || 'Book Now'}</button>
+    </div>
+  </section>`;
+  }
+
   // Contact
   if (sections.includes('contact')) {
     sectionsHTML += `
@@ -1985,8 +2244,8 @@ body {
   justify-content: center;
 }
 
-.team-initial { 
-  font-size: 48px; 
+.team-initial {
+  font-size: 48px;
   font-weight: 700; 
   color: white;
 }
@@ -2185,6 +2444,103 @@ body {
   .price {
     font-size: 36px;
   }
+
+  .location-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* NEW SECTIONS CSS */
+
+/* Location & Hours */
+.location-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  margin-top: 32px;
+}
+
+.location-info h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: ${primary};
+}
+
+.location-info p {
+  color: #64748b;
+  margin: 8px 0;
+}
+
+/* CTA Sections (reservations, booking, cta) */
+.cta-section {
+  background: linear-gradient(135deg, ${primary}10, ${secondary}10);
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Property Details (Real Estate) */
+.property-price {
+  font-size: 28px;
+  font-weight: 900;
+  color: ${primary};
+  margin: 12px 0;
+}
+
+.property-details {
+  color: #64748b;
+  margin: 12px 0;
+}
+
+/* Logo Grid (Social Proof) */
+.logo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 32px;
+  margin-top: 32px;
+}
+
+.partner-logo {
+  text-align: center;
+  padding: 24px;
+  background: white;
+  border-radius: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.partner-logo h4 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.text-sm {
+  font-size: 14px;
+  color: #64748b;
+}
+
+/* Hours List (Opening Hours) */
+.hours-list {
+  max-width: 500px;
+  margin: 32px auto;
+  text-align: center;
+}
+
+.hours-list p {
+  padding: 12px;
+  margin: 8px 0;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.hours-list .note {
+  background: ${primary}10;
+  color: ${primary};
+  font-weight: 600;
+  border-color: ${primary}30;
 }`;
 }
 
