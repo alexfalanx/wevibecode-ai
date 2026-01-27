@@ -2,11 +2,12 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import Preview from '@/components/Preview';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, CreditCard, CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useToast } from '@/components/Toast';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -15,14 +16,28 @@ interface PageProps {
 export default function PreviewPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useTranslation();
+  const toast = useToast();
   const [preview, setPreview] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   useEffect(() => {
     loadPreview();
   }, [resolvedParams.id]);
+
+  useEffect(() => {
+    // Handle payment redirects
+    const payment = searchParams.get('payment');
+    if (payment === 'success') {
+      toast.success('Payment successful! Your website is now published.');
+      loadPreview(); // Reload to get updated payment status
+    } else if (payment === 'cancelled') {
+      toast.error('Payment cancelled. You can try again when ready.');
+    }
+  }, [searchParams]);
 
   const loadPreview = async () => {
     try {
@@ -32,7 +47,7 @@ export default function PreviewPage({ params }: PageProps) {
       );
 
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
         router.push('/login');
         return;
@@ -54,6 +69,35 @@ export default function PreviewPage({ params }: PageProps) {
       setError(err.message || 'Failed to load preview');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePayment = async () => {
+    try {
+      setPaymentLoading(true);
+
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ previewId: resolvedParams.id }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create checkout session');
+      }
+
+      // Redirect to Stripe Checkout
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL received');
+      }
+    } catch (err: any) {
+      console.error('Payment error:', err);
+      toast.error(err.message || 'Failed to start payment process');
+      setPaymentLoading(false);
     }
   };
 
@@ -96,7 +140,7 @@ export default function PreviewPage({ params }: PageProps) {
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.push('/dashboard/history')}
@@ -107,13 +151,42 @@ export default function PreviewPage({ params }: PageProps) {
               </button>
               <div className="h-6 w-px bg-gray-300" />
               <div>
-                <h1 className="text-xl font-bold text-gray-900">{preview.title}</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl font-bold text-gray-900">{preview.title}</h1>
+                  {preview.payment_status === 'paid' && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                      <CheckCircle className="w-3 h-3" />
+                      Published
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-gray-500">
                   {preview.generation_type && `${preview.generation_type.charAt(0).toUpperCase() + preview.generation_type.slice(1)} • `}
                   {new Date(preview.created_at).toLocaleDateString()}
                 </p>
               </div>
             </div>
+
+            {/* Payment Button */}
+            {preview.payment_status !== 'paid' && (
+              <button
+                onClick={handlePayment}
+                disabled={paymentLoading}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold hover:shadow-xl transition transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {paymentLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="w-5 h-5" />
+                    Pay £19.99 to Publish
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>
