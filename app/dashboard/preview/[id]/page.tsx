@@ -169,23 +169,26 @@ export default function PreviewPage({ params }: PageProps) {
 
             {/* Payment Button */}
             {preview.payment_status !== 'paid' && (
-              <button
-                onClick={handlePayment}
-                disabled={paymentLoading}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold hover:shadow-xl transition transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                {paymentLoading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <CreditCard className="w-5 h-5" />
-                    Pay £19.99 to Publish
-                  </>
-                )}
-              </button>
+              <div className="flex flex-col items-end gap-1">
+                <button
+                  onClick={handlePayment}
+                  disabled={paymentLoading}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold hover:shadow-xl transition transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {paymentLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="w-5 h-5" />
+                      Pay £19.99 to Publish
+                    </>
+                  )}
+                </button>
+                <p className="text-xs text-gray-500">Card or PayPal accepted</p>
+              </div>
             )}
           </div>
         </div>

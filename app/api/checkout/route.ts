@@ -98,6 +98,7 @@ export async function POST(request: NextRequest) {
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       customer_email: user.email,
+      payment_method_types: ['card', 'paypal'], // Enable card and PayPal payments
       line_items: [
         {
           price_data: {

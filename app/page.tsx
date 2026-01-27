@@ -293,8 +293,11 @@ export default function LandingPage() {
               Try It Free
             </button>
 
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 mb-2">
               Generate free preview • Pay £19.99 only when you publish
+            </p>
+            <p className="text-xs text-gray-400">
+              💳 Card or PayPal accepted
             </p>
           </div>
 
@@ -323,6 +326,10 @@ export default function LandingPage() {
             <FAQItem
               q="Do I need to pay monthly?"
               a="No. Pay £19.99 once per website. That's it. No subscriptions, no recurring charges."
+            />
+            <FAQItem
+              q="What payment methods do you accept?"
+              a="We accept all major credit and debit cards, plus PayPal. Secure payments powered by Stripe."
             />
             <FAQItem
               q="How many times can I regenerate?"
