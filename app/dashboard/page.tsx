@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Store, Zap, Sparkles, LogOut, Plus, FolderOpen } from 'lucide-react';
+import { Store, Sparkles, Plus, FolderOpen } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { DashboardSkeleton } from '@/components/LoadingSkeleton';
@@ -14,9 +14,7 @@ export default function DashboardPage() {
   const toast = useToast();
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
-  const [credits, setCredits] = useState<number>(0);
   const [totalProjects, setTotalProjects] = useState<number>(0);
-  const [currentPlan, setCurrentPlan] = useState<string>('free');
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
@@ -37,18 +35,6 @@ export default function DashboardPage() {
         return;
       }
       setUser(user);
-
-      // Fetch user profile data
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('credits_remaining, subscription_tier')
-        .eq('id', user.id)
-        .single();
-
-      if (profile) {
-        setCredits(profile.credits_remaining || 0);
-        setCurrentPlan(profile.subscription_tier || 'free');
-      }
 
       // Fetch total projects count
       const { count } = await supabase
@@ -101,10 +87,6 @@ export default function DashboardPage() {
             
             <div className="flex items-center gap-4">
               <SimpleLanguageSwitcher />
-              <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 rounded-lg">
-                <Zap className="w-4 h-4 text-indigo-600" />
-                <span className="font-semibold text-indigo-900">{credits} {t('common.credits')}</span>
-              </div>
               <button
                 onClick={handleLogout}
                 className="text-gray-700 hover:text-gray-900 font-medium"
@@ -124,12 +106,12 @@ export default function DashboardPage() {
             {t('dashboard.welcome')} 👋
           </h1>
           <p className="text-xl text-gray-600">
-            <span className="font-bold text-indigo-600">{credits} {t('common.credits')}</span> {t('dashboard.remaining', 'remaining')}.
+            Generate unlimited websites for free. Pay £19.99 only when you publish.
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
+        <div className="grid md:grid-cols-2 gap-6 mb-12">
           {/* Create Website Card */}
           <button
             onClick={() => router.push('/dashboard/generate')}
@@ -146,38 +128,12 @@ export default function DashboardPage() {
             </div>
           </button>
 
-          {/* Create Simple App Card */}
-          <button
-            onClick={() => router.push('/dashboard/create-app')}
-            className="bg-gradient-to-br from-pink-600 to-purple-600 rounded-2xl p-8 text-white hover:shadow-2xl transition transform hover:scale-105 text-left group"
-          >
-            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
-              <Zap className="w-8 h-8" />
-            </div>
-            <h3 className="text-2xl font-bold mb-2">{t('dashboard.createApp', 'Create Simple App')}</h3>
-            <p className="text-white/90 mb-4">{t('dashboard.createAppDesc', 'Booking, directory, calculator & more')}</p>
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              <span>{t('dashboard.getStarted', 'Get Started')}</span>
-              <Plus className="w-4 h-4" />
-            </div>
-          </button>
-
-          {/* Stats Card */}
-          <div className="grid grid-rows-2 gap-6">
-            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200">
-              <div className="text-center">
-                <div className="text-5xl mb-2">📁</div>
-                <div className="text-3xl font-bold text-gray-900">{totalProjects}</div>
-                <div className="text-gray-600 font-medium">{t('dashboard.totalProjects', 'Total Projects')}</div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200">
-              <div className="text-center">
-                <div className="text-5xl mb-2">✨</div>
-                <div className="text-3xl font-bold text-gray-900">{currentPlan}</div>
-                <div className="text-gray-600 font-medium">{t('dashboard.currentPlan', 'Current Plan')}</div>
-              </div>
+          {/* Total Projects Card */}
+          <div className="bg-white rounded-2xl p-8 border-2 border-gray-200">
+            <div className="text-center">
+              <div className="text-6xl mb-4">📁</div>
+              <div className="text-4xl font-bold text-gray-900 mb-2">{totalProjects}</div>
+              <div className="text-gray-600 font-medium text-lg">{t('dashboard.totalProjects', 'Total Projects')}</div>
             </div>
           </div>
         </div>
@@ -193,22 +149,14 @@ export default function DashboardPage() {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">{t('dashboard.noProjects', 'No projects yet')}</h3>
               <p className="text-gray-600 mb-6">
-                {t('dashboard.createFirstProject', 'Create your first website or app to get started!')}
+                Create your first website to get started! Generate unlimited for free.
               </p>
-              <div className="flex gap-4 justify-center">
-                <button
-                  onClick={() => router.push('/dashboard/generate')}
-                  className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition"
-                >
-                  {t('dashboard.createWebsite', 'Create Website')}
-                </button>
-                <button
-                  onClick={() => router.push('/dashboard/create-app')}
-                  className="px-6 py-3 bg-pink-600 text-white rounded-xl font-semibold hover:bg-pink-700 transition"
-                >
-                  {t('dashboard.createApp', 'Create Simple App')}
-                </button>
-              </div>
+              <button
+                onClick={() => router.push('/dashboard/generate')}
+                className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-lg hover:shadow-xl transition transform hover:scale-105"
+              >
+                {t('dashboard.createWebsite', 'Create Website')}
+              </button>
             </div>
           ) : (
             <div className="grid md:grid-cols-3 gap-6">
@@ -230,21 +178,21 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Quick Tips */}
+        {/* How It Works */}
         <div className="mt-8 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6 border-2 border-indigo-100">
-          <h3 className="text-lg font-bold text-gray-900 mb-3">💡 {t('dashboard.quickTips', 'Quick Tips')}</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-3">💡 How It Works</h3>
           <ul className="space-y-2 text-gray-700">
             <li className="flex items-start gap-2">
-              <span className="text-indigo-600 font-bold">•</span>
-              <span><strong>{t('dashboard.tip1Title', 'Websites cost 1 credit')}</strong> - {t('dashboard.tip1Desc', 'Perfect for restaurants, gyms, portfolios')}</span>
+              <span className="text-indigo-600 font-bold">1.</span>
+              <span><strong>Generate unlimited for free</strong> - Create as many websites as you want, experiment and iterate</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-pink-600 font-bold">•</span>
-              <span><strong>{t('dashboard.tip2Title', 'Simple Apps cost 1 credit')}</strong> - {t('dashboard.tip2Desc', 'Great for booking, directories, calculators')}</span>
+              <span className="text-purple-600 font-bold">2.</span>
+              <span><strong>Pay £19.99 only when ready</strong> - Publish your website when you're happy with it</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-purple-600 font-bold">•</span>
-              <span><strong>{t('dashboard.tip3Title', 'Edit anytime for free')}</strong> - {t('dashboard.tip3Desc', 'No extra credits needed for updates')}</span>
+              <span className="text-pink-600 font-bold">3.</span>
+              <span><strong>Edit forever, no extra cost</strong> - Update your published website anytime, completely free</span>
             </li>
           </ul>
         </div>
